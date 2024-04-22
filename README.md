@@ -1,1 +1,1 @@
-# SPARKI (Statistical Process Aimed at Robust Kraken2 Interpretation)
+# SPARKI (*S*tatistical Process Aimed at Robust Kraken2 Interpretation)
