@@ -1,6 +1,6 @@
 # SPARKI (Statistical Process Aimed at Robust Kraken2 Interpretation) :sparkles:
 
-This repository contains the code related to SPARKI (**S**tatistical **P**rocess **A**imed at **R**obust **K**raken2 **I**nterpreation), a framework developed in R to help refine, visualise & interpret Kraken2 outputs. This package is tailored for the identification of viruses
+This repository contains the code related to SPARKI (**S**tatistical **P**rocess **A**imed at **R**obust **K**raken2 **I**nterpreation), a framework developed in R to help refine, visualise & interpret Kraken2 outputs. This package is **tailored/fine-tuned for the interpretation of results related to viruses**.
 
 ## Tutorial
 
@@ -19,7 +19,10 @@ merged_reports <- load_reports("test/reports", verbose = FALSE)
 
 ### Read metadata (optional) and Kraken2's reference database
 ```
-mdata <- load_metadata("test/metadata.csv") # Optional
+# Read metadata (optional).
+mdata <- load_metadata("test/metadata.csv")
+
+# Read Kraken2's reference database info.
 ref_db <- load_reference("test/inspect.txt")
 ```
 
@@ -33,8 +36,12 @@ merged_reports <- add_metadata(merged_reports, mdata, mdata_columns)
 
 ### Prepare standard reports and MPA-style reports for downstream analysis
 ```
+
 merged_mpa <- mpa_determine_last_rank(merged_mpa)
 merged_mpa <- mpa_add_rank_columns(merged_mpa)
+
+merged_reports <- assess_n_taxa_per_sample(merged_reports)
+merged_reports <- assess_n_reads_per_sample(merged_reports)
 
 merged_reports <- subset_reports(merged_reports)
 merged_reports <- report_add_domains(merged_reports, merged_mpa)
