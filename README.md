@@ -11,8 +11,14 @@ source("library/helper.R")
 source("library/plotting.R")
 ```
 
-### Read input data
+### Read Kraken2 results
 ```
 merged_mpa <- load_mpa("test/mpa")
 merged_reports <- load_mpa("test/reports")
+```
+
+### Read metadata and Kraken2's reference database
+```
+mdata <- load_metadata("test/metadata.csv")
+ref_db <- load_reference("test/inspect.txt")
 ```
