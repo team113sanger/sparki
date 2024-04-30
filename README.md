@@ -23,7 +23,7 @@ mdata <- load_metadata("test/metadata.csv") # Optional
 ref_db <- load_reference("test/inspect.txt")
 ```
 
-### Add metadata to dataframes containing Kraken2 results (optional)
+### Add metadata to dataframes containing Kraken2 results **(optional)**
 ```
 mdata_columns <- c("Diagnosis_short", "Site_group")
 
