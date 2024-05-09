@@ -25,15 +25,15 @@ load_reference <- function(reference_path) {
     )
     # Add column names.
     colnames(ref) <- c(
-        COLNAME_PCT_FRAG_CLADE_REF_DB, 
-        COLNAME_MINIMISERS_CLADE_REF_DB,
-        COLNAME_MINIMISERS_TAXON_REF_DB,
-        COLNAME_RANK_REF_DB, 
-        COLNAME_NCBI_ID_REF_DB, 
-        COLNAME_TAXON_REF_DB
+        COLNAME_REF_DB_PCT_FRAG_CLADE, 
+        COLNAME_REF_DB_MINIMISERS_CLADE,
+        COLNAME_REF_DB_MINIMISERS_TAXON,
+        COLNAME_REF_DB_RANK, 
+        COLNAME_REF_DB_NCBI_ID, 
+        COLNAME_REF_DB_TAXON
     )
 
-    ref[, COLNAME_TAXON_REF_DB] <- gsub("^[[:space:]]\\s*(.*?)", "", ref[, COLNAME_TAXON_REF_DB], perl = TRUE)
+    ref[, COLNAME_REF_DB_TAXON] <- gsub("^[[:space:]]\\s*(.*?)", "", ref[, COLNAME_REF_DB_TAXON], perl = TRUE)
 
     return(ref)
 
@@ -96,8 +96,8 @@ load_mpa_reports <- function(mpa_reports_dir, verbose = TRUE) {
             mpa_report <- read.csv(file = paste0(mpa_reports_dir, "/", file_name), header = FALSE, sep = "\t")
 
             mpa_report_colnames <- c(
-                COLNAME_TAXON_MPA, 
-                COLNAME_N_FRAG_CLADE_MPA
+                COLNAME_MPA_TAXON, 
+                COLNAME_MPA_N_FRAG_CLADE
             )
 
             # Add column names.
@@ -144,27 +144,27 @@ load_std_reports <- function(std_reports_dir, verbose = TRUE) {
             std_report <- read.csv(file = paste0(std_reports_dir, "/", file_name), header = FALSE, sep = "\t")
             
             std_report_colnames <- c(
-                COLNAME_PCT_FRAG_CLADE_STD, 
-                COLNAME_N_FRAG_CLADE_STD, 
-                COLNAME_N_FRAG_TAXON_STD, 
-                COLNAME_MINIMISERS_STD, 
-                COLNAME_UNIQ_MINIMISERS_STD,
-                COLNAME_RANK_STD, 
-                COLNAME_NCBI_ID_STD, 
-                COLNAME_TAXON_STD
+                COLNAME_STD_PCT_FRAG_CLADE, 
+                COLNAME_STD_N_FRAG_CLADE, 
+                COLNAME_STD_N_FRAG_TAXON, 
+                COLNAME_STD_MINIMISERS, 
+                COLNAME_STD_UNIQ_MINIMISERS,
+                COLNAME_STD_RANK, 
+                COLNAME_STD_NCBI_ID, 
+                COLNAME_STD_TAXON
             )
 
             # Add column names.
             colnames(std_report) <- std_report_colnames
 
             # Add sample name to report dataframe.
-            std_report[, COLNAME_SAMPLE_STD] <- rep(sample_name, times = nrow(std_report))
+            std_report[, COLNAME_STD_SAMPLE] <- rep(sample_name, times = nrow(std_report))
 
             # Reorder columns.
-            std_report <- std_report[, c(COLNAME_SAMPLE_STD, std_report_colnames)]
+            std_report <- std_report[, c(COLNAME_STD_SAMPLE, std_report_colnames)]
 
             # Remove identation.
-            std_report[, COLNAME_TAXON_STD] <- gsub("^[[:space:]]\\s*(.*?)", "", std_report[, COLNAME_TAXON_STD], perl = TRUE)
+            std_report[, COLNAME_STD_TAXON] <- gsub("^[[:space:]]\\s*(.*?)", "", std_report[, COLNAME_STD_TAXON], perl = TRUE)
 
             # Add sample results to dataframe where all results will be stored.
             std_reports <- rbind(std_reports, std_report)
@@ -220,19 +220,19 @@ addMetadata <- function(dataframe, metadata, columns) {
 
 is_mpa <- function(report) {
     
-    if (COLNAME_TAXON_MPA == COLNAME_TAXON_STD ) {
+    if (COLNAME_MPA_TAXON == COLNAME_STD_TAXON ) {
         stop("The column names are the same in both report formats and therefore it will not
              be able to distinguish between them.")
     } else {
         # If the column "taxon" is present in the report, then it is an MPA-style report.
-        if (COLNAME_TAXON_MPA %in% colnames(report)) { 
+        if (COLNAME_MPA_TAXON %in% colnames(report)) { 
             return(TRUE)
 
         # If the column "taxon" is not present...
         } else {
 
             # If the column "scientific_name" is present, then it is a standard report.
-            if (COLNAME_TAXON_STD %in% colnames(report)) {
+            if (COLNAME_STD_TAXON %in% colnames(report)) {
                 return(FALSE)
             
             # If none of those columns are present then it is not an MPA-style or standard report.
@@ -318,13 +318,13 @@ sum_domainReads <- function(report, domains) {
 
     if (is_mpa(report)) {
         
-        subset <- report[grep(domains, report[, COLNAME_TAXON_MPA]),]
-        sum_domains <- sum(subset[, COLNAME_N_FRAG_CLADE_MPA])
+        subset <- report[grep(domains, report[, COLNAME_MPA_TAXON]),]
+        sum_domains <- sum(subset[, COLNAME_MPA_N_FRAG_CLADE])
 
     } else {
 
-        subset <- report[grep(domains, report[, COLNAME_TAXON_STD]),]
-        sum_domains <- sum(subset[, COLNAME_N_FRAG_CLADE_STD])
+        subset <- report[grep(domains, report[, COLNAME_STD_TAXON]),]
+        sum_domains <- sum(subset[, COLNAME_STD_N_FRAG_CLADE])
 
     }
 
@@ -338,15 +338,15 @@ prepare_for_plotDomainReads <- function(report, include_eukaryotes) {
 
     if (is_mpa(report)) {
            
-        colname_taxon <- COLNAME_TAXON_MPA
-        colname_n_frag_clade <- COLNAME_N_FRAG_CLADE_MPA
+        colname_taxon <- COLNAME_MPA_TAXON
+        colname_n_frag_clade <- COLNAME_MPA_N_FRAG_CLADE
 
-        report[, COLNAME_TAXON_MPA] <- gsub("d__", "", report[, COLNAME_TAXON_MPA])
+        report[, COLNAME_MPA_TAXON] <- gsub("d__", "", report[, COLNAME_MPA_TAXON])
         
     } else {
 
-        colname_taxon <- COLNAME_TAXON_STD
-        colname_n_frag_clade <- COLNAME_N_FRAG_CLADE_STD
+        colname_taxon <- COLNAME_STD_TAXON
+        colname_n_frag_clade <- COLNAME_STD_N_FRAG_CLADE
 
     }
 
@@ -387,9 +387,9 @@ get_ClassificationSummary <- function(report) {
             "MPA-style reports do not contain information on unclassified reads."
         ))
     } else {
-        colname_n_frag_clade <- COLNAME_N_FRAG_CLADE_STD
-        colname_taxon <- COLNAME_TAXON_STD
-        colname_sample <- COLNAME_SAMPLE_STD
+        colname_n_frag_clade <- COLNAME_STD_N_FRAG_CLADE
+        colname_taxon <- COLNAME_STD_TAXON
+        colname_sample <- COLNAME_STD_SAMPLE
     }
 
     class_unclass_df <- data.frame(matrix(nrow = 0, ncol = 3))
@@ -420,9 +420,9 @@ get_ProportionClassifiedReads <- function(report) {
             "but the MPA-style reports do not contain information on unclassified reads."
         ))
     } else {
-        colname_n_frag_clade <- COLNAME_N_FRAG_CLADE_STD
-        colname_taxon <- COLNAME_TAXON_STD
-        colname_sample <- COLNAME_SAMPLE_STD
+        colname_n_frag_clade <- COLNAME_STD_N_FRAG_CLADE
+        colname_taxon <- COLNAME_STD_TAXON
+        colname_sample <- COLNAME_STD_SAMPLE
     }
 
     proportion_df <- data.frame(matrix(nrow = 0, ncol = 3))

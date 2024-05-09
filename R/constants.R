@@ -3,43 +3,43 @@
 #######################################################################################################
 
 #### Reference database ####
-COLNAME_PCT_FRAG_CLADE_REF_DB <- "pct_fragments_clade"
-COLNAME_MINIMISERS_CLADE_REF_DB <- "n_minimisers_clade"
-COLNAME_MINIMISERS_TAXON_REF_DB <- "n_minimisers_taxon"
-COLNAME_RANK_REF_DB <- "rank"
-COLNAME_NCBI_ID_REF_DB <- "ncbi_id"
-COLNAME_TAXON_REF_DB <- "taxon"
+COLNAME_REF_DB_PCT_FRAG_CLADE <- "pct_fragments_clade"
+COLNAME_REF_DB_MINIMISERS_CLADE <- "n_minimisers_clade"
+COLNAME_REF_DB_MINIMISERS_TAXON <- "n_minimisers_taxon"
+COLNAME_REF_DB_RANK <- "rank"
+COLNAME_REF_DB_NCBI_ID <- "ncbi_id"
+COLNAME_REF_DB_TAXON <- "taxon"
 
 #### Standard report ####
-COLNAME_SAMPLE_STD <- "sample"
-COLNAME_PCT_FRAG_CLADE_STD <- "pct_fragments_clade"
-COLNAME_N_FRAG_CLADE_STD <- "n_fragments_clade"
-COLNAME_N_FRAG_TAXON_STD <- "n_fragments_taxon"
-COLNAME_MINIMISERS_STD <- "n_minimisers"
-COLNAME_UNIQ_MINIMISERS_STD <- "n_distinct_minimisers"
-COLNAME_RANK_STD <- "rank"
-COLNAME_NCBI_ID_STD <- "ncbi_id"
-COLNAME_TAXON_STD <- "taxon"
-COLNAME_DB_MINIMISERS_CLADE_STD <- "db_number_minimisers_clade"
-COLNAME_DB_MINIMISERS_TAXON_STD <- "db_number_minimisers_taxon"
+COLNAME_STD_SAMPLE <- "sample"
+COLNAME_STD_PCT_FRAG_CLADE <- "pct_fragments_clade"
+COLNAME_STD_N_FRAG_CLADE <- "n_fragments_clade"
+COLNAME_STD_N_FRAG_TAXON <- "n_fragments_taxon"
+COLNAME_STD_MINIMISERS <- "n_minimisers"
+COLNAME_STD_UNIQ_MINIMISERS <- "n_distinct_minimisers"
+COLNAME_STD_RANK <- "rank"
+COLNAME_STD_NCBI_ID <- "ncbi_id"
+COLNAME_STD_TAXON <- "taxon"
+COLNAME_STD_DB_MINIMISERS_CLADE <- "db_number_minimisers_clade"
+COLNAME_STD_DB_MINIMISERS_TAXON <- "db_number_minimisers_taxon"
 
 #### MPA-style report #### 
-COLNAME_SAMPLE_MPA <- "sample"
-COLNAME_N_FRAG_CLADE_MPA <- "n_fragments_clade"
-COLNAME_TAXON_MPA <- "taxon_hierarchy"
-COLNAME_RANK_MPA <- "rank"
-COLNAME_NCBI_ID_MPA <- "ncbi_id"
-COLNAME_DB_MINIMISERS_CLADE_MPA <- "db_number_minimisers_clade"
-COLNAME_DB_MINIMISERS_TAXON_MPA <- "db_number_minimisers_taxon"
+COLNAME_MPA_SAMPLE <- "sample"
+COLNAME_MPA_N_FRAG_CLADE <- "n_fragments_clade"
+COLNAME_MPA_TAXON <- "taxon_hierarchy"
+COLNAME_MPA_RANK <- "rank"
+COLNAME_MPA_NCBI_ID <- "ncbi_id"
+COLNAME_MPA_DB_MINIMISERS_CLADE <- "db_number_minimisers_clade"
+COLNAME_MPA_DB_MINIMISERS_TAXON <- "db_number_minimisers_taxon"
 
 #### Auxiliary dataframes ####
 
 # Number of domain reads per sample.
-COLNAME_SAMPLE_DOMAIN_READS <- "sample"
-COLNAME_SCOPE_DOMAIN_READS <- "domains_considered"
-COLNAME_N_READS_DOMAIN_READS <- "n_clade_reads"
+COLNAME_DOMAIN_READS_SAMPLE <- "sample"
+COLNAME_DOMAIN_READS_SCOPE <- "domains_considered"
+COLNAME_DOMAIN_READS_N_READS <- "n_clade_reads"
 
 # Number of classified/unclassified reads per sample.
-COLNAME_SAMPLE_CLASSIF_SUMMARY <- "sample"
-COLNAME_READ_TYPE_CLASSIF_SUMMARY <- "type"
-COLNAME_N_READS_CLASSIF_SUMMARY <- "n_reads"
+COLNAME_CLASSIF_SUMMARY_SAMPLE <- "sample"
+COLNAME_CLASSIF_SUMMARY_READ_TYPE <- "type"
+COLNAME_CLASSIF_SUMMARY_N_READS <- "n_reads"

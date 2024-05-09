@@ -2,10 +2,10 @@ addRank <- function(report) {
 
     if (is_mpa(report)) {
 
-        report[, COLNAME_RANK_MPA] <- sapply(seq_len(nrow(report)), function(x) {
+        report[, COLNAME_MPA_RANK] <- sapply(seq_len(nrow(report)), function(x) {
 
             # Get scientific name (in this case it will have a prefix indicating the taxonomic rank).
-            rank <- tail(unlist(stringr::str_split(report[, COLNAME_TAXON_MPA][x], "\\|")), n = 1)
+            rank <- tail(unlist(stringr::str_split(report[, COLNAME_MPA_TAXON][x], "\\|")), n = 1)
 
             # Identify which taxonomic rank the scientific name belongs to.
             if(grepl("s__", rank)) return("S")
@@ -21,7 +21,7 @@ addRank <- function(report) {
     } else {
         stop(paste0(
             "This function is not applicable to a standard report (i.e. not MPA-style). ",
-            "The standard report format already has the column ", COLNAME_RANK_STD, ", which indicates the taxonomic rank of each line."
+            "The standard report format already has the column ", COLNAME_STD_RANK, ", which indicates the taxonomic rank of each line."
         ))   
     }
 
@@ -51,13 +51,13 @@ addConciseTaxon <- function(report, verbose = TRUE) {
             # "(...)g__Homo|s__Homo sapiens" -> "Homo" (under "genus") and "Homo sapiens" (under "species")
             report[, colname] <- sapply(seq_len(nrow(report)), function(x) {
 
-                if (report[, COLNAME_RANK_MPA][x] == rank) {
+                if (report[, COLNAME_MPA_RANK][x] == rank) {
 
-                    return(extract_taxon(report[, COLNAME_TAXON_MPA][x], rank = rank, last_in_hierarchy = TRUE))
+                    return(extract_taxon(report[, COLNAME_MPA_TAXON][x], rank = rank, last_in_hierarchy = TRUE))
 
                 } else {
 
-                    return(extract_taxon(report[, COLNAME_TAXON_MPA][x], rank = rank, last_in_hierarchy = FALSE))
+                    return(extract_taxon(report[, COLNAME_MPA_TAXON][x], rank = rank, last_in_hierarchy = FALSE))
 
                 }
             })
@@ -65,7 +65,7 @@ addConciseTaxon <- function(report, verbose = TRUE) {
     } else {
         stop(paste0(
             "This function is not applicable to a standard report (i.e. not MPA-style). The standard report ",
-            "format already has the column ", COLNAME_TAXON_STD, ", which has concise taxon names instead of ",
+            "format already has the column ", COLNAME_STD_TAXON, ", which has concise taxon names instead of ",
             "taxon hierarchies."
         ))   
     }
@@ -120,14 +120,14 @@ add_ncbiID <- function(report_std, report_mpa) {
         ))
     }
 
-    ranks <- unique(report_std[, COLNAME_RANK_STD])
-    ranks <- ranks[ranks %in% report_mpa[, COLNAME_RANK_MPA]]
+    ranks <- unique(report_std[, COLNAME_STD_RANK])
+    ranks <- ranks[ranks %in% report_mpa[, COLNAME_MPA_RANK]]
     ranks <- get_association(ranks)
 
     for (rank in ranks) {
 
-        report_mpa[, COLNAME_NCBI_ID_MPA] <- report_std[, COLNAME_NCBI_ID_STD][match(
-            report_mpa[, names(ranks)[ranks == rank]], report_std[, COLNAME_TAXON_STD]
+        report_mpa[, COLNAME_MPA_NCBI_ID] <- report_std[, COLNAME_STD_NCBI_ID][match(
+            report_mpa[, names(ranks)[ranks == rank]], report_std[, COLNAME_STD_TAXON]
         )]
 
     }
@@ -181,12 +181,12 @@ get_nDomainReads <- function(report) {
     }
 
     colnames(n_domainReads) <- c(
-        COLNAME_SAMPLE_DOMAIN_READS, 
-        COLNAME_SCOPE_DOMAIN_READS, 
-        COLNAME_N_READS_DOMAIN_READS
+        COLNAME_DOMAIN_READS_SAMPLE, 
+        COLNAME_DOMAIN_READS_SCOPE, 
+        COLNAME_DOMAIN_READS_N_READS
     )
     
-    n_domainReads[, COLNAME_N_READS_DOMAIN_READS] <- as.numeric(n_domainReads[, COLNAME_N_READS_DOMAIN_READS])
+    n_domainReads[, COLNAME_DOMAIN_READS_N_READS] <- as.numeric(n_domainReads[, COLNAME_DOMAIN_READS_N_READS])
 
     return(n_domainReads)
 }
@@ -203,13 +203,13 @@ get_nTaxa <- function(report, ranks) {
     }
 
     if (is_mpa(report)) {
-        colname_sample <- COLNAME_SAMPLE_MPA
-        colname_taxon <- COLNAME_TAXON_MPA
-        colname_rank <- COLNAME_RANK_MPA
+        colname_sample <- COLNAME_MPA_SAMPLE
+        colname_taxon <- COLNAME_MPA_TAXON
+        colname_rank <- COLNAME_MPA_RANK
     } else {
-        colname_sample <- COLNAME_SAMPLE_STD
-        colname_taxon <- COLNAME_TAXON_STD
-        colname_rank <- COLNAME_RANK_STD
+        colname_sample <- COLNAME_STD_SAMPLE
+        colname_taxon <- COLNAME_STD_TAXON
+        colname_rank <- COLNAME_STD_RANK
     }
 
     n_taxa_in_samples <- data.frame(matrix(nrow = 0, ncol = 4))
@@ -244,20 +244,20 @@ add_DBinfo <- function(report, ref_db) {
 
     if (is_mpa(report)) {
 
-        colname_db_minimisers_taxon <- COLNAME_DB_MINIMISERS_TAXON_MPA
-        colname_db_minimisers_clade <- COLNAME_DB_MINIMISERS_CLADE_MPA
-        colname_ncbi_id <- COLNAME_NCBI_ID_MPA
+        colname_db_minimisers_taxon <- COLNAME_MPA_DB_MINIMISERS_TAXON
+        colname_db_minimisers_clade <- COLNAME_MPA_DB_MINIMISERS_CLADE
+        colname_ncbi_id <- COLNAME_MPA_NCBI_ID
 
     } else {
 
-        colname_db_minimisers_taxon <- COLNAME_DB_MINIMISERS_TAXON_STD
-        colname_db_minimisers_clade <- COLNAME_DB_MINIMISERS_CLADE_STD
-        colname_ncbi_id <- COLNAME_NCBI_ID_STD
+        colname_db_minimisers_taxon <- COLNAME_STD_DB_MINIMISERS_TAXON
+        colname_db_minimisers_clade <- COLNAME_STD_DB_MINIMISERS_CLADE
+        colname_ncbi_id <- COLNAME_STD_NCBI_ID
 
     }
 
-    report[, colname_db_minimisers_taxon] <- ref_db[, COLNAME_MINIMISERS_TAXON_REF_DB][match(report[, colname_ncbi_id], ref_db[, COLNAME_NCBI_ID_REF_DB])]
-    report[, colname_db_minimisers_clade] <- ref_db[, COLNAME_MINIMISERS_CLADE_REF_DB][match(report[, colname_ncbi_id], ref_db[, COLNAME_NCBI_ID_REF_DB])]
+    report[, colname_db_minimisers_taxon] <- ref_db[, COLNAME_REF_DB_MINIMISERS_TAXON][match(report[, colname_ncbi_id], ref_db[, COLNAME_REF_DB_NCBI_ID])]
+    report[, colname_db_minimisers_clade] <- ref_db[, COLNAME_REF_DB_MINIMISERS_CLADE][match(report[, colname_ncbi_id], ref_db[, COLNAME_REF_DB_NCBI_ID])]
 
     return(report)
 }
@@ -271,9 +271,9 @@ getClassificationSummary <- function(report) {
             "MPA-style reports do not contain information on unclassified reads."
         ))
     } else {
-        colname_n_frag_clade <- COLNAME_N_FRAG_CLADE_STD
-        colname_taxon <- COLNAME_TAXON_STD
-        colname_sample <- COLNAME_SAMPLE_STD
+        colname_n_frag_clade <- COLNAME_STD_N_FRAG_CLADE
+        colname_taxon <- COLNAME_STD_TAXON
+        colname_sample <- COLNAME_STD_SAMPLE
     }
 
     class_unclass_df <- data.frame(matrix(nrow = 0, ncol = 3))
@@ -290,12 +290,12 @@ getClassificationSummary <- function(report) {
     }
 
     colnames(class_unclass_df) <- c(
-        COLNAME_SAMPLE_CLASSIF_SUMMARY, 
-        COLNAME_READ_TYPE_CLASSIF_SUMMARY, 
-        COLNAME_N_READS_CLASSIF_SUMMARY
+        COLNAME_CLASSIF_SUMMARY_SAMPLE, 
+        COLNAME_CLASSIF_SUMMARY_READ_TYPE, 
+        COLNAME_CLASSIF_SUMMARY_N_READS
     )
 
-    class_unclass_df[, COLNAME_N_READS_CLASSIF_SUMMARY] <- as.numeric(class_unclass_df[, COLNAME_N_READS_CLASSIF_SUMMARY])
+    class_unclass_df[, COLNAME_CLASSIF_SUMMARY_N_READS] <- as.numeric(class_unclass_df[, COLNAME_CLASSIF_SUMMARY_N_READS])
 
     return(class_unclass_df)
 }
@@ -310,18 +310,18 @@ getProportion <- function(report, taxon) {
             "assessed, but the MPA-style reports do not contain information on unclassified reads."
         ))
     } else {
-        colname_n_frag_clade <- COLNAME_N_FRAG_CLADE_STD
-        colname_taxon <- COLNAME_TAXON_STD
-        colname_sample <- COLNAME_SAMPLE_STD
+        colname_n_frag_clade <- COLNAME_STD_N_FRAG_CLADE
+        colname_taxon <- COLNAME_STD_TAXON
+        colname_sample <- COLNAME_STD_SAMPLE
     }
 
     class_unclass_df <- getClassificationSummary(report)
 
-    for (sample in unique(class_unclass_df[, COLNAME_SAMPLE_CLASSIF_SUMMARY])) {
-        subset <- class_unclass_df[, class_unclass_df[, COLNAME_SAMPLE_CLASSIF_SUMMARY] == sample, ]
+    for (sample in unique(class_unclass_df[, COLNAME_CLASSIF_SUMMARY_SAMPLE])) {
+        subset <- class_unclass_df[, class_unclass_df[, COLNAME_CLASSIF_SUMMARY_SAMPLE] == sample, ]
         
-        classified_reads <- subset[, COLNAME_N_READS_CLASSIF_SUMMARY][subset[, COLNAME_READ_TYPE_CLASSIF_SUMMARY] == "Classified"]
-        unclassified_reads <- subset[, COLNAME_N_READS_CLASSIF_SUMMARY][subset[, COLNAME_READ_TYPE_CLASSIF_SUMMARY] == "Unclassified"]
+        classified_reads <- subset[, COLNAME_CLASSIF_SUMMARY_N_READS][subset[, COLNAME_CLASSIF_SUMMARY_READ_TYPE] == "Classified"]
+        unclassified_reads <- subset[, COLNAME_CLASSIF_SUMMARY_N_READS][subset[, COLNAME_CLASSIF_SUMMARY_READ_TYPE] == "Unclassified"]
 
         total_reads <- classified_reads + unclassified_reads
 
@@ -344,7 +344,7 @@ addDomain <- function(std_report, mpa_report) {
 
         for (rank in ranks) {
             
-            if (report[, COLNAME_RANK_STD][x] == rank) {
+            if (report[, COLNAME_STD_RANK][x] == rank) {
                 return()
             }
         }
