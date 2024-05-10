@@ -83,27 +83,50 @@ add_nReads <- function(report) {
     if (is_mpa(report)) {
         stop(paste0(
             "This function is not applicable to MPA-style reports. The purpose of this function ",
-            "is to assess the number of classified and unclassified reads for each sample, but the ",
-            "MPA-style reports do not contain information on unclassified reads."
+            "is to assess the total number of reads (classified + unclassified) assessed in each ",
+            "sample, but the MPA-style reports do not contain information on unclassified reads. ",
+            "If you would like to have the total number of reads in your MPA-style report, please do:\n\n",
+            "std_reports <- add_nReads(std_reports)\n", "mpa_reports <- transfer_nReads(mpa_reports, ",
+            "std_reports)\n\n"
         ))
     } else {
 
-        report$n_total_reads_in_sample <- NA
+        report[, COLNAME_STD_TOTAL_READS] <- NA
 
         # Get numbers of classified/unclassified reads for each sample.
-        subset <- report[report$scientific_name %in% c("unclassified", "root"), ]
+        subset <- report[report[, COLNAME_STD_TAXON] %in% c("unclassified", "root"), ]
 
-        for (sample in unique(subset$sample)) {
+        for (sample in unique(subset[, COLNAME_STD_SAMPLE])) {
 
-            subset_sample <- subset[subset$sample == sample, ]
-            n_unclassified_reads <- as.numeric(subset_sample$number_fragments_clade[subset_sample$scientific_name == "unclassified"])
-            n_classified_reads <- as.numeric(subset_sample$number_fragments_clade[subset_sample$scientific_name == "root"])
+            subset_sample <- subset[subset[, COLNAME_STD_SAMPLE] == sample, ]
+            n_unclassified_reads <- as.numeric(subset_sample[, COLNAME_STD_N_FRAG_CLADE][subset_sample[, COLNAME_STD_TAXON] == "unclassified"])
+            n_classified_reads <- as.numeric(subset_sample[, COLNAME_STD_N_FRAG_CLADE][subset_sample[, COLNAME_STD_TAXON] == "root"])
 
-            report$n_total_reads_in_sample[report$sample == sample] <- (n_unclassified_reads + n_classified_reads)
+            report[, COLNAME_STD_TOTAL_READS][report[, COLNAME_STD_SAMPLE] == sample] <- (n_unclassified_reads + n_classified_reads)
         }
     }
 
     return(report)
+}
+
+transfer_nReads <- function(report_mpa, report_std) {
+
+    if (is_mpa(report_std)) {
+        stop(paste0(
+            "The report you provided as 'report_std' is not actually in standard format. ",
+            "Please review your input!"
+        ))
+    } else if (!(is_mpa(report_mpa))) {
+        stop(paste0(
+            "The report you provided as 'report_mpa' is not actually in MPA format. ",
+            "Please review your input!"
+        ))
+    }
+
+    report_mpa[, COLNAME_MPA_TOTAL_READS] <- report_std[, COLNAME_STD_TOTAL_READS][match(report_mpa[, COLNAME_MPA_SAMPLE], report_std[, COLNAME_STD_SAMPLE])]
+    report_mpa[, COLNAME_MPA_TOTAL_READS] <- as.numeric(report_mpa[, COLNAME_MPA_TOTAL_READS])
+
+    return(report_mpa)
 }
 
 
