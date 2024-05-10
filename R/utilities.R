@@ -106,6 +106,54 @@ add_nReads <- function(report) {
     return(report)
 }
 
+# sample_h1
+# sample_h2
+# sample_h3...
+add_hierarchyID <- function(report) {
+
+    if (is_mpa(report)) {
+        colname_sample <- COLNAME_MPA_SAMPLE
+        colname_rank <- COLNAME_MPA_RANK
+        colname_hierarchy_id <- COLNAME_MPA_HIERARCHY_ID
+    } else {
+        colname_sample <- COLNAME_STD_SAMPLE
+        colname_rank <- COLNAME_STD_RANK
+        colname_hierarchy_id <- COLNAME_STD_HIERARCHY_ID
+    }
+
+    report[, colname_hierarchy_id] <- NA
+
+    final_report <- data.frame(matrix(nrow = 0, ncol = (ncol(report) + 1)))
+
+    for (sample in unique(report[, colname_sample])) {
+
+        subset <- report[report[, colname_sample] == sample, ]
+
+        h_id <- 1
+        for (i in seq_len(nrow(subset))) {
+
+            if (i == nrow(subset)) break
+
+            rank <- subset[, colname_rank][i]
+            #print(paste0("Rank: ", rank))
+            real_downstream_rank <- subset[, colname_rank][i + 1]
+            #print(paste0("Real downstream rank: ", real_downstream_rank))
+            expected_downstream_rank <- get_downstream_rank(rank)
+            #print(paste0("Expected downstream rank: ", expected_downstream_rank))
+
+            subset[, colname_hierarchy_id] <- paste0(sample, "_h", h_id)
+
+            if (real_downstream_rank != expected_downstream_rank) {
+                h_id <- h_id + 1
+            }
+        } 
+    
+        final_report <- rbind(final_report, subset)
+    }
+
+    return(final_report)
+} 
+
 add_ncbiID <- function(report_std, report_mpa) {
 
     if (is_mpa(report_std)) {
@@ -124,15 +172,23 @@ add_ncbiID <- function(report_std, report_mpa) {
     ranks <- ranks[ranks %in% report_mpa[, COLNAME_MPA_RANK]]
     ranks <- get_association(ranks)
 
+    final_report <- data.frame(matrix(nrow = 0, ncol = (ncol(report_mpa) + 1)))
+
     for (rank in ranks) {
 
-        report_mpa[, COLNAME_MPA_NCBI_ID] <- report_std[, COLNAME_STD_NCBI_ID][match(
-            report_mpa[, names(ranks)[ranks == rank]], report_std[, COLNAME_STD_TAXON]
+        subset <- report_mpa[report_mpa[, COLNAME_MPA_RANK] == rank, ]
+
+        subset[, COLNAME_MPA_NCBI_ID] <- report_std[, COLNAME_STD_NCBI_ID][match(
+            subset[, names(ranks)[ranks == rank]], report_std[, COLNAME_STD_TAXON]
         )]
+
+        final_report <- rbind(final_report, subset)
 
     }
 
-    return(report_mpa)
+    final_report <- final_report[rownames(report_mpa), ]
+
+    return(final_report)
 }
 
 get_nDomainReads <- function(report) {

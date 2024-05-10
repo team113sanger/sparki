@@ -314,6 +314,21 @@ get_association_2 <- function(ranks) {
     return(ranks)
 }
 
+get_downstream_rank <- function(rank) {
+
+    if(rank %in% c("R", "R1")) return(NA)
+    else if(rank == "U") return(NA)
+    else if(rank == "D") return("K")
+    else if(rank == "K") return("P")
+    else if(rank == "P") return("C")
+    else if(rank == "C") return("O")
+    else if(rank == "O") return("F")
+    else if(rank == "F") return("G")
+    else if(rank == "G") return("S")
+    else if(rank == "S") return("None")
+
+}
+
 sum_domainReads <- function(report, domains) {
 
     if (is_mpa(report)) {
