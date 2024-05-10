@@ -22,7 +22,6 @@ COLNAME_STD_NCBI_ID <- "ncbi_id"
 COLNAME_STD_TAXON <- "taxon"
 COLNAME_STD_DB_MINIMISERS_CLADE <- "db_number_minimisers_clade"
 COLNAME_STD_DB_MINIMISERS_TAXON <- "db_number_minimisers_taxon"
-COLNAME_STD_HIERARCHY_ID <- "hierarchy_id"
 
 #### MPA-style report #### 
 COLNAME_MPA_SAMPLE <- "sample"
@@ -32,7 +31,6 @@ COLNAME_MPA_RANK <- "rank"
 COLNAME_MPA_NCBI_ID <- "ncbi_id"
 COLNAME_MPA_DB_MINIMISERS_CLADE <- "db_number_minimisers_clade"
 COLNAME_MPA_DB_MINIMISERS_TAXON <- "db_number_minimisers_taxon"
-COLNAME_MPA_HIERARCHY_ID <- "hierarchy_id"
 
 #### Auxiliary dataframes ####
 
