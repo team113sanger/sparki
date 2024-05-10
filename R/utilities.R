@@ -107,7 +107,7 @@ add_nReads <- function(report) {
 }
 
 
-add_ncbiID <- function(report_mpa, report_std) {
+transfer_ncbiID <- function(report_mpa, report_std) {
 
     if (is_mpa(report_std)) {
         stop(paste0(
