@@ -44,13 +44,13 @@ mpa_reports <- addRank(mpa_reports)
 mpa_reports <- addConciseTaxon(mpa_reports)
 mpa_reports <- transfer_ncbiID(mpa_reports, std_reports)
 mpa_reports <- transfer_nReads(mpa_reports, std_reports) # To be run after: std_reports <- add_nReads(std_reports)
-mpa_reports <- add_DBinfo(mpa_reports)
+mpa_reports <- add_DBinfo(mpa_reports, ref_db)
 ```
 
 ### Process standard reports
 ```
 std_reports <- add_nReads(std_reports)
-std_reports <- add_DBinfo(std_reports)
+std_reports <- add_DBinfo(std_reports, ref_db)
 ```
 
 ### Create auxiliary dataframes
