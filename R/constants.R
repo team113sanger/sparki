@@ -80,6 +80,8 @@ COLNAME_STD_TOTAL_READS <- "n_total_reads_in_sample"
 COLNAME_STD_DOMAIN <- "domain"
 COLNAME_STD_DB_MINIMISERS_CLADE <- "db_number_minimisers_clade"
 COLNAME_STD_DB_MINIMISERS_TAXON <- "db_number_minimisers_taxon"
+COLNAME_STD_RATIO_CLADE <- "ratio_clade"
+COLNAME_STD_RATIO_TAXON <- "ratio_taxon"
 
 #### MPA-style report #### 
 COLNAME_MPA_SAMPLE <- "sample"
@@ -90,6 +92,7 @@ COLNAME_MPA_NCBI_ID <- "ncbi_id"
 COLNAME_MPA_TOTAL_READS <- "n_total_reads_in_sample"
 COLNAME_MPA_DB_MINIMISERS_CLADE <- "db_number_minimisers_clade"
 COLNAME_MPA_DB_MINIMISERS_TAXON <- "db_number_minimisers_taxon"
+COLNAME_MPA_RATIO_CLADE <- "ratio_clade"
 
 #### Auxiliary dataframes ####
 

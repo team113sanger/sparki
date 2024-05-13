@@ -512,9 +512,30 @@ getProportion <- function(report, taxon) {
 ## UTILITY FUNCTIONS FOR ASSESSING THE STATISTICAL SIGNIFICANCE OF RESULTS ##
 #######################################################################################################
 
-assess_propMinimisers <- function(report) {
+assess_ratioMinimisers <- function(report) {
 
+    if (is_mpa(report)) {
+        
+        colname_uniq_minimisers <- COLNAME_MPA_UNIQ_MINIMISERS
+        colname_db_minimisers_clade <- COLNAME_MPA_DB_MINIMISERS_CLADE
+        colname_ratio_clade <- COLNAME_MPA_RATIO_CLADE
+
+    } else (
+
+        colname_uniq_minimisers <- COLNAME_STD_UNIQ_MINIMISERS
+        colname_db_minimisers_clade <- COLNAME_STD_DB_MINIMISERS_CLADE
+        colname_db_minimisers_taxon <- COLNAME_STD_DB_MINIMISERS_TAXON
+        colname_ratio_clade <- COLNAME_STD_RATIO_CLADE
+        colname_ratio_taxon <- COLNAME_STD_RATIO_TAXON
     
+        report[, colname_ratio_taxon] <- (report[, colname_uniq_minimisers] / report[, colname_db_minimisers_taxon])
+
+    )
+
+    report[, colname_ratio_clade] <- (report[, colname_uniq_minimisers] / report[, colname_db_minimisers_clade])
+
+    return(report)
+
 }
 
 
