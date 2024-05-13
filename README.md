@@ -49,14 +49,15 @@ mpa_reports <- add_DBinfo(mpa_reports, ref_db)
 
 ### Process standard reports
 ```
+std_reports <- transferDomains(std_reports, mpa_reports)
 std_reports <- add_nReads(std_reports)
 std_reports <- add_DBinfo(std_reports, ref_db)
-std_reports <- transferDomains(std_reports, mpa_reports)
 ```
 
 ### Create auxiliary dataframes
 ```
 nDomainReads <- get_nDomainReads(mpa_reports) # Or nDomainReads <- get_nDomainReads(std_reports)
+
 ```
 
 n_ranks_in_samples <- mpa_get_n_ranks_in_samples(merged_mpa)
