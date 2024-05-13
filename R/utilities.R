@@ -33,8 +33,8 @@ addRank <- function(report, verbose = TRUE) {
     } else {
         stop(paste0(
             "This function is not applicable to a standard report (i.e. not MPA-style). ",
-            "The standard report format already has the column ", COLNAME_STD_RANK, ", which indicates ",
-            "the taxonomic rank of each line."
+            "The standard report format already has the column ", COLNAME_STD_RANK, ", which ", 
+            "indicates the taxonomic rank of each line."
         ))   
     }
 
@@ -516,11 +516,11 @@ assess_ratioMinimisers <- function(report) {
 
     if (is_mpa(report)) {
         
-        colname_uniq_minimisers <- COLNAME_MPA_UNIQ_MINIMISERS
-        colname_db_minimisers_clade <- COLNAME_MPA_DB_MINIMISERS_CLADE
-        colname_ratio_clade <- COLNAME_MPA_RATIO_CLADE
+        stop(paste0(
+            "This function does not support MPA-style reports. Please provide a standard report."
+        ))
 
-    } else (
+    } else {
 
         colname_uniq_minimisers <- COLNAME_STD_UNIQ_MINIMISERS
         colname_db_minimisers_clade <- COLNAME_STD_DB_MINIMISERS_CLADE
@@ -529,89 +529,83 @@ assess_ratioMinimisers <- function(report) {
         colname_ratio_taxon <- COLNAME_STD_RATIO_TAXON
     
         report[, colname_ratio_taxon] <- (report[, colname_uniq_minimisers] / report[, colname_db_minimisers_taxon])
-
-    )
-
-    report[, colname_ratio_clade] <- (report[, colname_uniq_minimisers] / report[, colname_db_minimisers_clade])
+        report[, colname_ratio_clade] <- (report[, colname_uniq_minimisers] / report[, colname_db_minimisers_clade])
+    }
 
     return(report)
-
 }
 
 
 #' ASSESS THE STATISTICAL SIGNIFICANCE OF RESULTS
 #' 
-#' @param merged_reports
-#' @param reference_db 
+#' @param report
+#' @param ref_db 
 #' @return An updated version of the input dataframe, with new columns containing statistical significance results.
-assess_statSig <- function(merged_reports, reference_db) {
+assess_statSig <- function(report, ref_db) {
 
-    p_clade_in_db <- numeric(nrow(merged_reports))
-    pval <- numeric(nrow(merged_reports))
+    if (is_mpa(report)) {
 
-    for (i in 1:nrow(merged_reports)){
+    } else {
 
-        # Get proportion of clade-level minimisers of a given taxon in the reference database.
-        p_clade_in_db_ <- (merged_reports$db_number_minimisers_clade[i] / sum(reference_db$number_minimisers_clade))
+        p_clade_in_db <- numeric(nrow(report))
+        pval <- numeric(nrow(report))
 
-        # Mean is the total number of reads analysed from the sample times the probability of success which is equal 
-        # to the proportion of clade-level minimisers of the taxon out of the total available in the reference database.
-        mean_ <- (merged_reports$sample_size[i] * p_clade_in_db_)
+        for (i in seq_len(nrow(report))) {
 
-        # Standard deviation = sqrt(n*P*(1-p))
-        sdev <- sqrt(merged_reports$sample_size[i] * p_clade_in_db_ * (1 - p_clade_in_db_)) 
+            # Get proportion of clade-level minimisers of a given taxon in the reference database (DB).
+            p_clade_in_db_ <- (reports[, COLNAME_STD_DB_MINIMISERS_CLADE][i] / sum(ref_db[, COLNAME_REF_DB_MINIMISERS_CLADE]))
 
-        # Get p-values.
-        pval_ <- pnorm(
-            q = merged_reports$number_distinct_minimisers[i], 
-            mean = mean_, 
-            sd = sdev, 
-            lower.tail = FALSE
-        )
+            # Mean is the total number of reads analysed from the sample (sample size) times the probability of success which 
+            # is equal to the proportion of clade-level minimisers of the taxon out of the total available in the reference DB.
+            mean_ <- (report[, COLNAME_STD_TOTAL_READS][i] * p_clade_in_db_)
 
-        if (is.na(pval_)) {
-            cat(merged_reports$scientific_name[i], "\n")
-            cat(mean_, "\n")
-            cat(sdev, "\n")
-            cat(merged_reports$number_distinct_minimisers[i], "\n")
-            cat("\n")
+            # Standard deviation = sqrt(n*P*(1-p))
+            sdev <- sqrt(report[, COLNAME_STD_TOTAL_READS][i] * p_clade_in_db_ * (1 - p_clade_in_db_)) 
 
-        } else {
-            print("No NA")
-        }
-        
-        # Saving probability of success.
-        p_clade_in_db[i] <- p_clade_in_db_
-        pval[i] <- pval_
-    }
+            # Get p-values.
+            pval_ <- pnorm(
+                q = report[, COLNAME_STD_UNIQ_MINIMISERS][i], 
+                mean = mean_, 
+                sd = sdev, 
+                lower.tail = FALSE
+            )
+            
+            # Saving probability of success.
+            p_clade_in_db[i] <- p_clade_in_db_
 
-    merged_reports$p_clade_in_db <- p_clade_in_db
-    merged_reports$pval <- pval
-
-    # Create vector to store adjusted p-values.
-    padj <- rep(0, times = nrow(merged_reports))
-
-    # Iterate over dataframe rows...
-    for (i in 1:nrow(merged_reports)){
-        
-        # Identify how many families, genuses or species were identified in a given sample.
-        n_taxons_rank <- NULL
-        if (merged_reports$rank[i] == "F") {
-            n_taxons_rank <- merged_reports$nF_sample[i]  
-        } else if (merged_reports$rank[i] == "G") {
-            n_taxons_rank <- merged_reports$nG_sample[i] 
-        } else if (merged_reports$rank[i] == "S") {
-            n_taxons_rank <- merged_reports$nS_sample[i] 
-        } else {
-            stop(paste0("Invalid rank value in row: ", i))
+            # Saving p-value.
+            pval[i] <- pval_
         }
 
-        # Perform p-value correction.
-        padj[i] <- p.adjust(merged_reports$pval[i], method = "BH", n = n_taxons_rank)
+        report[, COLNAME_STD_P_CLADE_IN_DB] <- p_clade_in_db
+        report[, COLNAME_STD_PVALUE] <- pval
+
+        # Create vector to store adjusted p-values.
+        padj <- rep(0, times = nrow(report))
+
+        # Iterate over dataframe rows...
+        for (i in seq_len(nrow(report))){
+            
+            # Identify how many families, genuses or species were identified in a given sample.
+            n_taxons_rank <- NULL
+
+            if (report[, COLNAME_STD_RANK][i] == "F") {
+                n_taxons_rank <- merged_reports$nF_sample[i]  
+            } else if (report[, COLNAME_STD_RANK][i] == "G") {
+                n_taxons_rank <- merged_reports$nG_sample[i] 
+            } else if (report[, COLNAME_STD_RANK][i] == "S") {
+                n_taxons_rank <- merged_reports$nS_sample[i] 
+            } else {
+                stop(paste0("Invalid rank value in row: ", i))
+            }
+
+            # Perform p-value correction.
+            padj[i] <- p.adjust(report[, COLNAME_STD_PVALUE][i], method = "BH", n = n_taxons_rank)
+        }
+
+        # Add adjusted p-values to dataframe.
+        report[, COLNAME_STD_PADJ] <- padj
+
+        return(report)
     }
-
-    # Add adjusted p-values to dataframe.
-    merged_reports$padj <- padj
-
-    return(merged_reports)
 }
