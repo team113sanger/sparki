@@ -346,20 +346,6 @@ get_association <- function(ranks) {
     return(ranks)
 }
 
-get_association_2 <- function(ranks) {
-    names(ranks) <- dplyr::case_when(
-        ranks == "domain" ~ "D",
-        ranks == "kingdom" ~ "K",
-        ranks == "phylum" ~ "P",
-        ranks == "class" ~ "C",
-        ranks == "order" ~ "O",
-        ranks == "family" ~ "F",
-        ranks == "genus" ~ "G",
-        ranks == "species" ~ "S",
-    )
-    return(ranks)
-}
-
 sum_domainReads <- function(report, domains) {
 
     if (is_mpa(report)) {
