@@ -11,7 +11,7 @@
 #' @param reference_path Path to an inspect.txt file inside a Kraken2 reference database.
 #' @return 
 #' 
-load_reference <- function(reference_path) {
+loadReference <- function(reference_path) {
 
     # Read Kraken2 reference file (inspect.txt).
     ref <- read.table(
@@ -48,7 +48,7 @@ load_reference <- function(reference_path) {
 #' @param mdata_path Path to a metadata table.
 #' @return 
 #' 
-load_metadata <- function(mdata_path) {
+loadMetadata <- function(mdata_path) {
 
     # Read metadata file.
     mdata <- read.csv(
@@ -69,7 +69,7 @@ load_metadata <- function(mdata_path) {
 #' @param mdata_path Path to a metadata table.
 #' @return 
 #' 
-load_mpa_reports <- function(mpa_reports_dir, verbose = TRUE) {
+load_MPAreports <- function(mpa_reports_dir, verbose = TRUE) {
 
     # Get paths to MPA-style reports in a specified directory.
     mpa_file_names <- list.files(mpa_reports_dir, pattern = "mpa$")
@@ -117,7 +117,7 @@ load_mpa_reports <- function(mpa_reports_dir, verbose = TRUE) {
     }
 }
 
-load_std_reports <- function(std_reports_dir, verbose = TRUE) {
+load_STDreports <- function(std_reports_dir, verbose = TRUE) {
 
     # Get paths to reports in a specified directory.
     std_file_names <- list.files(std_reports_dir, pattern = "kraken$")
