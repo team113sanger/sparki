@@ -170,6 +170,68 @@ transfer_ncbiID <- function(report_mpa, report_std) {
     return(final_report)
 }
 
+add_DBinfo <- function(report, ref_db) {
+
+    if (is_mpa(report)) {
+
+        colname_db_minimisers_taxon <- COLNAME_MPA_DB_MINIMISERS_TAXON
+        colname_db_minimisers_clade <- COLNAME_MPA_DB_MINIMISERS_CLADE
+        colname_ncbi_id <- COLNAME_MPA_NCBI_ID
+
+    } else {
+
+        colname_db_minimisers_taxon <- COLNAME_STD_DB_MINIMISERS_TAXON
+        colname_db_minimisers_clade <- COLNAME_STD_DB_MINIMISERS_CLADE
+        colname_ncbi_id <- COLNAME_STD_NCBI_ID
+
+    }
+
+    report[, colname_db_minimisers_taxon] <- ref_db[, COLNAME_REF_DB_MINIMISERS_TAXON][match(report[, colname_ncbi_id], ref_db[, COLNAME_REF_DB_NCBI_ID])]
+    report[, colname_db_minimisers_clade] <- ref_db[, COLNAME_REF_DB_MINIMISERS_CLADE][match(report[, colname_ncbi_id], ref_db[, COLNAME_REF_DB_NCBI_ID])]
+
+    return(report)
+}
+
+transferDomain <- function(report_std, report_mpa) {
+
+    ranks <- c("D", "K", "P", "C", "O", "F", "G", "S")
+    ranks <- get_association(ranks)
+
+    report[, COLNAME_STD_DOMAIN] <- sapply(seq_len(nrow(report)), function(x) {
+
+        
+
+
+
+        for (rank in ranks) {
+            
+            if (report[, COLNAME_STD_RANK][x] == rank) {
+                return()
+            }
+        }
+
+    })
+
+
+    merged_reports$domain <- sapply(seq_len(nrow(merged_reports)), function(x) {
+
+        domain <- NA
+
+        if (merged_reports$rank[x] == "F") {
+            domain <- unique(merged_mpa$domain[which(merged_mpa$family == merged_reports$scientific_name[x])])
+        } else if (merged_reports$rank[x] == "G") {
+            domain <- unique(merged_mpa$domain[which(merged_mpa$genus == merged_reports$scientific_name[x])])
+        } else if (merged_reports$rank[x] == "S") {
+            domain <- unique(merged_mpa$domain[which(merged_mpa$species == merged_reports$scientific_name[x])])
+        }
+
+        return(domain)
+    })
+
+    return(merged_reports)
+}
+
+
 get_nDomainReads <- function(report) {
 
     n_domainReads <- data.frame(matrix(nrow = 0, ncol = 4))
@@ -274,29 +336,6 @@ get_nTaxa <- function(report, ranks) {
 }
 
 
-
-add_DBinfo <- function(report, ref_db) {
-
-    if (is_mpa(report)) {
-
-        colname_db_minimisers_taxon <- COLNAME_MPA_DB_MINIMISERS_TAXON
-        colname_db_minimisers_clade <- COLNAME_MPA_DB_MINIMISERS_CLADE
-        colname_ncbi_id <- COLNAME_MPA_NCBI_ID
-
-    } else {
-
-        colname_db_minimisers_taxon <- COLNAME_STD_DB_MINIMISERS_TAXON
-        colname_db_minimisers_clade <- COLNAME_STD_DB_MINIMISERS_CLADE
-        colname_ncbi_id <- COLNAME_STD_NCBI_ID
-
-    }
-
-    report[, colname_db_minimisers_taxon] <- ref_db[, COLNAME_REF_DB_MINIMISERS_TAXON][match(report[, colname_ncbi_id], ref_db[, COLNAME_REF_DB_NCBI_ID])]
-    report[, colname_db_minimisers_clade] <- ref_db[, COLNAME_REF_DB_MINIMISERS_CLADE][match(report[, colname_ncbi_id], ref_db[, COLNAME_REF_DB_NCBI_ID])]
-
-    return(report)
-}
-
 getClassificationSummary <- function(report) {
 
     if (is_mpa(report)) {
@@ -366,47 +405,6 @@ getProportion <- function(report, taxon) {
 
     return(class_unclass_df)
 }
-
-addDomain <- function(std_report, mpa_report) {
-
-    ranks <- c("D", "K", "P", "C", "O", "F", "G", "S")
-
-    report$domain <- sapply(seq_len(nrow(report)), function(x) {
-
-
-
-
-
-        for (rank in ranks) {
-            
-            if (report[, COLNAME_STD_RANK][x] == rank) {
-                return()
-            }
-        }
-
-    })
-
-
-    merged_reports$domain <- sapply(seq_len(nrow(merged_reports)), function(x) {
-
-        domain <- NA
-
-        if (merged_reports$rank[x] == "F") {
-            domain <- unique(merged_mpa$domain[which(merged_mpa$family == merged_reports$scientific_name[x])])
-        } else if (merged_reports$rank[x] == "G") {
-            domain <- unique(merged_mpa$domain[which(merged_mpa$genus == merged_reports$scientific_name[x])])
-        } else if (merged_reports$rank[x] == "S") {
-            domain <- unique(merged_mpa$domain[which(merged_mpa$species == merged_reports$scientific_name[x])])
-        }
-
-        return(domain)
-    })
-
-    return(merged_reports)
-}
-
-
-
 
 
 report_assess_n_taxa_per_sample <- function(merged_reports) {
