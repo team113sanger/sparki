@@ -209,7 +209,7 @@ add_DBinfo <- function(report, ref_db) {
     return(report)
 }
 
-transferDomain <- function(report_std, report_mpa, verbose = TRUE) {
+transferDomains <- function(report_std, report_mpa, verbose = TRUE) {
 
     if (is_mpa(report_std)) {
         stop(paste0(
