@@ -339,8 +339,8 @@ get_association <- function(ranks) {
         ranks == "G3" ~ NAME_RANK_SUBGENUS_3,
         ranks == "S" ~ NAME_RANK_SPECIES,
         ranks == "S1" ~ NAME_RANK_SUBSPECIES_1,
-        ranks == "S2" ~ NAME_RANK_SUBSPECIES_2,,
-        ranks == "S3" ~ NAME_RANK_SUBSPECIES_3
+        ranks == "S2" ~ NAME_RANK_SUBSPECIES_2,
+        ranks == "S3" ~ NAME_RANK_SUBSPECIES_3,
         ranks == "S4" ~ NAME_RANK_SUBSPECIES_4
     )
     return(ranks)
