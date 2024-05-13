@@ -51,6 +51,7 @@ mpa_reports <- add_DBinfo(mpa_reports, ref_db)
 ```
 std_reports <- add_nReads(std_reports)
 std_reports <- add_DBinfo(std_reports, ref_db)
+std_reports <- transferDomain(std_reports, mpa_reports)
 ```
 
 ### Create auxiliary dataframes
