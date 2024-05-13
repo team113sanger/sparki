@@ -288,14 +288,17 @@ extract_taxon <- function(line, rank, last_in_hierarchy) {
 
 get_association <- function(ranks) {
     names(ranks) <- dplyr::case_when(
-        ranks == "U" ~ "unclassified",
-        ranks == "R" ~ "root",
-        ranks == "R1" ~ "subroot_1",
-        ranks == "R2" ~ "subroot_2",
+        ranks == "U" ~ NAME_RANK_UNCLASS,
+        ranks == "R" ~ NAME_RANK_ROOT,
+        ranks == "R1" ~ NAME_RANK_SUBROOT_1,
+        ranks == "R2" ~ NAME_RANK_SUBROOT_2,
+        ranks == "R3" ~ NAME_RANK_SUBROOT_3,
         ranks == "D" ~ NAME_RANK_DOMAIN,
         ranks == "D1" ~ NAME_RANK_SUBDOMAIN_1,
         ranks == "D2" ~ NAME_RANK_SUBDOMAIN_2,
         ranks == "D3" ~ NAME_RANK_SUBDOMAIN_3,
+        ranks == "D4" ~ NAME_RANK_SUBDOMAIN_4,
+        ranks == "D5" ~ NAME_RANK_SUBDOMAIN_5,
         ranks == "K" ~ NAME_RANK_KINGDOM,
         ranks == "K1" ~ NAME_RANK_SUBKINGDOM_1,
         ranks == "K2" ~ NAME_RANK_SUBKINGDOM_2,
@@ -333,9 +336,12 @@ get_association <- function(ranks) {
         ranks == "G" ~ NAME_RANK_GENUS,
         ranks == "G1" ~ NAME_RANK_SUBGENUS_1,
         ranks == "G2" ~ NAME_RANK_SUBGENUS_2,
+        ranks == "G3" ~ NAME_RANK_SUBGENUS_3,
         ranks == "S" ~ NAME_RANK_SPECIES,
         ranks == "S1" ~ NAME_RANK_SUBSPECIES_1,
-        ranks == "S2" ~ NAME_RANK_SUBSPECIES_2
+        ranks == "S2" ~ NAME_RANK_SUBSPECIES_2,,
+        ranks == "S3" ~ NAME_RANK_SUBSPECIES_3
+        ranks == "S4" ~ NAME_RANK_SUBSPECIES_4
     )
     return(ranks)
 }
