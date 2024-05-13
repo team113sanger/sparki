@@ -3,10 +3,17 @@
 #####################################################################
 
 #### Rank names ####
+NAME_RANK_UNCLASS <- "unclassified"
+NAME_RANK_ROOT <- "root"
+NAME_RANK_SUBROOT_1 <- "subroot_1"
+NAME_RANK_SUBROOT_2 <- "subroot_2"
+NAME_RANK_SUBROOT_3 <- "subroot_3"
 NAME_RANK_DOMAIN <- "domain"
 NAME_RANK_SUBDOMAIN_1 <- "subdomain_1"
 NAME_RANK_SUBDOMAIN_2 <- "subdomain_2"
 NAME_RANK_SUBDOMAIN_3 <- "subdomain_3"
+NAME_RANK_SUBDOMAIN_4 <- "subdomain_4"
+NAME_RANK_SUBDOMAIN_5 <- "subdomain_5"
 NAME_RANK_KINGDOM <- "kingdom"
 NAME_RANK_SUBKINGDOM_1 <- "subkingdom_1"
 NAME_RANK_SUBKINGDOM_2 <- "subkingdom_2"
@@ -44,9 +51,12 @@ NAME_RANK_SUBFAMILY_7 <- "subfamily_7"
 NAME_RANK_GENUS <- "genus"
 NAME_RANK_SUBGENUS_1 <- "subgenus_1"
 NAME_RANK_SUBGENUS_2 <- "subgenus_2"
+NAME_RANK_SUBGENUS_3 <- "subgenus_3"
 NAME_RANK_SPECIES <- "species"
 NAME_RANK_SUBSPECIES_1 <- "subspecies_1"
 NAME_RANK_SUBSPECIES_2 <- "subspecies_2"
+NAME_RANK_SUBSPECIES_3 <- "subspecies_3"
+NAME_RANK_SUBSPECIES_4 <- "subspecies_4"
 
 #### Reference database ####
 COLNAME_REF_DB_PCT_FRAG_CLADE <- "pct_fragments_clade"
