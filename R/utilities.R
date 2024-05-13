@@ -1,8 +1,15 @@
-addRank <- function(report) {
+addRank <- function(report, verbose = TRUE) {
 
     if (is_mpa(report)) {
 
+        if (verbose) {
+            cat("Adding", COLNAME_MPA_RANK, "column to the MPA-style report\n")
+            pb <- txtProgressBar(min = 0, max = nrow(report), style = 3)
+        }
+
         report[, COLNAME_MPA_RANK] <- sapply(seq_len(nrow(report)), function(x) {
+
+            if (verbose) setTxtProgressBar(pb, x)
 
             # Get scientific name (in this case it will have a prefix indicating the taxonomic rank).
             rank <- tail(unlist(stringr::str_split(report[, COLNAME_MPA_TAXON][x], "\\|")), n = 1)
@@ -17,6 +24,7 @@ addRank <- function(report) {
             if(grepl("k__", rank)) return("K")
             if(grepl("d__", rank)) return("D")
         })
+        cat("\n")
 
     } else {
         stop(paste0(
@@ -39,7 +47,10 @@ addConciseTaxon <- function(report, verbose = TRUE) {
         # Iterate over ranks... 
         for (rank in ranks) {
 
-            if (verbose) cat("Adding column with taxon names for rank:", names(ranks)[ranks == rank], "\n")
+            if (verbose) {
+                cat("Adding column with taxon names for rank:", names(ranks)[ranks == rank], "\n")
+                pb <- txtProgressBar(min = 0, max = nrow(report), style = 3)
+            }
 
             # Get name for column that will be added to the MPA-style report.
             colname <- names(ranks)[ranks == rank]
@@ -51,6 +62,8 @@ addConciseTaxon <- function(report, verbose = TRUE) {
             # "(...)g__Homo|s__Homo sapiens" -> "Homo" (under "genus") and "Homo sapiens" (under "species")
             report[, colname] <- sapply(seq_len(nrow(report)), function(x) {
 
+                if (verbose) setTxtProgressBar(pb, x)
+
                 if (report[, COLNAME_MPA_RANK][x] == rank) {
 
                     return(extract_taxon(report[, COLNAME_MPA_TAXON][x], rank = rank, last_in_hierarchy = TRUE))
@@ -61,7 +74,11 @@ addConciseTaxon <- function(report, verbose = TRUE) {
 
                 }
             })
+
+            cat("\n")
+
         }
+
     } else {
         stop(paste0(
             "This function is not applicable to a standard report (i.e. not MPA-style). The standard report ",
@@ -192,43 +209,48 @@ add_DBinfo <- function(report, ref_db) {
     return(report)
 }
 
-transferDomain <- function(report_std, report_mpa) {
+transferDomain <- function(report_std, report_mpa, verbose = TRUE) {
 
-    ranks <- c("D", "K", "P", "C", "O", "F", "G", "S")
+    if (is_mpa(report_std)) {
+        stop(paste0(
+            "The report you provided as 'report_std' is not actually in standard format. ",
+            "Please review your input!"
+        ))
+    } else if (!(is_mpa(report_mpa))) {
+        stop(paste0(
+            "The report you provided as 'report_mpa' is not actually in MPA format. ",
+            "Please review your input!"
+        ))
+    }
+
+    if (verbose) cat("Adding domain info from the MPA-style report to the standard report.\n")
+
+    ranks <- unique(report_std[, COLNAME_STD_RANK])
     ranks <- get_association(ranks)
 
-    report[, COLNAME_STD_DOMAIN] <- sapply(seq_len(nrow(report)), function(x) {
+    pb <- txtProgressBar(min = 0, max = nrow(report_std), style = 3)
 
-        
+    report_std[, COLNAME_STD_DOMAIN] <- sapply(seq_len(nrow(report_std)), function(x) {
 
+        setTxtProgressBar(pb, x)
 
+        rank <- names(ranks)[ranks == report_std[, COLNAME_STD_RANK][x]]
 
-        for (rank in ranks) {
+        if (rank %in% colnames(report_mpa)) {
+
+            domain <- unique(report_mpa[, NAME_RANK_DOMAIN][which(
+                report_mpa[, rank] == report_std[, COLNAME_STD_TAXON][x]
+            )])
             
-            if (report[, COLNAME_STD_RANK][x] == rank) {
-                return()
-            }
+            return(domain)
+        
+        } else {
+            return(NA)
         }
 
     })
 
-
-    merged_reports$domain <- sapply(seq_len(nrow(merged_reports)), function(x) {
-
-        domain <- NA
-
-        if (merged_reports$rank[x] == "F") {
-            domain <- unique(merged_mpa$domain[which(merged_mpa$family == merged_reports$scientific_name[x])])
-        } else if (merged_reports$rank[x] == "G") {
-            domain <- unique(merged_mpa$domain[which(merged_mpa$genus == merged_reports$scientific_name[x])])
-        } else if (merged_reports$rank[x] == "S") {
-            domain <- unique(merged_mpa$domain[which(merged_mpa$species == merged_reports$scientific_name[x])])
-        }
-
-        return(domain)
-    })
-
-    return(merged_reports)
+    return(report_std)
 }
 
 
@@ -424,7 +446,10 @@ report_assess_n_taxa_per_sample <- function(merged_reports) {
 #' @export
 report_assess_n_taxa_specific_rank_per_sample <- function(merged_reports, rank) {
 
+
     for (r in rank) {
+
+        
 
         column_name <- paste0("n", r, "_sample")
 
