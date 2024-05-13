@@ -322,9 +322,9 @@ transferDomains <- function(report_std, report_mpa, verbose = TRUE) {
 }
 
 
-
-
-
+#########################################################
+## UTILITY FUNCTIONS FOR CREATING AUXILIARY DATAFRAMES ##
+#######################################################################################################
 
 get_nDomainReads <- function(report) {
 
@@ -508,13 +508,22 @@ getProportion <- function(report, taxon) {
 }
 
 
+#############################################################################
+## UTILITY FUNCTIONS FOR ASSESSING THE STATISTICAL SIGNIFICANCE OF RESULTS ##
+#######################################################################################################
+
+assess_propMinimisers <- function(report) {
+
+    
+}
+
 
 #' ASSESS THE STATISTICAL SIGNIFICANCE OF RESULTS
 #' 
 #' @param merged_reports
 #' @param reference_db 
 #' @return An updated version of the input dataframe, with new columns containing statistical significance results.
-report_assess_statistical_significance <- function(merged_reports, reference_db) {
+assess_statSig <- function(merged_reports, reference_db) {
 
     p_clade_in_db <- numeric(nrow(merged_reports))
     pval <- numeric(nrow(merged_reports))
