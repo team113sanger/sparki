@@ -1,3 +1,7 @@
+#####################################################
+## UTILITY FUNCTIONS FOR ADDING COLUMNS TO REPORTS ##
+#######################################################################################################
+
 addRank <- function(report, verbose = TRUE) {
 
     if (is_mpa(report)) {
@@ -29,7 +33,8 @@ addRank <- function(report, verbose = TRUE) {
     } else {
         stop(paste0(
             "This function is not applicable to a standard report (i.e. not MPA-style). ",
-            "The standard report format already has the column ", COLNAME_STD_RANK, ", which indicates the taxonomic rank of each line."
+            "The standard report format already has the column ", COLNAME_STD_RANK, ", which indicates ",
+            "the taxonomic rank of each line."
         ))   
     }
 
@@ -57,8 +62,12 @@ addConciseTaxon <- function(report, verbose = TRUE) {
 
             # Create column with concise taxon name at a given rank.
             # Examples:
+            #
             # "d__Eukaryota" -> "Eukaryota" (under "domain")
-            # "(...)f__Papillomaviridae|g__Alphapapillomavirus" -> "Papillomaviridae" (under "family") and "Alphapapillomavirus" (under "genus")
+            #
+            # "(...)f__Papillomaviridae|g__Alphapapillomavirus" -> "Papillomaviridae" (under "family") and 
+            # "Alphapapillomavirus" (under "genus")
+            #
             # "(...)g__Homo|s__Homo sapiens" -> "Homo" (under "genus") and "Homo sapiens" (under "species")
             report[, colname] <- sapply(seq_len(nrow(report)), function(x) {
 
@@ -116,8 +125,12 @@ add_nReads <- function(report) {
         for (sample in unique(subset[, COLNAME_STD_SAMPLE])) {
 
             subset_sample <- subset[subset[, COLNAME_STD_SAMPLE] == sample, ]
-            n_unclassified_reads <- as.numeric(subset_sample[, COLNAME_STD_N_FRAG_CLADE][subset_sample[, COLNAME_STD_TAXON] == "unclassified"])
-            n_classified_reads <- as.numeric(subset_sample[, COLNAME_STD_N_FRAG_CLADE][subset_sample[, COLNAME_STD_TAXON] == "root"])
+            n_unclassified_reads <- as.numeric(
+                subset_sample[, COLNAME_STD_N_FRAG_CLADE][subset_sample[, COLNAME_STD_TAXON] == "unclassified"]
+            )
+            n_classified_reads <- as.numeric(
+                subset_sample[, COLNAME_STD_N_FRAG_CLADE][subset_sample[, COLNAME_STD_TAXON] == "root"]
+            )
 
             report[, COLNAME_STD_TOTAL_READS][report[, COLNAME_STD_SAMPLE] == sample] <- (n_unclassified_reads + n_classified_reads)
         }
@@ -125,6 +138,37 @@ add_nReads <- function(report) {
 
     return(report)
 }
+
+add_DBinfo <- function(report, ref_db) {
+
+    if (is_mpa(report)) {
+
+        colname_db_minimisers_taxon <- COLNAME_MPA_DB_MINIMISERS_TAXON
+        colname_db_minimisers_clade <- COLNAME_MPA_DB_MINIMISERS_CLADE
+        colname_ncbi_id <- COLNAME_MPA_NCBI_ID
+
+    } else {
+
+        colname_db_minimisers_taxon <- COLNAME_STD_DB_MINIMISERS_TAXON
+        colname_db_minimisers_clade <- COLNAME_STD_DB_MINIMISERS_CLADE
+        colname_ncbi_id <- COLNAME_STD_NCBI_ID
+
+    }
+
+    report[, colname_db_minimisers_taxon] <- ref_db[, COLNAME_REF_DB_MINIMISERS_TAXON][match(
+        report[, colname_ncbi_id], ref_db[, COLNAME_REF_DB_NCBI_ID]
+    )]
+    report[, colname_db_minimisers_clade] <- ref_db[, COLNAME_REF_DB_MINIMISERS_CLADE][match(
+        report[, colname_ncbi_id], ref_db[, COLNAME_REF_DB_NCBI_ID]
+    )]
+
+    return(report)
+}
+
+
+#################################################################################
+## UTILITY FUNCTIONS FOR TRANSFERRING COLUMNS BETWEEN DIFFERENT REPORT FORMATS ##
+#######################################################################################################
 
 transfer_nReads <- function(report_mpa, report_std) {
 
@@ -140,7 +184,9 @@ transfer_nReads <- function(report_mpa, report_std) {
         ))
     }
 
-    report_mpa[, COLNAME_MPA_TOTAL_READS] <- report_std[, COLNAME_STD_TOTAL_READS][match(report_mpa[, COLNAME_MPA_SAMPLE], report_std[, COLNAME_STD_SAMPLE])]
+    report_mpa[, COLNAME_MPA_TOTAL_READS] <- report_std[, COLNAME_STD_TOTAL_READS][match(
+        report_mpa[, COLNAME_MPA_SAMPLE], report_std[, COLNAME_STD_SAMPLE]
+    )]
     report_mpa[, COLNAME_MPA_TOTAL_READS] <- as.numeric(report_mpa[, COLNAME_MPA_TOTAL_READS])
 
     return(report_mpa)
@@ -241,19 +287,20 @@ transferDomains <- function(report_std, report_mpa, verbose = TRUE) {
 
         if (verbose) setTxtProgressBar(pb, i) 
 
-        # If domain in line is NA...
-        if (is.na(report_std[, COLNAME_STD_DOMAIN][i])) {
+        # Every time domain = NA (except when rank is related to root or unclassified), this means that
+        # the line corresponds to a sub-rank. The chunck of code below will look for the nearest rank upstream 
+        # (i.e. if sub-rank is F2, the nearest rank upstream will be F) and assign the nearest rank's domain to
+        # the sub-rank.
+        if (
+            is.na(report_std[, COLNAME_STD_DOMAIN][i]) && 
+            !(report_std[, COLNAME_STD_RANK][i] %in% c("U", "R", "R1", "R2", "R3"))
+        ) {
 
             domain <- NA
 
             counter <- 1            
             while (is.na(domain)) {
 
-                print(i)
-                print(counter)
-                print(report_std[, COLNAME_STD_RANK][i])
-                print(report_std[, COLNAME_STD_RANK][i - counter])
-                
                 attempt <- report_std[, COLNAME_STD_RANK][i - counter]
 
                 print(attempt)
@@ -274,27 +321,9 @@ transferDomains <- function(report_std, report_mpa, verbose = TRUE) {
     return(report_std)
 }
 
-add_DBinfo <- function(report, ref_db) {
 
-    if (is_mpa(report)) {
 
-        colname_db_minimisers_taxon <- COLNAME_MPA_DB_MINIMISERS_TAXON
-        colname_db_minimisers_clade <- COLNAME_MPA_DB_MINIMISERS_CLADE
-        colname_ncbi_id <- COLNAME_MPA_NCBI_ID
 
-    } else {
-
-        colname_db_minimisers_taxon <- COLNAME_STD_DB_MINIMISERS_TAXON
-        colname_db_minimisers_clade <- COLNAME_STD_DB_MINIMISERS_CLADE
-        colname_ncbi_id <- COLNAME_STD_NCBI_ID
-
-    }
-
-    report[, colname_db_minimisers_taxon] <- ref_db[, COLNAME_REF_DB_MINIMISERS_TAXON][match(report[, colname_ncbi_id], ref_db[, COLNAME_REF_DB_NCBI_ID])]
-    report[, colname_db_minimisers_clade] <- ref_db[, COLNAME_REF_DB_MINIMISERS_CLADE][match(report[, colname_ncbi_id], ref_db[, COLNAME_REF_DB_NCBI_ID])]
-
-    return(report)
-}
 
 
 get_nDomainReads <- function(report) {
@@ -388,7 +417,9 @@ get_nTaxa <- function(report, ranks) {
             # Iterate over ranks...
             for (rank in ranks) {
 
-                n_taxa <- length(unique(report_sample[, colname_taxon][report[, colname_rank] == rank & report$domain == domain]))
+                n_taxa <- length(unique(
+                    report_sample[, colname_taxon][report[, colname_rank] == rank & report$domain == domain]
+                ))
                 n_taxa_in_samples <- rbind(n_taxa_in_samples, c(sample, domain, rank, n_taxa))
 
             }
@@ -423,8 +454,13 @@ getClassificationSummary <- function(report) {
     for (sample in unique(report[, colname_sample])) {
         for (classification in classifications) {
 
-            value <- as.numeric(report[, colname_n_frag_clade][report[, colname_taxon] == classification & report[, colname_sample] == sample])
-            class_unclass_df <- rbind(class_unclass_df, c(sample, names(classifications)[classifications == classification], value))
+            value <- as.numeric(
+                report[, colname_n_frag_clade][report[, colname_taxon] == classification & report[, colname_sample] == sample]
+            )
+            class_unclass_df <- rbind(
+                class_unclass_df, 
+                c(sample, names(classifications)[classifications == classification], value)
+            )
         }
     }
 
@@ -470,43 +506,6 @@ getProportion <- function(report, taxon) {
 
     return(class_unclass_df)
 }
-
-
-report_assess_n_taxa_per_sample <- function(merged_reports) {
-
-    n_taxa_per_sample <- table(merged_reports$sample)
-    merged_reports$n_taxa_per_sample <- n_taxa_per_sample[merged_reports$sample]
-
-    return(merged_reports)
-}
-
-#' This function takes a report and assesses the number of taxa available at a specific
-#' rank (e.g. family, genus, species etc) for each sample. 
-#' 
-#' @param merged_reports A dataframe containing Kraken2 standard reports for one or more samples.
-#' @param rank A vector containing one or more ranks that should be looked into.
-#' @return An updated version of the input merged_reports dataframe.
-#' @export
-report_assess_n_taxa_specific_rank_per_sample <- function(merged_reports, rank) {
-
-
-    for (r in rank) {
-
-        
-
-        column_name <- paste0("n", r, "_sample")
-
-        merged_reports[, column_name] <- sapply(seq_len(nrow(merged_reports)), function(x) {
-            n_in_sample <- length(
-                unique(merged_reports$scientific_name[merged_reports$rank == r & merged_reports$sample == merged_reports$sample[x]])
-            )
-            return(n_in_sample)
-        })
-    }
-
-    return(merged_reports)
-}
-
 
 
 
