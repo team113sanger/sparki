@@ -490,27 +490,6 @@ subset_reports <- function(merged_reports, include_human = TRUE) {
     }
 }
 
-report_add_domains <- function(merged_reports, merged_mpa) {
-
-    merged_reports$domain <- sapply(seq_len(nrow(merged_reports)), function(x) {
-
-        domain <- NA
-
-        if (merged_reports$rank[x] == "F") {
-            domain <- unique(merged_mpa$domain[which(merged_mpa$family == merged_reports$scientific_name[x])])
-        } else if (merged_reports$rank[x] == "G") {
-            domain <- unique(merged_mpa$domain[which(merged_mpa$genus == merged_reports$scientific_name[x])])
-        } else if (merged_reports$rank[x] == "S") {
-            domain <- unique(merged_mpa$domain[which(merged_mpa$species == merged_reports$scientific_name[x])])
-        }
-
-        return(domain)
-    })
-
-    return(merged_reports)
-}
-
-
 
 #' DETERMINE WIDTH FOR PDF FILE
 #' 
