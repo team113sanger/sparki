@@ -397,33 +397,6 @@ is_subrank <- function(rank) {
 
 }
 
-get_nearestRank <- function()
-
-check_adjacentRanks <- function(upstream_domain, downstream_rank, downstream_domain) {
-
-    # If rank is at the species/sub-species level...
-    #if (grepl("S", rank)) {
-
-        # The downstream rank should be at the domain/sub-domain level (i.e. another "taxon
-        # hierarchy" should be starting). Therefore, we do not want the downstream domain,
-        # but the upstream domain instead.
-    #    if (grepl("D", downstream_rank)) return(upstream_domain)
-    
-    #} else if (grepl("F", rank))
-
-    # If the downstream rank is at the domain/sub-domain level, this means that another "taxon
-    # hierarchy" is starting. Therefore, we do not want the downstream rank, but the upstream 
-    # rank instead.
-    if (grepl("D", downstream_rank)) {
-        return(upstream_domain) 
-    } else {
-        return(downstream_domain)
-    }
-
-}
-
-
-
 
 #subset_mpa <- function(merged_mpa, include_human = TRUE) {
 
