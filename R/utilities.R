@@ -187,6 +187,93 @@ transfer_ncbiID <- function(report_mpa, report_std) {
     return(final_report)
 }
 
+transferDomains <- function(report_std, report_mpa, verbose = TRUE) {
+
+    if (is_mpa(report_std)) {
+        stop(paste0(
+            "The report you provided as 'report_std' is not actually in standard format. ",
+            "Please review your input!"
+        ))
+    } else if (!(is_mpa(report_mpa))) {
+        stop(paste0(
+            "The report you provided as 'report_mpa' is not actually in MPA format. ",
+            "Please review your input!"
+        ))
+    }
+
+    if (verbose) {
+        cat("Adding domain info from the MPA-style report to the standard report\n")
+        pb <- txtProgressBar(min = 0, max = nrow(report_std), style = 3)
+    }
+
+    ranks <- unique(report_std[, COLNAME_STD_RANK])
+    ranks <- get_association(ranks)
+
+    report_std[, COLNAME_STD_DOMAIN] <- sapply(seq_len(nrow(report_std)), function(x) {
+
+        if (verbose) setTxtProgressBar(pb, x)
+
+        rank <- names(ranks)[ranks == report_std[, COLNAME_STD_RANK][x]]
+
+        if (rank %in% colnames(report_mpa)) {
+
+            domain <- unique(report_mpa[, NAME_RANK_DOMAIN][which(
+                report_mpa[, rank] == report_std[, COLNAME_STD_TAXON][x]
+            )])
+            
+            return(domain)
+        
+        } else {
+            
+            return(NA)
+
+        }
+
+    })
+
+    if (verbose) {
+        cat("\nChecking sub-ranks\n")
+        pb <- txtProgressBar(min = 0, max = nrow(report_std), style = 3)
+    }
+
+    # Iterate over lines in standard report...
+    for (i in seq_len(nrow(report_std))) {
+
+        if (verbose) setTxtProgressBar(pb, i) 
+
+        # If domain in line is NA...
+        if (is.na(report_std[, COLNAME_STD_DOMAIN][i])) {
+
+            domain <- NA
+
+            counter <- 1            
+            while (is.na(domain)) {
+
+                print(i)
+                print(counter)
+                print(report_std[, COLNAME_STD_RANK][i])
+                print(report_std[, COLNAME_STD_RANK][i - counter])
+                
+                attempt <- report_std[, COLNAME_STD_RANK][i - counter]
+
+                print(attempt)
+                
+                if (is_subrank(attempt)) counter <- counter + 1
+                else domain <- report_std[, COLNAME_STD_DOMAIN][i - counter]
+
+            }
+
+            report_std[, COLNAME_STD_DOMAIN][i] <- domain
+
+        }
+    
+    }
+
+    cat("\n")
+    
+    return(report_std)
+}
+
 add_DBinfo <- function(report, ref_db) {
 
     if (is_mpa(report)) {
@@ -207,50 +294,6 @@ add_DBinfo <- function(report, ref_db) {
     report[, colname_db_minimisers_clade] <- ref_db[, COLNAME_REF_DB_MINIMISERS_CLADE][match(report[, colname_ncbi_id], ref_db[, COLNAME_REF_DB_NCBI_ID])]
 
     return(report)
-}
-
-transferDomains <- function(report_std, report_mpa, verbose = TRUE) {
-
-    if (is_mpa(report_std)) {
-        stop(paste0(
-            "The report you provided as 'report_std' is not actually in standard format. ",
-            "Please review your input!"
-        ))
-    } else if (!(is_mpa(report_mpa))) {
-        stop(paste0(
-            "The report you provided as 'report_mpa' is not actually in MPA format. ",
-            "Please review your input!"
-        ))
-    }
-
-    if (verbose) cat("Adding domain info from the MPA-style report to the standard report.\n")
-
-    ranks <- unique(report_std[, COLNAME_STD_RANK])
-    ranks <- get_association(ranks)
-
-    pb <- txtProgressBar(min = 0, max = nrow(report_std), style = 3)
-
-    report_std[, COLNAME_STD_DOMAIN] <- sapply(seq_len(nrow(report_std)), function(x) {
-
-        setTxtProgressBar(pb, x)
-
-        rank <- names(ranks)[ranks == report_std[, COLNAME_STD_RANK][x]]
-
-        if (rank %in% colnames(report_mpa)) {
-
-            domain <- unique(report_mpa[, NAME_RANK_DOMAIN][which(
-                report_mpa[, rank] == report_std[, COLNAME_STD_TAXON][x]
-            )])
-            
-            return(domain)
-        
-        } else {
-            return(NA)
-        }
-
-    })
-
-    return(report_std)
 }
 
 
