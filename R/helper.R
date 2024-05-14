@@ -188,7 +188,13 @@ load_STDreports <- function(std_reports_dir, verbose = TRUE) {
 #' @param categories Categories of interest from df2 that should be added to df1.
 #' @return An updated version of df1.
 #' @export
-addMetadata <- function(dataframe, metadata, columns) {
+addMetadata <- function(report, metadata, columns) {
+
+    if (is_mpa(report)) {
+        colname_sample <- COLNAME_MPA_SAMPLE
+    } else {
+        colname_sample <- COLNAME_STD_SAMPLE
+    }
 
     # Create temporary sample columns to facilitate the matching between dataframes.
     metadata$sample <- rownames(metadata)
@@ -199,18 +205,18 @@ addMetadata <- function(dataframe, metadata, columns) {
         column <- gsub(" ", "_", column)
 
         # Add metadata from one dataframe to another based on sample IDs.
-        dataframe[, column] <- metadata[, column][match(dataframe$sample, metadata$sample)]
+        report[, column] <- metadata[, column][match(report[, colname_sample], metadata$sample)]
     }
 
     # Remove temporary sample columns.
     metadata$sample <- NULL
 
     # Get names of columns that contain results (and not sample names / metadata).
-    results_cols <- colnames(dataframe)[!(colnames(dataframe) %in% c("sample", columns))]
+    results_cols <- colnames(report)[!(colnames(report) %in% c(colname_sample, columns))]
 
-    dataframe <- dataframe[, c("sample", columns, results_cols)]
+    report <- report[, c(colname_sample, columns, results_cols)]
 
-    return(dataframe)
+    return(report)
 }
 
 
@@ -240,7 +246,7 @@ is_mpa <- function(report) {
                 stop(paste0(
                     "There is no support for the report format that has been provided. ",
                     "Please review your input. If your report is in standard or MPA format, ",
-                    "make sure you load it using load_std_reports() or load_mpa_reports()."
+                    "make sure you load it using load_STDreports() or load_MPAreports()."
                 ))
             }
         }
@@ -394,6 +400,146 @@ is_subrank <- function(rank) {
 
     if (nchar(rank) > 1) return(TRUE)
     else return(FALSE)
+
+}
+
+
+############################################
+## HELPER FUNCTIONS FOR transferDomains() ##
+#######################################################################################################
+
+# Will be a private function.
+retrieve_rankDomains <- function(report_std, report_mpa, verbose = TRUE) {
+
+    ranks <- unique(report_std[, COLNAME_STD_RANK])
+    ranks <- get_association(ranks)
+
+    # Initialise progress bar.
+    if (verbose == TRUE) {
+        pb <- txtProgressBar(min = 0, max = nrow(report_std), style = 3)
+    }
+
+    report_std[, COLNAME_STD_DOMAIN] <- sapply(seq_len(nrow(report_std)), function(x) {
+
+        if (verbose) setTxtProgressBar(pb, x)
+
+        rank <- names(ranks)[ranks == report_std[, COLNAME_STD_RANK][x]]
+
+        if (rank %in% colnames(report_mpa)) {
+
+            domain <- unique(report_mpa[, NAME_RANK_DOMAIN][which(
+                report_mpa[, rank] == report_std[, COLNAME_STD_TAXON][x]
+            )])
+            
+            return(domain)
+        
+        } else {
+            
+            return(NA)
+
+        }
+
+    })
+
+    cat("\n")
+
+    return(report_std)
+
+}
+
+# Will be a private function.
+retrieve_subrankDomains <- function(report_std, report_mpa, verbose = TRUE) {
+
+    # Initialise progress bar.
+    if (verbose) {
+        cat("\nChecking sub-ranks\n")
+        pb <- txtProgressBar(min = 0, max = nrow(report_std), style = 3)
+    }
+
+    # Iterate over lines in standard report...
+    for (i in seq_len(nrow(report_std))) {
+
+        # Update progress bar.
+        if (verbose) setTxtProgressBar(pb, i) 
+
+        # Every time domain = NA (except when rank is related to root or unclassified), this means that
+        # the line corresponds to a sub-rank. The chunck of code below will look for the nearest rank upstream 
+        # (i.e. if sub-rank is F2, the nearest rank upstream will be F) and assign the nearest rank's domain to
+        # the sub-rank.
+        if (
+            is.na(report_std[, COLNAME_STD_DOMAIN][i]) && 
+            !(report_std[, COLNAME_STD_RANK][i] %in% c("U", "R", "R1", "R2", "R3"))
+        ) {
+
+            # Identify sub-rank in line.
+            sub_rank <- report_std[, COLNAME_STD_RANK][i]
+
+            # Initialise domain. 
+            domain <- NA
+
+            # Create a counter to go up one line at a time to find the nearest rank.
+            go_up_one_line <- 1
+
+            while (is.na(domain)) {
+
+                # Break loop in case we have reached the beginning of the dataframe
+                # and there are no more lines to look at.
+                if ((i - go_up_one_line) == 0) {
+                    
+                    warning(paste0(
+                        "The loop has reached the beginning of the dataframe while ",
+                        "trying to assign a domain to line ", i, ". Exiting loop..."
+                    ))
+                    break
+                } 
+
+                # Get rank/sub-rank value above a given sub-rank.
+                attempt <- report_std[, COLNAME_STD_RANK][i - go_up_one_line]
+
+                # If the value of "attempt" is a sub-rank, it means we have not reached
+                # a rank yet.
+                if (is_subrank(attempt)) { 
+
+                    # Update counter. 
+                    go_up_one_line <- go_up_one_line + 1 
+
+                # Alternatively, if the value of "attempt" is not a sub-rank, then we
+                # have gotten to a rank!
+                } else if (!(is_subrank(attempt))) { 
+                    
+                    # We just also need to double-check we are looking at the right rank 
+                    # for the sub-rank (e.g. if sub-rank is C2, then the rank should be
+                    # C, not O, F or anything else).
+                    if (grepl(attempt, sub_rank)) {
+
+                        # Assign new value to domain (i.e. it will no longer be NA).
+                        domain <- report_std[, COLNAME_STD_DOMAIN][i - go_up_one_line] 
+
+                    } else {
+
+                        expected_rank <- substring(report_std[, COLNAME_STD_RANK][i], 1, 1)
+                        actual_rank <- report_std[, COLNAME_STD_RANK][i - go_up_one_line]
+
+                        warning(paste0(
+                            "The nearest rank found for ", sub_rank, " was ", actual_rank,
+                            " while it should have been ", expected_rank, ". Exiting loop..."
+                        ))
+                        break
+                        
+                    }
+                } 
+            }
+
+            # Assign domain value to sub-rank.
+            report_std[, COLNAME_STD_DOMAIN][i] <- domain
+
+        }
+    
+    }
+
+    cat("\n")
+
+    return(report_std)
 
 }
 
