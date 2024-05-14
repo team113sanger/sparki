@@ -328,18 +328,30 @@ transferDomains <- function(report_std, report_mpa, verbose = TRUE) {
                     go_up_one_line <- go_up_one_line + 1 
 
                 # Alternatively, if the value of "attempt" is not a sub-rank, then we
-                # have gotten to a rank! We just also need to double-check we are looking
-                # at the right rank for the sub-rank (e.g. if sub-rank is C2, then the
-                # rank should be C, not O, F or anything else).
-                } else if (
-                    !(is_subrank(attempt)) && 
-                    grepl(attempt, report_std[, COLNAME_STD_RANK][i])
-                ) { 
+                # have gotten to a rank!
+                } else if (!(is_subrank(attempt))) { 
                     
-                    # Assign new value to domain (i.e. it will no longer be NA).
-                    domain <- report_std[, COLNAME_STD_DOMAIN][i - go_up_one_line] 
+                    # We just also need to double-check we are looking at the right rank 
+                    # for the sub-rank (e.g. if sub-rank is C2, then the rank should be
+                    # C, not O, F or anything else).
+                    if (grepl(attempt, report_std[, COLNAME_STD_RANK][i])) {
+
+                        # Assign new value to domain (i.e. it will no longer be NA).
+                        domain <- report_std[, COLNAME_STD_DOMAIN][i - go_up_one_line] 
+
+                    } else {
+
+                        warning(paste0(
+                            "The nearest rank found for ", report_std[, COLNAME_STD_RANK][i],
+                            " was ", report_std[, COLNAME_STD_DOMAIN][i - go_up_one_line], " while it ",
+                            "should have been ", substring(report_std[, COLNAME_STD_RANK][i], 1, 1), ". ",
+                            "Exiting loop..."
+                        ))
+                        break
+                        
+                    }
                 
-                }
+                } 
             }
 
             # Assign domain value to sub-rank.
