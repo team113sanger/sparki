@@ -20,14 +20,14 @@ source("R/constants.R")
 
 ### Read Kraken2 results
 ```
-mpa_reports <- load_mpa_reports("test/mpa", verbose = FALSE)
-std_reports <- load_std_reports("test/reports", verbose = FALSE)
+mpa_reports <- load_MPAreports("test/mpa", verbose = FALSE)
+std_reports <- load_STDreports("test/reports", verbose = FALSE)
 ```
 
 ### Read metadata (optional) and Kraken2's reference database
 ```
-mdata <- load_metadata("test/metadata.csv") # Optional
-ref_db <- load_reference("test/inspect.txt")
+mdata <- loadMetadata("test/metadata.csv") # Optional
+ref_db <- loadReference("test/inspect.txt")
 ```
 
 ### Add metadata to dataframes containing Kraken2 results *(optional)*
