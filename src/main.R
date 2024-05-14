@@ -6,7 +6,6 @@ process_kraken2 <- function(
     std_reports <- load_STDreports(std_reports_path)
     mpa_reports <- load_MPAreports(mpa_reports_path)
 
-    
 
 
 }
