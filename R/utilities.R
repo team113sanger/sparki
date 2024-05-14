@@ -277,6 +277,7 @@ transferDomains <- function(report_std, report_mpa, verbose = TRUE) {
 
     })
 
+    # Initialise progress bar.
     if (verbose) {
         cat("\nChecking sub-ranks\n")
         pb <- txtProgressBar(min = 0, max = nrow(report_std), style = 3)
@@ -285,6 +286,7 @@ transferDomains <- function(report_std, report_mpa, verbose = TRUE) {
     # Iterate over lines in standard report...
     for (i in seq_len(nrow(report_std))) {
 
+        # Update progress bar.
         if (verbose) setTxtProgressBar(pb, i) 
 
         # Every time domain = NA (except when rank is related to root or unclassified), this means that
@@ -296,20 +298,51 @@ transferDomains <- function(report_std, report_mpa, verbose = TRUE) {
             !(report_std[, COLNAME_STD_RANK][i] %in% c("U", "R", "R1", "R2", "R3"))
         ) {
 
+            # Initialise domain. 
             domain <- NA
 
-            counter <- 1            
+            # Create a counter to go up one line at a time to find the nearest rank.
+            go_up_one_line <- 1
+
             while (is.na(domain)) {
 
-                attempt <- report_std[, COLNAME_STD_RANK][i - counter]
+                # Break loop in case we have reached the beginning of the dataframe
+                # and there are no more lines to look at.
+                if ((i - go_up_one_line) == 0) {
+                    
+                    warning(paste0(
+                        "The loop has reached the beginning of the dataframe while ",
+                        "trying to assign a domain to line ", i, ". Exiting loop..."
+                    ))
+                    break
+                } 
 
-                print(attempt)
+                # Get rank/sub-rank value above a given sub-rank.
+                attempt <- report_std[, COLNAME_STD_RANK][i - go_up_one_line]
+
+                # If the value of "attempt" is a sub-rank, it means we have not reached
+                # a rank yet.
+                if (is_subrank(attempt)) { 
+
+                    # Update counter. 
+                    go_up_one_line <- go_up_one_line + 1 
+
+                # Alternatively, if the value of "attempt" is not a sub-rank, then we
+                # have gotten to a rank! We just also need to double-check we are looking
+                # at the right rank for the sub-rank (e.g. if sub-rank is C2, then the
+                # rank should be C, not O, F or anything else).
+                } else if (
+                    !(is_subrank(attempt)) && 
+                    grepl(attempt, report_std[, COLNAME_STD_RANK][i])
+                ) { 
+                    
+                    # Assign new value to domain (i.e. it will no longer be NA).
+                    domain <- report_std[, COLNAME_STD_DOMAIN][i - go_up_one_line] 
                 
-                if (is_subrank(attempt)) counter <- counter + 1
-                else domain <- report_std[, COLNAME_STD_DOMAIN][i - counter]
-
+                }
             }
 
+            # Assign domain value to sub-rank.
             report_std[, COLNAME_STD_DOMAIN][i] <- domain
 
         }
