@@ -49,9 +49,21 @@ mpa_reports <- add_DBinfo(mpa_reports, ref_db)
 
 ### Process standard reports
 ```
-std_reports <- transferDomains(std_reports, mpa_reports)
+std_reports <- transferDomains(std_reports, mpa_reports, inference = TRUE)
 std_reports <- add_nReads(std_reports)
 std_reports <- add_DBinfo(std_reports, ref_db)
+
+plotClassificationSummary_violin(std_reports, outdir = "test/outputs")
+plotClassificationSummary_barplot(std_reports, include_sample_names = FALSE, orientation = "vertical", outdir = "test/outputs")
+plotClassificationSummary_barplot(std_reports, include_sample_names = FALSE, orientation = "horizontal", outdir = "test/outputs")
+plotClassificationSummary_barplot(std_reports, include_sample_names = TRUE, orientation = "vertical", outdir = "test/outputs")
+plotClassificationSummary_barplot(std_reports, include_sample_names = TRUE, orientation = "horizontal", outdir = "test/outputs")
+```
+
+```
+std_reports <- subset_STDreport(std_reports, include_human = FALSE)
+std_reports <- assess_ratioMinimisers(std_reports)
+std_reports <- assess_statSig(std_reports, ref_db)
 ```
 
 ### Create auxiliary dataframes
@@ -84,4 +96,11 @@ plotClassificationSummary_dotplot()
 plot_classified_vs_unclassified_summary(class_unclass_df, "outputs/")
 plot_classified_vs_unclassified_per_sample(class_unclass_df)
 ```
+
+rmarkdown::render(
+    "/lustre/scratch126/casm/team113da/users/jb62/projects/sparki/tutorials/SPARKI_basic_usage.Rmd",
+    output_dir = "/lustre/scratch126/casm/team113da/users/jb62/projects/sparki/tutorials",
+    output_file = "SPARKI_basic_usage.html"
+)
+
 

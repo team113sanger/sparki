@@ -369,6 +369,71 @@ sum_domainReads <- function(report, domains) {
     return(as.numeric(sum_domains))
 }
 
+is_subrank <- function(rank) {
+
+    if (nchar(rank) > 1) return(TRUE)
+    else return(FALSE)
+
+}
+
+###################################
+## HELPER FUNCTIONS FOR PLOTTING ##
+#######################################################################################################
+
+# Private function.
+exportPlot <- function(plot, filename, outdir, fig_width, fig_height) {
+
+    if (missing(fig_width) && missing(fig_height)) {
+        fig_width <- 10
+        fig_height <- 10
+    }
+
+    ggpubr::ggexport(
+        plot, 
+        filename = paste0(outdir, filename),
+        width = fig_width,
+        height = fig_height
+    )
+}
+
+# Private function.
+handlePrefix <- function(filename, prefix) {
+
+    if (prefix != "") prefix <- paste0(prefix, "_")
+    filename <- paste0(prefix, filename)
+
+    return(filename)
+}
+
+# Private function.
+handlePlot <- function(plot, prefix, filename, outdir, fig_width, fig_height, return_plot) {
+
+    # If outdir is not NA, it means it has been provided by the user and therefore
+    # the plot should be saved to an output directory.
+    if (!(is.na(outdir))) {
+
+        # Since the plot will be saved to an output directory, we need to deal with 
+        # the file name and ensure a prefix is added in case that was specified by
+        # the user.
+        filename <- handlePrefix(filename = filename, prefix = prefix)
+
+        # Now we need to export the plot.
+        exportPlot(
+            plot = plot, filename = filename, outdir = outdir, 
+            fig_width = fig_width, fig_height = fig_height
+        )
+
+        # The user may want the plot to be returned by the function even if it
+        # has been saved to an output directory.
+        if (return_plot == TRUE) return(plot)
+
+    # If outdir is NA, it means the user has not provided an output directory and
+    # therefore the plot will not be saved. In this case, the plot will be returned
+    # regardless of the value of return_plot.
+    } else if (is.na(outdir)) { return(plot) }
+
+}
+
 prepare_for_plotDomainReads <- function(report, include_eukaryotes) {
 
     if(include_eukaryotes) domains <- "^Eukaryota$|^Viruses$|^Archaea$|^Bacteria$"
@@ -396,13 +461,190 @@ prepare_for_plotDomainReads <- function(report, include_eukaryotes) {
     return(report)
 }
 
-is_subrank <- function(rank) {
+# private function
+process_barplot_orientation <- function(plot, n_samples, orientation, include_sample_names, factor) {
 
-    if (nchar(rank) > 1) return(TRUE)
-    else return(FALSE)
+    # proportion (x-axis) vs samples (y-axis)
+    if (orientation %in% c("vertical", "v")) { 
 
+        base_size <- 3
+        if (include_sample_names == TRUE) base_size <- 12
+        
+        pdf_width <- 5
+        pdf_height <- determine_pdf_height(
+            n_elements = n_samples, 
+            base_size = 3,
+            factor = factor
+        )
+
+    # samples (x-axis) vs proportion (y-axis)
+    } else if (orientation %in% c("horizontal", "h")) {
+
+        base_size <- 4
+        if (include_sample_names == TRUE) base_size <- 16
+
+        plot <- plot + ggplot2::coord_flip() 
+
+        pdf_height <- 3.5
+        pdf_width <- determine_pdf_width(
+            n_elements = n_samples, 
+            base_size = 4,
+            factor = factor
+        )
+
+    } else {
+        stop(paste0(
+            "The orientation provided (", orientation, ") is not valid. ",
+            "Please choose from the following options: 'horizontal' or 'h' ",
+            "for horizontal plots; 'vertical' or 'v' for vertical plots." 
+        ))
+    }
+
+    return(list(plot, pdf_width, pdf_height))
 }
 
+process_barplot_ticknames <- function(plot, orientation, include_sample_names) {
+
+    # proportion (x-axis) vs samples (y-axis)
+    if (orientation %in% c("vertical", "v")) { 
+
+        if (include_sample_names == TRUE) {
+
+            plot <- plot + ggplot2::theme(axis.text.y = ggplot2::element_text(size = 6))
+
+        } else {
+
+            plot <- plot + ggplot2::theme(
+                axis.text.y = ggplot2::element_blank(),
+                axis.ticks.y = ggplot2::element_blank()
+            )
+
+        }
+
+    } else if (orientation %in% c("horizontal", "h")) {
+
+        if (include_sample_names == TRUE) {
+
+            plot <- plot + ggplot2::theme(
+                axis.text.x = ggplot2::element_text(size = 6, angle = 90, vjust = 1, hjust = 1)
+            )
+            
+        } else {
+
+            plot <- plot + ggplot2::theme(
+                axis.text.x = ggplot2::element_blank(),
+                axis.ticks.x = ggplot2::element_blank()
+            )
+
+        }
+
+    } else {
+
+        stop(paste0(
+            "The orientation provided (", orientation, ") is not valid. ",
+            "Please choose from the following options: 'horizontal' or 'h' ",
+            "for horizontal plots; 'vertical' or 'v' for vertical plots." 
+        ))
+
+    }
+
+    return(plot)
+}
+
+# private function
+adjustClassificationSummary_barplot <- function(plot, n_samples, include_sample_names, orientation, filename) {
+
+    if (include_sample_names) {
+
+        plot <- plot + ggplot2::geom_bar(position = "fill", stat = "identity", width = 0.9) 
+        pdf_factor <- 0.6
+        if (!(is.na(filename))) filename <- paste0(filename, orientation, "_withSampleNames.pdf")
+
+    } else {
+
+        plot <- plot + ggplot2::geom_bar(position = "fill", stat = "identity", width = 1)
+        pdf_factor <- 0.3
+        if (!(is.na(filename))) filename <- paste0(filename, orientation, "_withoutSampleNames.pdf")
+            
+    }
+
+    plot <- process_barplot_ticknames(
+        plot = plot, 
+        orientation = orientation, 
+        include_sample_names = include_sample_names
+    )
+
+    processed_plot <- process_barplot_orientation(
+        plot = plot,
+        n_samples = n_samples,
+        orientation = orientation, 
+        include_sample_names = include_sample_names,
+        factor = pdf_factor
+    )
+
+    plot <- processed_plot[[1]]
+    pdf_width <- processed_plot[[2]]
+    pdf_height <- processed_plot[[3]]
+
+    return(list(plot, filename, pdf_width, pdf_height))
+}
+
+prepare_for_plotMinimisers <- function(std_reports, domain) {
+
+    # Subset report to keep only a given domain.
+    subset <- std_reports[std_reports[, COLNAME_STD_DOMAIN] == domain, ]
+
+    df <- data.frame(matrix(nrow = 0, ncol = 8))
+
+    # Iterate over all samples....
+    for (sample in unique(subset[, COLNAME_STD_SAMPLE])) {
+
+        # Iterate over all taxa in a given domain...
+        for (taxon in unique(subset[, COLNAME_STD_TAXON])) {
+
+            # Identify whether a given taxon was identified in a given sample.
+            n_res <- length(subset[, COLNAME_STD_RATIO_CLADE][((subset[, COLNAME_STD_TAXON] == taxon) & (subset[, COLNAME_STD_SAMPLE] == sample))])
+
+            # If a given taxon WAS NOT identified in a given sample...
+            if(n_res == 0) {
+                
+                df <- rbind(
+                    df, 
+                    c(sample, domain, taxon, unique(subset[, COLNAME_STD_RANK][subset[, COLNAME_STD_TAXON] == taxon]),
+                      NA, NA, "Non-significant", NA)
+                )
+
+            # If a given taxon WAS identified in a given sample...
+            } else {
+
+                sample_taxon <- subset[(subset[, COLNAME_STD_TAXON] == taxon) & (subset[, COLNAME_STD_SAMPLE] == sample), ]
+
+                df <- rbind(
+                    df, 
+                    c(sample, domain, taxon, sample_taxon[, COLNAME_STD_RANK], sample_taxon[, COLNAME_STD_RATIO_CLADE],
+                      sample_taxon[, COLNAME_STD_PADJ], sample_taxon[, COLNAME_STD_SIGNIF], sample_taxon[, COLNAME_STD_N_FRAG_CLADE])
+                )
+            }
+        }
+    }
+
+    colnames(df) <- c(
+        COLNAME_STD_SAMPLE,
+        COLNAME_STD_DOMAIN, 
+        COLNAME_STD_TAXON, 
+        COLNAME_STD_RANK,
+        COLNAME_STD_RATIO_CLADE,
+        COLNAME_STD_PADJ,
+        COLNAME_STD_SIGNIF,
+        COLNAME_STD_N_FRAG_CLADE
+    )
+
+    df[, COLNAME_STD_RATIO_CLADE] <- as.numeric(df[, COLNAME_STD_RATIO_CLADE])
+    df[, COLNAME_STD_PADJ] <- as.numeric(df[, COLNAME_STD_PADJ])
+    df[, COLNAME_STD_N_FRAG_CLADE] <- as.numeric(df[, COLNAME_STD_N_FRAG_CLADE])
+
+    return(df)
+}
 
 ############################################
 ## HELPER FUNCTIONS FOR transferDomains() ##
@@ -411,6 +653,7 @@ is_subrank <- function(rank) {
 # Will be a private function.
 retrieve_rankDomains <- function(report_std, report_mpa, verbose = TRUE) {
 
+    # Create vector with ranks present in the standard report provided.
     ranks <- unique(report_std[, COLNAME_STD_RANK])
     ranks <- get_association(ranks)
 
@@ -419,36 +662,124 @@ retrieve_rankDomains <- function(report_std, report_mpa, verbose = TRUE) {
         pb <- txtProgressBar(min = 0, max = nrow(report_std), style = 3)
     }
 
+    # Iterate over each line of the standard report... 
     report_std[, COLNAME_STD_DOMAIN] <- sapply(seq_len(nrow(report_std)), function(x) {
 
+        # Update progress bar.
         if (verbose) setTxtProgressBar(pb, x)
 
+        # Get rank in line.
         rank <- names(ranks)[ranks == report_std[, COLNAME_STD_RANK][x]]
 
+        # If rank is also a column in the MPA-style report...
+        # (Note that sub-ranks [e.g. C2, F5 etc] are not present in the MPA format!)
         if (rank %in% colnames(report_mpa)) {
 
+            # Obtain domain.
             domain <- unique(report_mpa[, NAME_RANK_DOMAIN][which(
                 report_mpa[, rank] == report_std[, COLNAME_STD_TAXON][x]
             )])
-            
             return(domain)
         
-        } else {
-            
-            return(NA)
-
-        }
-
+        # As stated above, sub-ranks are not present in MPA-style reports so for
+        # these the value returned will be NA.
+        } else return(NA)
     })
 
-    cat("\n")
+    if (verbose) cat("\n") # Print line after progress bar is finished.
 
-    return(report_std)
+    return(report_std) # Return the updated version of the standard report!
+}
 
+infer_fromAdjacencies <- function(report_std, line) {
+
+    domain_upstream <- report_std[, COLNAME_STD_DOMAIN][line - 1]
+    domain_downstream <- report_std[, COLNAME_STD_DOMAIN][line + 1]
+                
+    if (domain_upstream == domain_downstream) domain <- domain_upstream
+
+    return(domain)
+}
+
+determine_subrankDomain <- function(report_std, line, inference) {
+
+    # Initialise domain. 
+    domain <- NA
+
+    # Identify sub-rank.
+    sub_rank <- report_std[, COLNAME_STD_RANK][line]
+
+    # Create a counter to go up one line at a time to find the nearest rank.
+    go_up_one_line <- 1
+
+    # Keep looping until a domain is found...
+    while (is.na(domain)) {
+        
+        # Break loop in case we have reached the beginning of the dataframe
+        # and there are no more lines to look at.
+        if ((line - go_up_one_line) == 0) {
+                   
+            warning(paste0(
+                "The loop has reached the beginning of the dataframe while ",
+                "trying to assign a domain to line ", line, ". Exiting loop..."
+            ))
+            break
+        } 
+
+        # Get rank/sub-rank value above a given sub-rank.
+        attempt <- report_std[, COLNAME_STD_RANK][line - go_up_one_line]
+
+        # If the value of "attempt" is a sub-rank, it means we have not reached
+        # a rank yet.
+        if (is_subrank(attempt)) { 
+
+            # Update counter. 
+            go_up_one_line <- go_up_one_line + 1 
+
+        # Alternatively, if the value of "attempt" is not a sub-rank, then we
+        # have gotten to a rank!
+        } else if (!(is_subrank(attempt))) { 
+                    
+            # We also need to double check we are looking at the right rank for
+            # the sub-rank (e.g. if sub-rank is C2, then the rank should be C,
+            # not O, F or anything else).
+            if (grepl(attempt, sub_rank)) {
+
+                # Assign new value to domain (i.e. it will no longer be NA).
+                domain <- report_std[, COLNAME_STD_DOMAIN][line - go_up_one_line] 
+
+            } else {
+
+                expected_rank <- substring(sub_rank, 1, 1)
+                actual_rank <- report_std[, COLNAME_STD_RANK][line - go_up_one_line]
+
+                warning_msg <- paste0(
+                    "The nearest rank found for ", sub_rank, " at line ", line, " was ", actual_rank,
+                    " while it should have been ", expected_rank, ". "
+                )
+
+                if (inference == FALSE) {
+
+                    warning(paste0(warning_msg, "Exiting loop..."))
+                    break
+
+                } else {
+
+                    warning(paste0(
+                        warning_msg, "Trying to infer the domain based on the sub-rank's adjacencies..."
+                    ))
+
+                    #domain <- infer_fromAdjacencies()
+                }
+            }
+        } 
+    }
+
+    return(domain)
 }
 
 # Will be a private function.
-retrieve_subrankDomains <- function(report_std, report_mpa, verbose = TRUE) {
+retrieve_subrankDomains <- function(report_std, report_mpa, inference = TRUE, verbose = TRUE) {
 
     # Initialise progress bar.
     if (verbose) {
@@ -462,81 +793,22 @@ retrieve_subrankDomains <- function(report_std, report_mpa, verbose = TRUE) {
         # Update progress bar.
         if (verbose) setTxtProgressBar(pb, i) 
 
+        if (!is.na(report_std[, COLNAME_STD_DOMAIN][i]) || report_std[, COLNAME_STD_RANK][i] %in% c("U", "R", "R1", "R2", "R3")) {
+            next
+        }
         # Every time domain = NA (except when rank is related to root or unclassified), this means that
         # the line corresponds to a sub-rank. The chunck of code below will look for the nearest rank upstream 
         # (i.e. if sub-rank is F2, the nearest rank upstream will be F) and assign the nearest rank's domain to
         # the sub-rank.
-        if (
-            is.na(report_std[, COLNAME_STD_DOMAIN][i]) && 
-            !(report_std[, COLNAME_STD_RANK][i] %in% c("U", "R", "R1", "R2", "R3"))
-        ) {
 
-            # Identify sub-rank in line.
-            sub_rank <- report_std[, COLNAME_STD_RANK][i]
+        # Determine sub-rank's domain.
+        domain <- determine_subrankDomain(report_std, i, inference)
 
-            # Initialise domain. 
-            domain <- NA
+        # Assign domain value to sub-rank.
+        report_std[, COLNAME_STD_DOMAIN][i] <- domain
 
-            # Create a counter to go up one line at a time to find the nearest rank.
-            go_up_one_line <- 1
-
-            while (is.na(domain)) {
-
-                # Break loop in case we have reached the beginning of the dataframe
-                # and there are no more lines to look at.
-                if ((i - go_up_one_line) == 0) {
-                    
-                    warning(paste0(
-                        "The loop has reached the beginning of the dataframe while ",
-                        "trying to assign a domain to line ", i, ". Exiting loop..."
-                    ))
-                    break
-                } 
-
-                # Get rank/sub-rank value above a given sub-rank.
-                attempt <- report_std[, COLNAME_STD_RANK][i - go_up_one_line]
-
-                # If the value of "attempt" is a sub-rank, it means we have not reached
-                # a rank yet.
-                if (is_subrank(attempt)) { 
-
-                    # Update counter. 
-                    go_up_one_line <- go_up_one_line + 1 
-
-                # Alternatively, if the value of "attempt" is not a sub-rank, then we
-                # have gotten to a rank!
-                } else if (!(is_subrank(attempt))) { 
-                    
-                    # We just also need to double-check we are looking at the right rank 
-                    # for the sub-rank (e.g. if sub-rank is C2, then the rank should be
-                    # C, not O, F or anything else).
-                    if (grepl(attempt, sub_rank)) {
-
-                        # Assign new value to domain (i.e. it will no longer be NA).
-                        domain <- report_std[, COLNAME_STD_DOMAIN][i - go_up_one_line] 
-
-                    } else {
-
-                        expected_rank <- substring(report_std[, COLNAME_STD_RANK][i], 1, 1)
-                        actual_rank <- report_std[, COLNAME_STD_RANK][i - go_up_one_line]
-
-                        warning(paste0(
-                            "The nearest rank found for ", sub_rank, " was ", actual_rank,
-                            " while it should have been ", expected_rank, ". Exiting loop..."
-                        ))
-                        break
-                        
-                    }
-                } 
-            }
-
-            # Assign domain value to sub-rank.
-            report_std[, COLNAME_STD_DOMAIN][i] <- domain
-
-        }
-    
     }
-
+    
     cat("\n")
 
     return(report_std)
@@ -625,22 +897,27 @@ get_ProportionClassifiedReads <- function(report) {
 }
 
 
+subset_STDreport <- function(report, include_human = TRUE) {
 
+    # Subsetting family-, genus- and species-level results.
+    report <- report[report[, COLNAME_STD_RANK] %in% c("F", "G", "S"), ]
 
-
-subset_reports <- function(merged_reports, include_human = TRUE) {
-
-    # Subsetting family-, genus- and species-level results
-    merged_reports <- merged_reports[merged_reports$rank %in% c("F", "G", "S"),]
-
-    if (include_human) {
-        return(merged_reports)
-    } else {
-        merged_reports <- merged_reports[!(merged_reports$scientific_name %in% c("Hominidae", "Homo", "Homo sapiens")),]
-        return(merged_reports)
+    # Filter out human results.    
+    if (include_human == FALSE) {
+        report <- report[!(report[, COLNAME_STD_TAXON] %in% c("Hominidae", "Homo", "Homo sapiens")), ]
     }
+
+    return(report)
 }
 
+get_nTaxaInRank <- function(report, rank, sample) {
+
+    n_taxa_in_rank <- length(unique(
+        report[, COLNAME_STD_TAXON][report[, COLNAME_STD_RANK] == rank & report[, COLNAME_STD_SAMPLE] == sample]
+    ))
+
+    return(n_taxa_in_rank)
+}
 
 #' DETERMINE WIDTH FOR PDF FILE
 #' 
@@ -650,17 +927,15 @@ subset_reports <- function(merged_reports, include_human = TRUE) {
 #' so should be used with caution for any other ends.
 #' 
 #' @param n_elements Number of elements on the x-axis.
+#' @param base_size Base plot width when there is only one element on the x-axis.
 #' @param factor Value to help adjust the width.
 #' @return Plot width for PDF file.
 #' @export
-determine_pdf_width <- function(n_elements, factor = 1) {
-
-    # Basic plot width when there is only one element on the x-axis.
-    pdf_width <- 1
+determine_pdf_width <- function(n_elements, base_size = 1, factor = 1) {
 
     # Increment width if there are 2 elements or more.
-    for (i in 1:n_elements) {
-        pdf_width <- pdf_width + (0.25 * factor)
+    for (i in seq_len(n_elements)) {
+        pdf_width <- base_size + (0.25 * factor)
     }
 
     return(pdf_width)
@@ -674,17 +949,15 @@ determine_pdf_width <- function(n_elements, factor = 1) {
 #' so should be used with caution for any other ends.
 #' 
 #' @param n_elements Number of elements on the y-axis.
+#' @param base_size Base plot height when there is only one element on the y-axis.
 #' @param factor Value to help adjust the height.
 #' @return Plot height for PDF file.
 #' @export
-determine_pdf_height <- function(n_elements, factor = 1) {
-
-    # Basic plot height when there is only one element on the y-axis.
-    pdf_height <- 2
+determine_pdf_height <- function(n_elements, base_size = 2, factor = 1) {
 
     # Increment height if there are 2 elements or more.
-    for (i in 1:n_elements) {
-        pdf_height <- pdf_height + (1 * factor)
+    for (i in seq_len(n_elements)) {
+        pdf_height <- base_size + (1 * factor)
     }
 
     return(pdf_height)

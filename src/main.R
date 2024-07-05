@@ -29,7 +29,6 @@ process_kraken2 <- function(std_reports_path, mpa_reports_path, metadata_path, r
     # Process Kraken2 reports #
     ###########################
 
-    mpa_reports <- 
 
 
 

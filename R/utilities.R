@@ -233,7 +233,7 @@ transfer_ncbiID <- function(report_mpa, report_std) {
     return(final_report)
 }
 
-transferDomains <- function(report_std, report_mpa, verbose = TRUE) {
+transferDomains <- function(report_std, report_mpa, verbose = TRUE, inference = TRUE) {
 
     if (is_mpa(report_std)) {
         stop(paste0(
@@ -251,8 +251,8 @@ transferDomains <- function(report_std, report_mpa, verbose = TRUE) {
         cat("Adding domain info from the MPA-style report to the standard report\n")
     }
 
-    report_std <- retrieve_rankDomains(report_std, report_mpa, verbose = TRUE)
-    report_std <- retrieve_subrankDomains(report_std, report_mpa, verbose = TRUE)
+    report_std <- retrieve_rankDomains(report_std, report_mpa, verbose)
+    #report_std <- retrieve_subrankDomains(report_std, report_mpa, verbose, inference)
     
     return(report_std)
 }
@@ -477,19 +477,30 @@ assess_ratioMinimisers <- function(report) {
 #' @param report
 #' @param ref_db 
 #' @return An updated version of the input dataframe, with new columns containing statistical significance results.
-assess_statSig <- function(report, ref_db) {
+assess_statSig <- function(report, ref_db, verbose = TRUE) {
 
     if (is_mpa(report)) {
+
+        stop(paste0(
+            "This function does not support MPA-style reports. Please provide a standard report."
+        ))
 
     } else {
 
         p_clade_in_db <- numeric(nrow(report))
         pval <- numeric(nrow(report))
 
+        if (verbose) {
+            cat("Assessing the statistical significance of results at the family, genus and species levels\n")
+            pb <- txtProgressBar(min = 0, max = nrow(report), style = 3)
+        }
+
         for (i in seq_len(nrow(report))) {
 
+            if (verbose) setTxtProgressBar(pb, i)
+
             # Get proportion of clade-level minimisers of a given taxon in the reference database (DB).
-            p_clade_in_db_ <- (reports[, COLNAME_STD_DB_MINIMISERS_CLADE][i] / sum(ref_db[, COLNAME_REF_DB_MINIMISERS_CLADE]))
+            p_clade_in_db_ <- (report[, COLNAME_STD_DB_MINIMISERS_CLADE][i] / sum(ref_db[, COLNAME_REF_DB_MINIMISERS_CLADE]))
 
             # Mean is the total number of reads analysed from the sample (sample size) times the probability of success which 
             # is equal to the proportion of clade-level minimisers of the taxon out of the total available in the reference DB.
@@ -519,28 +530,44 @@ assess_statSig <- function(report, ref_db) {
         # Create vector to store adjusted p-values.
         padj <- rep(0, times = nrow(report))
 
+        if (verbose) {
+            cat("\nCorrecting p-values\n")
+            pb <- txtProgressBar(min = 0, max = nrow(report), style = 3)
+        }
+
         # Iterate over dataframe rows...
         for (i in seq_len(nrow(report))){
+
+            if (verbose) setTxtProgressBar(pb, i)
             
             # Identify how many families, genuses or species were identified in a given sample.
-            n_taxons_rank <- NULL
+            n_taxa_rank <- NA
 
-            if (report[, COLNAME_STD_RANK][i] == "F") {
-                n_taxons_rank <- merged_reports$nF_sample[i]  
-            } else if (report[, COLNAME_STD_RANK][i] == "G") {
-                n_taxons_rank <- merged_reports$nG_sample[i] 
-            } else if (report[, COLNAME_STD_RANK][i] == "S") {
-                n_taxons_rank <- merged_reports$nS_sample[i] 
+            if (report[, COLNAME_STD_RANK][i] %in% c("F", "G", "S")) {
+                n_taxa_rank <- get_nTaxaInRank(
+                    report = report, 
+                    rank = report[, COLNAME_STD_RANK][i], 
+                    sample = report[, COLNAME_STD_SAMPLE][i]
+                )
             } else {
                 stop(paste0("Invalid rank value in row: ", i))
             }
 
             # Perform p-value correction.
-            padj[i] <- p.adjust(report[, COLNAME_STD_PVALUE][i], method = "BH", n = n_taxons_rank)
+            padj[i] <- p.adjust(report[, COLNAME_STD_PVALUE][i], method = "BH", n = n_taxa_rank)
         }
 
         # Add adjusted p-values to dataframe.
         report[, COLNAME_STD_PADJ] <- padj
+
+        # Add column stating whether results are significant or not based on the adjusted p-value.
+        report[, COLNAME_STD_SIGNIF] <- ifelse(
+            report[, COLNAME_STD_PADJ] <= 0.05,
+            "Significant",
+            "Non-significant"
+        )
+
+        cat("\n")
 
         return(report)
     }
