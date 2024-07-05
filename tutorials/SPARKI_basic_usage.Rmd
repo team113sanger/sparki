@@ -1,0 +1,191 @@
+---
+title: "Basic usage of SPARKI!"
+author: "Jacqueline M. Boccacino"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    code_folding: show
+fontsize: 14pt
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+    echo = TRUE, 
+    warning = FALSE, 
+    message = FALSE
+)
+knitr::opts_knit$set(root.dir = "/lustre/scratch126/casm/team113da/users/jb62/projects/sparki/")
+
+```
+
+```{r source_code}
+#library(SPARKI)
+source("R/utilities.R")
+source("R/helper.R")
+source("R/plotting.R")
+source("R/constants.R")
+```
+
+# Load data
+
+```{r load_data}
+mpa_reports <- load_MPAreports("test/mpa", verbose = FALSE)
+std_reports <- load_STDreports("test/reports", verbose = FALSE)
+
+mdata <- loadMetadata("test/metadata.csv") # Optional
+ref_db <- loadReference("test/inspect.txt")
+```
+
+```{r add_metadata}
+mdata_columns <- c("Diagnosis_short", "Site_group")
+
+mpa_reports <- addMetadata(mpa_reports, mdata, mdata_columns)
+std_reports <- addMetadata(std_reports, mdata, mdata_columns)
+```
+
+# Process data
+
+```{r process_data}
+mpa_reports <- addRank(mpa_reports, verbose = FALSE)
+mpa_reports <- addConciseTaxon(mpa_reports, verbose = FALSE)
+mpa_reports <- transfer_ncbiID(mpa_reports, std_reports)
+std_reports <- transferDomains(std_reports, mpa_reports, verbose = FALSE)
+std_reports <- add_nReads(std_reports)
+std_reports <- add_DBinfo(std_reports, ref_db)
+mpa_reports <- transfer_nReads(mpa_reports, std_reports) # To be run after: std_reports <- add_nReads(std_reports)
+mpa_reports <- add_DBinfo(mpa_reports, ref_db)
+```
+
+# Summary of read classification
+
+## Violin plot
+
+```{r plots1, echo = TRUE, fig.retina = 1, fig.width = 4, fig.height = 3.5, fig.align = 'center'}
+plotClassificationSummary_violin(std_reports, return_plot = TRUE)
+```
+
+## Horizontal bar plot
+
+### Without sample names
+
+```{r plots2, echo = TRUE, fig.retina = 1, fig.width = 6, fig.height = 5, fig.align = 'center'}
+
+plotClassificationSummary_barplot(
+  std_reports, 
+  include_sample_names = FALSE, 
+  orientation = "horizontal", 
+  return_plot = FALSE,
+  outdir = "test/outputs",
+  prefix = "SebT"
+)
+plotClassificationSummary_barplot(
+  std_reports, 
+  include_sample_names = FALSE, 
+  orientation = "horizontal",
+  return_plot = TRUE,
+  prefix = "SebT"
+)
+
+```
+
+### With sample names
+
+```{r plots3, echo = TRUE, fig.retina = 1, fig.width = 6, fig.height = 5, fig.align = 'center'}
+
+plotClassificationSummary_barplot(
+  std_reports, 
+  include_sample_names = TRUE, 
+  orientation = "horizontal", 
+  return_plot = FALSE,
+  outdir = "test/outputs",
+  prefix = "SebT"
+)
+plotClassificationSummary_barplot(
+  std_reports, 
+  include_sample_names = TRUE, 
+  orientation = "horizontal",
+  return_plot = TRUE,
+  prefix = "SebT"
+)
+
+```
+
+## Vertical bar plot
+
+### Without sample names
+
+```{r plots4, echo = TRUE, fig.retina = 1, fig.width = 5, fig.height = 5, fig.align = 'center'}
+
+plotClassificationSummary_barplot(
+  std_reports, 
+  include_sample_names = FALSE, 
+  orientation = "vertical", 
+  return_plot = FALSE,
+  outdir = "test/outputs",
+  prefix = "SebT"
+
+)
+plotClassificationSummary_barplot(
+  std_reports, 
+  include_sample_names = FALSE, 
+  orientation = "vertical",
+  return_plot = TRUE,
+  prefix = "SebT"
+)
+
+```
+
+### With sample names
+
+```{r plots5, echo = TRUE, fig.retina = 1, fig.width = 5, fig.height = 5, fig.align = 'center'}
+
+plotClassificationSummary_barplot(
+  std_reports, 
+  include_sample_names = TRUE, 
+  orientation = "vertical", 
+  return_plot = FALSE,
+  outdir = "test/outputs/",
+  prefix = "SebT"
+
+)
+plotClassificationSummary_barplot(
+  std_reports, 
+  include_sample_names = TRUE, 
+  orientation = "vertical",
+  return_plot = TRUE,
+  prefix = "SebT"
+)
+
+```
+
+## Without Eukaryotes
+
+```{r plots6, echo = TRUE, fig.retina = 1, fig.width = 4, fig.height = 5, fig.align = 'center'}
+plotDomainReads_violin(std_reports, include_eukaryotes = FALSE, return_plot = TRUE)
+```
+
+```{r plots7, echo = TRUE, fig.retina = 1, fig.width = 4, fig.height = 5, fig.align = 'center'}
+plotDomainReads_barplot(std_reports, include_eukaryotes = FALSE, return_plot = TRUE)
+```
+
+
+## With Eukaryotes
+
+```{r plots8, echo = TRUE, fig.retina = 1, fig.width = 4, fig.height = 5, fig.align = 'center'}
+plotDomainReads_violin(std_reports, include_eukaryotes = TRUE, return_plot = TRUE)
+```
+
+```{r plots9, echo = TRUE, fig.retina = 1, fig.width = 4, fig.height = 3, fig.align = 'center'}
+plotDomainReads_barplot(std_reports, include_eukaryotes = TRUE, return_plot = TRUE)
+```
+
+```{r assessing_significance, echo = TRUE}
+std_reports <- subset_STDreport(std_reports, include_human = FALSE)
+std_reports <- assess_ratioMinimisers(std_reports)
+std_reports <- assess_statSig(std_reports, ref_db)
+```
+
+```{r plots10, echo = TRUE, fig.retina = 1, fig.width = 15, fig.height = 15, fig.align = 'center'}
+
+plotMinimisers_dotplot(std_reports, domain = "Viruses", return_plot = TRUE, fig_width = 25, fig_height = 15, outdir = "test/outputs/")
+```
