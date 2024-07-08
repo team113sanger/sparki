@@ -2,7 +2,7 @@
 
 This repository contains the code related to SPARKI (**S**tatistical **P**rocess **A**imed at **R**obust **K**raken2 **I**nterpretation), a framework developed in R to help refine, visualise & interpret Kraken2 outputs.
 
-## Installation
+## Installation
 ```
 git clone git@gitlab.internal.sanger.ac.uk:team113_projects/jb62-projects/sparki.git
 cd sparki
