@@ -66,7 +66,8 @@ plotClassificationSummary_violin <- function(report, return_plot, outdir, prefix
 #' @return 
 #' 
 plotClassificationSummary_barplot <- function(
-    report, include_sample_names = FALSE, orientation = "vertical", return_plot, outdir, prefix = ""
+    report, include_sample_names = FALSE, orientation = "vertical", 
+    return_plot, outdir, prefix = ""
 ) {
 
     # Stop if report provided is in MPA-style format.
@@ -108,10 +109,10 @@ plotClassificationSummary_barplot <- function(
         ggplot2::xlab("Proportion of reads\n") +
         ggplot2::ylab("Sample\n")
 
-    adjusted_plot <- adjustClassificationSummary_barplot(
+    adjusted_plot <- adjust_barplot(
         plot = plot, n_samples = length(unique(report[, COLNAME_STD_SAMPLE])),
         include_sample_names = include_sample_names, orientation = orientation, 
-        filename = file_name
+        filename = "nReads_classified_vs_unclassified_proportion_perSample_barPlot"
     ) 
 
     # Decide what to do with plot based on user-defined options.
@@ -135,11 +136,14 @@ plotClassificationSummary_barplot <- function(
 #' @param prefix Prefix to be added to output plot name.
 #' @return 
 #' 
-plotDomainReads_violin <- function(report, include_eukaryotes = FALSE, return_plot, outdir, prefix = "") {
+plotDomainReads_violin <- function(
+    report, include_eukaryotes = FALSE, return_plot, outdir, 
+    prefix = "", fig_width, fig_height
+) {
 
     if (include_eukaryotes == TRUE) {
         x_lab <- "\nProportion of classified reads\n(all domains)"
-        filename <- "nReadsDomains_vilion_with_eukaryotes.pdf"
+        filename <- "nReadsDomains_violin_with_eukaryotes.pdf"
         plot_width <- 5
         plot_height <- 5
     } else if (include_eukaryotes == FALSE) {
@@ -158,7 +162,8 @@ plotDomainReads_violin <- function(report, include_eukaryotes = FALSE, return_pl
 
     # Create violin plot.
     plot <- ggplot2::ggplot(
-            report, ggplot2::aes(x = colname_taxon, y = log10(colname_n_frag_clade), fill = colname_taxon)
+            report, 
+            ggplot2::aes(x = colname_taxon, y = log10(colname_n_frag_clade), fill = colname_taxon)
         ) +
         ggplot2::geom_violin(scale = "width") +
         ggplot2::geom_jitter(size = 0.5) +
@@ -186,27 +191,37 @@ plotDomainReads_violin <- function(report, include_eukaryotes = FALSE, return_pl
     )
 }
 
-
-
-
-
-
-
-
+#' PLOT NUMBERS OF CLASSIFIED READS PER DOMAIN (BAR PLOT)
+#' 
+#' This function takes a Kraken2 report, either in standard or MPA-style format, and creates
+#' a bar plot showing the number of classified reads per domain.
+#' 
+#' @param report Kraken2 report, either in standard or MPA-style format.
+#' @param include_sample_names Whether sample names should be displayed.
+#' @param orientation Whether plot should be horizontally or vertically oriented.
+#' @param include_eukaryotes Whether to include eukaryotes in the plot.
+#' @param return_plot Whether plot should be returned.
+#' @param outdir Output directory where the plot should be saved.
+#' @param prefix Prefix to be added to output plot name.
+#' @return 
+#' 
 plotDomainReads_barplot <- function(
-    report, include_sample_names = FALSE, orientation = "vertical", include_eukaryotes = TRUE, 
-    return_plot = FALSE, outdir, fig_width, fig_height
+    report, include_sample_names = FALSE, orientation = "vertical", 
+    include_eukaryotes = FALSE, return_plot, outdir, prefix = ""
 ) {
+
+    # Assign NA to outdir in case it has not been provided by the user.
+    if (missing(outdir)) outdir <- NA
 
     report <- prepare_for_plotDomainReads(report, include_eukaryotes)
 
     if (include_eukaryotes) {
         x_lab <- "\nProportion of classified reads\n(all domains)"
-        file_name <- "nReadsDomains_barplot_with_eukaryotes.pdf"
+        filename <- "nReadsDomains_barplot_with_eukaryotes"
         colours <- c("gold1", "royalblue", "snow4", "indianred2")
     } else {
         x_lab <- "\nProportion of classified reads\n(non-eukaryotes only)"
-        file_name <- "nReadsDomains_barplot_without_eukaryotes.pdf"
+        filename <- "nReadsDomains_barplot_without_eukaryotes"
         colours <- c("gold1", "royalblue", "indianred2")
     }
 
@@ -234,18 +249,40 @@ plotDomainReads_barplot <- function(
         ) +
         ggplot2::geom_vline(xintercept = c(0.25, 0.5, 0.75), linetype = "dashed")
 
-    if (missing(fig_height)) {
-        fig_height <- determine_pdf_height(n_elements = length(unique(report$sample)), factor = 0.25)
-    }
+    adjusted_plot <- adjust_barplot(
+        plot = plot, n_samples = length(unique(report[, COLNAME_STD_SAMPLE])),
+        include_sample_names = include_sample_names, orientation = orientation, 
+        filename = filename
+    ) 
 
+    # Decide what to do with plot based on user-defined options.
     handlePlot(
-        plot = plot, prefix = prefix, return_plot = return_plot, filename = filename,
-        outdir = outdir, fig_width = fig_width, fig_height = fig_height
+        plot = adjusted_plot[[1]], prefix = prefix, return_plot = return_plot, 
+        filename = adjusted_plot[[2]], outdir = outdir, fig_width = adjusted_plot[[3]], 
+        fig_height = adjusted_plot[[4]]
     )
-
 }
 
-plotMinimisers_dotplot <- function(std_reports, domain, fig_width, fig_height, return_plot, outdir) {
+#' PLOT PROPORTION OF MINIMISERS AND SIGNIFICANCE PER SAMPLE
+#' 
+#' This function takes a Kraken2 report, either in standard or MPA-style format, and creates
+#' a bar plot showing the number of classified reads per domain.
+#' 
+#' @param report Kraken2 report, either in standard or MPA-style format.
+#' @param include_sample_names Whether sample names should be displayed.
+#' @param orientation Whether plot should be horizontally or vertically oriented.
+#' @param include_eukaryotes Whether to include eukaryotes in the plot.
+#' @param return_plot Whether plot should be returned.
+#' @param outdir Output directory where the plot should be saved.
+#' @param prefix Prefix to be added to output plot name.
+#' @return 
+#' 
+plotMinimisers_dotplot <- function(
+    std_reports, domain, fig_width, fig_height, return_plot, outdir, prefix = ""
+) {
+
+    # Assign NA to outdir in case it has not been provided by the user.
+    if (missing(outdir)) outdir <- NA
 
     df <- prepare_for_plotMinimisers(
         std_reports = std_reports,
@@ -294,117 +331,13 @@ plotMinimisers_dotplot <- function(std_reports, domain, fig_width, fig_height, r
         ggplot2::xlab("Sample") +
         ggplot2::ylab("Taxon") 
 
-    filename <- "MINIMISERS.pdf"
-
     handlePlot(
-        plot = plot, 
+        plot = plot, prefix = prefix, 
         return_plot = return_plot, 
-        filename = filename, 
+        filename = "MINIMISERS.pdf", 
         outdir = outdir, 
         fig_width = fig_width, 
         fig_height = fig_height
     )
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-plot_reads_non_eukaryote_domains <- function(n_reads_in_samples_df, merged_mpa, return_plot = FALSE, outdir) {
-
-    merged_mpa <- merged_mpa[grep("d__Viruses$|d__Archaea$|d__Bacteria$", merged_mpa$classification), ]
-
-    subplot1 <- ggplot2::ggplot(
-            merged_mpa, 
-            ggplot2::aes(x = number_fragments_clade, y = sample, fill = classification)
-        ) +
-        ggplot2::geom_bar(position = "fill", stat = "identity") +
-        ggplot2::theme_void() +
-        ggplot2::theme(
-            axis.text.x = ggplot2::element_text(size = 12),
-            axis.text.y = ggplot2::element_text(size = 12),
-            axis.title.x = ggplot2::element_text(size = 14),
-            axis.title.y = ggplot2::element_text(size = 14, angle = 90),
-            legend.text = ggplot2::element_text(size = 14),
-            legend.title = ggplot2::element_text(size = 16),
-            legend.position = "left",
-            legend.justification = "top",
-            plot.title = ggplot2::element_text(size = 16, hjust = 0.5, face = "bold"),
-            plot.margin = ggplot2::unit(c(0, 0, 0, 0), "pt")
-        ) +
-        ggplot2::xlab("Proportion of reads") +
-        ggplot2::ylab("Sample\n") +
-        ggplot2::scale_fill_brewer(
-            palette = "Pastel1",
-            name = "Domain",
-            labels = c("Archaea", "Bacteria", "Viruses")
-        ) 
-
-    subplot2 <- ggplot2::ggplot(
-            n_reads_in_samples_df[n_reads_in_samples_df$domains_considered == "subset", ],
-            ggplot2::aes(x = log10(number_reads_clade), y = sample)
-        ) +
-        ggplot2::geom_bar(stat = "identity") +
-        ggplot2::theme_void() +
-        ggplot2::theme(
-            axis.text.x = ggplot2::element_text(size = 12),
-            axis.title.x = ggplot2::element_text(size = 14),
-            plot.margin = ggplot2::unit(c(0, 0, 0, 0), "pt")
-        ) +
-        ggplot2::xlab(expression("log"[10]~"(total non-eukaryote reads)")) 
-
-    plot <- cowplot::plot_grid(
-        plotlist = list(subplot1, subplot2),
-        ncol = 2,
-        align = "hv",
-        axis = "tb",
-        rel_widths = c(1.15,1)
-    ) 
-
-    pdf_height = determine_pdf_height(n_elements = length(unique(merged_mpa$sample)), factor = 0.25)
-
-    if (return_plot == FALSE) {
-
-        if (!(missing(outdir))) {
-            ggpubr::ggexport(
-                plot, 
-                filename = paste0(outdir, "/reads_non_eukaryote_domains.pdf"),
-                width = 10,
-                height = pdf_height
-            )
-        } else {
-            stop("Plot is to be saved to a file but no output directory has been provided.")
-        }
-    } else if (return_plot == TRUE && missing(outdir)) {
-        return(plot)
-    }
-}
-
-
-

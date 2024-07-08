@@ -61,7 +61,12 @@ mpa_reports <- add_DBinfo(mpa_reports, ref_db)
 ## Violin plot
 
 ```{r plots1, echo = TRUE, fig.retina = 1, fig.width = 4, fig.height = 3.5, fig.align = 'center'}
-plotClassificationSummary_violin(std_reports, return_plot = TRUE)
+plotClassificationSummary_violin(
+  std_reports, 
+  return_plot = TRUE,
+  outdir = "test/outputs/",
+  prefix = "SebT"
+)
 ```
 
 ## Horizontal bar plot
@@ -73,16 +78,9 @@ plotClassificationSummary_violin(std_reports, return_plot = TRUE)
 plotClassificationSummary_barplot(
   std_reports, 
   include_sample_names = FALSE, 
-  orientation = "horizontal", 
-  return_plot = FALSE,
-  outdir = "test/outputs",
-  prefix = "SebT"
-)
-plotClassificationSummary_barplot(
-  std_reports, 
-  include_sample_names = FALSE, 
   orientation = "horizontal",
   return_plot = TRUE,
+  outdir = "test/outputs/",
   prefix = "SebT"
 )
 
@@ -95,17 +93,10 @@ plotClassificationSummary_barplot(
 plotClassificationSummary_barplot(
   std_reports, 
   include_sample_names = TRUE, 
-  orientation = "horizontal", 
-  return_plot = FALSE,
-  outdir = "test/outputs",
-  prefix = "SebT"
-)
-plotClassificationSummary_barplot(
-  std_reports, 
-  include_sample_names = TRUE, 
   orientation = "horizontal",
   return_plot = TRUE,
-  prefix = "SebT"
+  prefix = "SebT",
+  outdir = "test/outputs/"
 )
 
 ```
@@ -119,17 +110,9 @@ plotClassificationSummary_barplot(
 plotClassificationSummary_barplot(
   std_reports, 
   include_sample_names = FALSE, 
-  orientation = "vertical", 
-  return_plot = FALSE,
-  outdir = "test/outputs",
-  prefix = "SebT"
-
-)
-plotClassificationSummary_barplot(
-  std_reports, 
-  include_sample_names = FALSE, 
   orientation = "vertical",
   return_plot = TRUE,
+  outdir = "test/outputs/",
   prefix = "SebT"
 )
 
@@ -143,16 +126,8 @@ plotClassificationSummary_barplot(
   std_reports, 
   include_sample_names = TRUE, 
   orientation = "vertical", 
-  return_plot = FALSE,
-  outdir = "test/outputs/",
-  prefix = "SebT"
-
-)
-plotClassificationSummary_barplot(
-  std_reports, 
-  include_sample_names = TRUE, 
-  orientation = "vertical",
   return_plot = TRUE,
+  outdir = "test/outputs/",
   prefix = "SebT"
 )
 
@@ -161,22 +136,50 @@ plotClassificationSummary_barplot(
 ## Without Eukaryotes
 
 ```{r plots6, echo = TRUE, fig.retina = 1, fig.width = 4, fig.height = 5, fig.align = 'center'}
-plotDomainReads_violin(std_reports, include_eukaryotes = FALSE, return_plot = TRUE)
+plotDomainReads_violin(
+  std_reports, 
+  include_eukaryotes = FALSE, 
+  return_plot = TRUE,
+  outdir = "test/outputs/",
+  prefix = "SebT"
+)
 ```
 
 ```{r plots7, echo = TRUE, fig.retina = 1, fig.width = 4, fig.height = 5, fig.align = 'center'}
-plotDomainReads_barplot(std_reports, include_eukaryotes = FALSE, return_plot = TRUE)
+plotDomainReads_barplot(
+  std_reports, 
+  include_eukaryotes = FALSE, 
+  include_sample_names = FALSE, 
+  orientation = "vertical", 
+  return_plot = TRUE,
+  outdir = "test/outputs/",
+  prefix = "SebT"
+)
 ```
 
 
 ## With Eukaryotes
 
 ```{r plots8, echo = TRUE, fig.retina = 1, fig.width = 4, fig.height = 5, fig.align = 'center'}
-plotDomainReads_violin(std_reports, include_eukaryotes = TRUE, return_plot = TRUE)
+plotDomainReads_violin(
+  std_reports, 
+  include_eukaryotes = TRUE, 
+  return_plot = TRUE,
+  outdir = "test/outputs/",
+  prefix = "SebT"
+)
 ```
 
-```{r plots9, echo = TRUE, fig.retina = 1, fig.width = 4, fig.height = 3, fig.align = 'center'}
-plotDomainReads_barplot(std_reports, include_eukaryotes = TRUE, return_plot = TRUE)
+```{r plots9, echo = TRUE, fig.retina = 1, fig.width = 4, fig.height = 5, fig.align = 'center'}
+plotDomainReads_barplot(
+  std_reports, 
+  include_eukaryotes = TRUE, 
+  return_plot = TRUE, 
+  include_sample_names = FALSE, 
+  orientation = "vertical",
+  outdir = "test/outputs/",
+  prefix = "SebT"
+)
 ```
 
 ```{r assessing_significance, echo = TRUE}
@@ -185,7 +188,15 @@ std_reports <- assess_ratioMinimisers(std_reports)
 std_reports <- assess_statSig(std_reports, ref_db)
 ```
 
-```{r plots10, echo = TRUE, fig.retina = 1, fig.width = 15, fig.height = 15, fig.align = 'center'}
+```{r plots10, echo = TRUE, fig.retina = 1, fig.width = 25, fig.height = 15, fig.align = 'center'}
 
-plotMinimisers_dotplot(std_reports, domain = "Viruses", return_plot = TRUE, fig_width = 25, fig_height = 15, outdir = "test/outputs/")
+plotMinimisers_dotplot(
+  std_reports, 
+  domain = "Viruses", 
+  return_plot = TRUE, 
+  fig_width = 25, 
+  fig_height = 15, 
+  outdir = "test/outputs/",
+  prefix = "SebT"
+)
 ```

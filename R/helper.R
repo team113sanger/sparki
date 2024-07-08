@@ -510,7 +510,7 @@ process_barplot_ticknames <- function(plot, orientation, include_sample_names) {
 
         if (include_sample_names == TRUE) {
 
-            plot <- plot + ggplot2::theme(axis.text.y = ggplot2::element_text(size = 6))
+            plot <- plot + ggplot2::theme(axis.text.y = ggplot2::element_text(size = 3))
 
         } else {
 
@@ -526,7 +526,7 @@ process_barplot_ticknames <- function(plot, orientation, include_sample_names) {
         if (include_sample_names == TRUE) {
 
             plot <- plot + ggplot2::theme(
-                axis.text.x = ggplot2::element_text(size = 6, angle = 90, vjust = 1, hjust = 1)
+                axis.text.x = ggplot2::element_text(size = 3, angle = 90, vjust = 1, hjust = 1)
             )
             
         } else {
@@ -552,7 +552,7 @@ process_barplot_ticknames <- function(plot, orientation, include_sample_names) {
 }
 
 # private function
-adjustClassificationSummary_barplot <- function(plot, n_samples, include_sample_names, orientation, filename) {
+adjust_barplot <- function(plot, n_samples, include_sample_names, orientation, filename) {
 
     if (include_sample_names) {
 
@@ -603,7 +603,8 @@ prepare_for_plotMinimisers <- function(std_reports, domain) {
         for (taxon in unique(subset[, COLNAME_STD_TAXON])) {
 
             # Identify whether a given taxon was identified in a given sample.
-            n_res <- length(subset[, COLNAME_STD_RATIO_CLADE][((subset[, COLNAME_STD_TAXON] == taxon) & (subset[, COLNAME_STD_SAMPLE] == sample))])
+            n_res <- length(subset[, COLNAME_STD_RATIO_CLADE][((subset[, COLNAME_STD_TAXON] == taxon) & 
+                (subset[, COLNAME_STD_SAMPLE] == sample))])
 
             # If a given taxon WAS NOT identified in a given sample...
             if(n_res == 0) {
