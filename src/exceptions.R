@@ -1,40 +1,65 @@
-check_report_directory <- function(directory_path, report_format) {
+check_report_directory <- function(dirpath, report_format) {
 
-    if (!(dir.exists(directory_path)))  {
+    # Check that the directory exists.
+    if (!(dir.exists(dirpath)))  {
         stop(paste0(
-            "The directory ", directory_path, " does not exist. ",
+            "The directory ", dirpath, " does not exist. ",
             "Please review your input!"
         ))
-    } else if (length(list.files(directory_path)) == 0) {
+
+    # Check that the directory is not empty.
+    } else if (length(list.files(dirpath)) == 0) {
         stop(paste0(
-            "The directory ", directory_path, " is empty. ",
+            "The directory ", dirpath, " is empty. ",
             "Please review your input!"
         ))
+
+    # Check that the directory contains MPA reports if it 
+    # is supposed to.
     } else if (
-        report_format == "MPA" && 
-        length(list.files(directory_path, pattern = "mpa$")) == 0
+        report_format == "mpa" && 
+        length(list.files(dirpath, pattern = "mpa$")) == 0
     ) {
         stop(paste0(
-            "The directory ", directory_path, " does not contain ",
+            "The directory ", dirpath, " does not contain ",
             "any MPA-style reports. Please review your input!"
         ))
+
+    # Check that the directory contains standard reports if it 
+    # is supposed to.
     } else if (
-        report_format == "STD" && 
-        length(list.files(directory_path, pattern = "kraken$")) == 0
+        report_format == "std" && 
+        length(list.files(dirpath, pattern = "kraken$")) == 0
     ) {
         stop(paste0(
-            "The directory ", directory_path, " does not contain ",
+            "The directory ", dirpath, " does not contain ",
             "any standard format reports. Please review your input!"
+        ))
+
+    # Double-check that the report format specified is valid.
+    } else if (!(report_format %in% c("std", "mpa"))) {
+        stop(paste0("The format ", report_format, " is not valid."))
+
+    # Ensure that the directory path has a slash at the end.
+    } else if (substr(dirpath, nchar(dirpath), nchar(dirpath)) != "/") {
+        dirpath <- paste0(dirpath, "/")
+    }
+
+    return(dirpath)
+}
+
+check_file <- function(file_path) {
+
+    if (!(file.exists(file_path))) {
+        stop(paste0(
+            "The file ", file_path, " does not exist. ",
+            "Please review your input!"
+        ))
+    } else if (file.size(file_path) == 0L) {
+        stop(paste0(
+            "The file ", file_path, " is empty. ",
+            "Please review your input!"
         ))
     }
 }
 
-check_reference <- function(reference_path) {
-
-    if (!(file.exists(reference_path)))  {
-        stop(paste0(
-            "The file ", reference_path, " does not exist. ",
-            "Please review your input!"
-        ))
-    } 
-}
