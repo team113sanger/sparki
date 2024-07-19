@@ -963,3 +963,19 @@ determine_pdf_height <- function(n_elements, base_size = 2, factor = 1) {
 
     return(pdf_height)
 }
+
+#' PARSE SYMBOL-DELIMITED LIST TO GET INDIVIDUAL ELEMENTS
+#' 
+#' This function takes a symbol-delimited list of elements and splits it up into individual elements.
+#' Symbols can be anything, e.g. ",", ";", "/", "//", "@", "." etc.
+#' 
+#' @param del_list A list with symbol-delimited values; the symbol can be a comma, for example.
+#' @return A vector with individual elements.
+#' @export
+parse_delimited_list <- function(del_list, delimiter) {
+
+    # Split comma-separated list.
+    elements <- unlist(stringr::str_split(del_list, delimiter))
+
+    return(elements)
+}
