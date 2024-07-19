@@ -7,7 +7,16 @@
 #' @param verbose Verbosity level.
 #' @return Processed data ready for downstream steps.
 #' @export
-prepare_data <- function(std_reports_path, mpa_reports_path, reference_path, metadata_path, verbose) {
+prepare_data <- function(
+    std_reports_path, 
+    mpa_reports_path, 
+    reference_path, 
+    metadata_path, 
+    metadata_columns,
+    outdir_path,
+    prefix,
+    verbose
+) {
 
     # Check the integrity of the directories provided & read reports.
     reports_paths <- list(
@@ -21,10 +30,32 @@ prepare_data <- function(std_reports_path, mpa_reports_path, reference_path, met
         )
     }
 
-    # Check the integrity of the reference and metadata (if provided) files.
-    if (is.na(metadata_path)) warning("No metadata file has been provided.")
-    for (file_path in c(reference_path, metadata_path)) { 
-        check_file(file_path = file_path) 
+    # Check the integrity of the metadata file (if provided).
+    if (is.na(metadata_path)) {
+        warning("No metadata file has been provided.")
+    } else {
+        check_file(file_path = metadata_path)
+        if (is.na(metadata_columns)) {
+            stop(paste0(
+                "A metadata table has been provided, but ",
+                "no columns have been specified. Please ",
+                "review your input!"
+            ))
+        } else {
+            metadata_columns <- parse_delimited_list(
+                del_list = metadata_columns, 
+                delimiter = ","
+            )
+        }
+    }
+    # Check the integrity of the reference file.
+    check_file(reference_path)
+
+    # Check prefix (if provided).
+    if(is.na(prefix)) {
+        warning("No prefix has been provided.")
+    } else {
+        prefix <- check_prefix(prefix)
     }
 
     # Read standard reports.
@@ -37,10 +68,15 @@ prepare_data <- function(std_reports_path, mpa_reports_path, reference_path, met
     ref_db <- loadReference(reference_path)
 
     # Read metadata (if any).
-    mdata <- NA
-    if (!(is.na(metadata_path))) mdata <- loadMetadata(metadata_path)
-    
-    return(list(std_reports, mpa_reports, ref_db, mdata))
+    metadata <- NA
+    if (!(is.na(metadata_path))) {
+        metadata <- loadMetadata(metadata_path)
+        check_columns(df = metadata, columns = columns)
+        mpa_reports <- addMetadata(mpa_reports, metadata, columns)
+        std_reports <- addMetadata(std_reports, metadata, columns)
+    }
+
+    return(list(std_reports, mpa_reports, ref_db, metadata, metadata_columns))
 
 }
 
@@ -59,6 +95,8 @@ process_kraken2 <- function(
     reference_path, 
     metadata_path, 
     metadata_columns, 
+    outdir_path,
+    prefix,
     verbose
 ) {
 
@@ -67,6 +105,9 @@ process_kraken2 <- function(
         mpa_reports_path = mpa_reports_path,
         reference_path = reference_path,
         metadata_path = metadata_path,
+        metadata_columns = metadata_columns,
+        outdir_path = outdir_path,
+        prefix = prefix,
         verbose = verbose
     )
 
@@ -74,11 +115,28 @@ process_kraken2 <- function(
     mpa_reports <- prepared_data[[2]]
     ref_db <- prepared_data[[3]]
     mdata <- prepared_data[[4]]
-    
-    mdata_columns <- c("Diagnosis_short", "Site_group")
+    columns <- prepared_data[[5]]
 
-    mpa_reports <- addMetadata(mpa_reports, mdata, mdata_columns)
-    std_reports <- addMetadata(std_reports, mdata, mdata_columns)
+    mpa_reports <- addRank(mpa_reports, verbose = verbose)
+    mpa_reports <- addConciseTaxon(mpa_reports, verbose = verbose)
+    mpa_reports <- transfer_ncbiID(mpa_reports, std_reports)
+    std_reports <- transferDomains(std_reports, mpa_reports, verbose = verbose)
+    std_reports <- add_nReads(std_reports)
+    std_reports <- add_DBinfo(std_reports, ref_db)
+    mpa_reports <- transfer_nReads(mpa_reports, std_reports) 
+    mpa_reports <- add_DBinfo(mpa_reports, ref_db)
+    std_reports <- subset_STDreport(std_reports, include_human = FALSE)
+    std_reports <- assess_ratioMinimisers(std_reports)
+    std_reports <- assess_statSig(std_reports, ref_db)
+
+    plotClassificationSummary_barplot(
+        std_reports, 
+        include_sample_names = FALSE, 
+        orientation = "horizontal",
+        return_plot = TRUE,
+        outdir = "test/outputs/",
+        prefix = "SebT"
+    )
 
 
 }
