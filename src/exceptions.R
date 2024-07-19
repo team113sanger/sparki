@@ -63,3 +63,24 @@ check_file <- function(file_path) {
     }
 }
 
+check_columns <- function(df, columns) {
+    
+    for (column in columns) {
+        if (!(column %in% colnames(df))) {
+            stop(paste0(
+                "The column ", column, " does not exist ",
+                "in the metadata table provided. Please ",
+                "review your input!"
+            ))
+        }
+    }
+}
+
+check_prefix <- function(prefix) {
+
+    if (substr(prefix, nchar(prefix), nchar(prefix)) != "_") {
+        prefix <- paste0(prefix, "_")
+    }
+
+    return(prefix)
+}
