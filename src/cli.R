@@ -112,14 +112,14 @@ parse_options <- function(option_list, description = "") {
 }
 
 # Compute PCA.
-run_pca_analysis <- function(arguments) {
-    pca_analysis(
-        gex_data = arguments$options$infile,
-        outdir = arguments$options$outdir,
-        prefix = arguments$options$prefix,
-        metadata = arguments$options$metadata,
-        sample_column = arguments$options$samples,
-        cat_column = arguments$options$categories
+run_sparki_analysis <- function(arguments) {
+    process_kraken2(
+        std_reports_path = arguments$options$std_reports, 
+        mpa_reports_path = arguments$options$mpa_reports,
+        reference_path = arguments$options$refdb, 
+        metadata_path = arguments$options$metadata,
+        metadata_columns = arguments$options$columns,
+        verbose = arguments$options$verbose
     )
 }
 
@@ -127,13 +127,12 @@ run_pca_analysis <- function(arguments) {
 # CLI entrypoints #
 ###################
 
-cli_pca_analysis <- function() {
+cli_sparki <- function() {
 
-    analysis_option_list <- c(analysis_option_list_overlap, analysis_option_list_pca)
-    description <- "Perform principal component analysis (PCA) on a gene expression matrix."
+    description <- "Run SPARKI on a given set of Kraken2 results."
 
-    parsed_arguments <- parse_options(analysis_option_list, description)
-    run_pca_analysis(parsed_arguments)
+    parsed_arguments <- parse_options(option_list, description)
+    run_sparki_analysis(parsed_arguments)
 }
 
 ######################
