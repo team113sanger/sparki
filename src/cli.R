@@ -71,10 +71,33 @@ option_list <- list(
         c("-v", "--verbose"),
         dest = "verbose",
         action = "store_true",
-        default = TRUE,
+        #default = TRUE,
         type = "logical",
-        help = "Verbosity level [optional]."
-    )
+        help = "Verbosity level."
+    ),
+    optparse::make_option(
+        c("-e", "--include-eukaryotes"),
+        dest = "inc_eukaryotes",
+        action = "store_true",
+        #default = FALSE,
+        type = "logical",
+        help = "Whether to include eukaryotes in the final results table and plots."
+    ),
+    optparse::make_option(
+        c("-s", "--include-sample-names"),
+        dest = "inc_sample_names",
+        action = "store_true",
+        #default = FALSE,
+        type = "logical",
+        help = "Whether to include sample names in the plots."
+    ),
+    optparse::make_option(
+        c("-d", "--domain"),
+        dest = "domain",
+        action = "store",
+        default = NA,
+        type = "character",
+        help = "Domain of interest (e.g. Viruses)."
 )
 
 
@@ -98,7 +121,8 @@ parse_options <- function(option_list, description = "") {
 
     # CLI arguments need some pre-processing before they can be parsed.
     raw_arguments <- optparse::commandArgs(trailingOnly = TRUE) # From the CLI
-    raw_arguments <- raw_arguments[-1] # We only want to handle the arguments that come after the function name which is the first element.
+    raw_arguments <- raw_arguments[-1] # We only want to handle the arguments that come after 
+                                       # the function name which is the first element.
 
     # Parse the arguments.
     parser <- optparse::OptionParser(
@@ -119,7 +143,10 @@ run_sparki_analysis <- function(arguments) {
         reference_path = arguments$options$refdb, 
         metadata_path = arguments$options$metadata,
         metadata_columns = arguments$options$columns,
-        verbose = arguments$options$verbose
+        verbose = arguments$options$verbose,
+        include_eukaryotes = arguments$options$inc_eukaryotes,
+        include_sample_names = arguments$options$inc_sample_names,
+        domain = arguments$options$domain
     )
 }
 
@@ -142,6 +169,7 @@ cli_sparki <- function() {
 args <- commandArgs(trailingOnly = TRUE)[1]
 func_name <- args[1]
 
-# Empty list is to satisfy the function signature, the actual args are passed via command line.
+# Empty list is to satisfy the function signature, the actual args are passed 
+# via command line.
 do.call(func_name, list()) 
 
