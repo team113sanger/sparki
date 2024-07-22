@@ -92,3 +92,13 @@ check_prefix <- function(prefix) {
 
     return(prefix)
 }
+
+check_domain <- function(domain) {
+
+    if (!(domain %in% c("Viruses", "Bacteria", "Archaea", "Eukaryota"))) {
+        stop(paste0(
+            domain, " is not a valid domain. Please choose from ",
+            "Viruses, Bacteria, Archaea or Eukaryota."
+        ))
+    }
+}
