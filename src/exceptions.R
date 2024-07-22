@@ -35,7 +35,8 @@ check_report_directory <- function(dirpath, report_format) {
             "The directory ", dirpath, " is empty. ",
             "Please review your input!"
         ))
-
+    }
+    
     return(dirpath)
 }
 
