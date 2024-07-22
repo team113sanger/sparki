@@ -83,14 +83,6 @@ option_list <- list(
         type = "logical",
         help = "Include eukaryotes in the final results table and plots."
     ),
-    #optparse::make_option(
-    #    c("--no-eukaryotes"),
-    #    dest = "inc_eukaryotes",
-    #    action = "store_false",
-    #    #default = FALSE,
-    #    type = "logical",
-    #    help = "Do not include eukaryotes in the final results table and plots."
-    #),
     optparse::make_option(
         c("-s", "--include-sample-names"),
         dest = "inc_sample_names",
@@ -99,14 +91,6 @@ option_list <- list(
         type = "logical",
         help = "Include sample names in the plots."
     ),
-    #optparse::make_option(
-    #    c("--no-sample-names"),
-    #    dest = "inc_sample_names",
-    #    action = "store_false",
-    #    #default = FALSE,
-    #    type = "logical",
-    #    help = "Do not include sample names in the plots."
-    #),
     optparse::make_option(
         c("-d", "--domain"),
         dest = "domain",
