@@ -28,9 +28,11 @@ prepare_data <- function(
         "std" = std_reports_path, 
         "mpa" = mpa_reports_path
     )
+
     for (report_format in names(reports_paths)) {
-        reports_paths[[path]] <- check_report_directory(
-            dirpath = reports_paths[[path]], 
+
+        reports_paths[[report_format]] <- check_report_directory(
+            dirpath = reports_paths[[report_format]], 
             report_format = report_format
         )
     }
@@ -107,9 +109,9 @@ prepare_data <- function(
     metadata <- NA
     if (!(is.na(metadata_path))) {
         metadata <- loadMetadata(metadata_path)
-        check_columns(df = metadata, columns = columns)
-        mpa_reports <- addMetadata(mpa_reports, metadata, columns)
-        std_reports <- addMetadata(std_reports, metadata, columns)
+        check_columns(df = metadata, columns = metadata_columns)
+        mpa_reports <- addMetadata(mpa_reports, metadata, metadata_columns)
+        std_reports <- addMetadata(std_reports, metadata, metadata_columns)
     }
 
     return(list(
