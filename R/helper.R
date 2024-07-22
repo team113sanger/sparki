@@ -834,39 +834,6 @@ retrieve_subrankDomains <- function(report_std, report_mpa, inference = TRUE, ve
 ## HELPER FUNCTIONS FOR REPORTS ##
 #######################################################################################################
 
-get_ClassificationSummary <- function(report) {
-
-    if (is_mpa(report)) {
-        stop(paste0(
-            "This function is not applicable to MPA-style reports. The purpose of this function ",
-            "is to assess the number of classified and unclassified reads for each sample, but the ",
-            "MPA-style reports do not contain information on unclassified reads."
-        ))
-    } else {
-        colname_n_frag_clade <- COLNAME_STD_N_FRAG_CLADE
-        colname_taxon <- COLNAME_STD_TAXON
-        colname_sample <- COLNAME_STD_SAMPLE
-    }
-
-    class_unclass_df <- data.frame(matrix(nrow = 0, ncol = 3))
-
-    classifications <- c("unclassified", "root")
-    names(classifications) <- c("Unclassified", "Classified")
-
-    for (sample in unique(report[, colname_sample])) {
-        for (classification in classifications) {
-
-            value <- as.numeric(report[, colname_n_frag_clade][report[, colname_taxon] == classification & report[, colname_sample] == sample])
-            class_unclass_df <- rbind(class_unclass_df, c(sample, names(classifications)[classifications == classification], value))
-        }
-    }
-
-    colnames(class_unclass_df) <- c("sample", "type", "value")
-    class_unclass_df$value <- as.numeric(class_unclass_df$value)
-
-    return(class_unclass_df)
-}
-
 get_ProportionClassifiedReads <- function(report) {
 
     if (is_mpa(report)) {
