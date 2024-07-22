@@ -28,7 +28,5 @@ run_sparki --std-reports ${PROJECTDIR}/test/reports --mpa-reports ${PROJECTDIR}/
     --prefix SebT \
     --outdir ${PROJECTDIR}/test/outputs/ \
     --verbose \
-    --no-eukaryotes \
-    --no-sample-names \
     --domain Viruses
 ```
