@@ -384,18 +384,21 @@ getClassificationSummary <- function(report) {
 
     class_unclass_df <- data.frame(matrix(nrow = 0, ncol = 3))
 
-    classifications <- c("unclassified", "root")
-    names(classifications) <- c("Unclassified", "Classified")
+    classifications <- list(
+        "Unclassified" = "unclassified",
+        "Classified" = "root"
+    )
 
     for (sample in unique(report[, colname_sample])) {
-        for (classification in classifications) {
+        for (classification in names(classifications)) {
 
             value <- as.numeric(
-                report[, colname_n_frag_clade][report[, colname_taxon] == classification & report[, colname_sample] == sample]
+                report[, colname_n_frag_clade][report[, colname_taxon] == classifications[[classification]] & report[, colname_sample] == sample]
             )
+
             class_unclass_df <- rbind(
                 class_unclass_df, 
-                c(sample, names(classifications)[classifications == classification], value)
+                c(sample, classification, value)
             )
         }
     }
