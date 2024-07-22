@@ -17,3 +17,18 @@ rmarkdown::render(
     output_file = "SPARKI_basic_usage.html"
 )
 ```
+
+# CLI usage
+```
+PROJECTDIR="/lustre/scratch126/casm/team113da/users/jb62/projects/sparki"
+run_sparki --std-reports ${PROJECTDIR}/test/reports --mpa-reports ${PROJECTDIR}/test/mpa \
+    --reference ${PROJECTDIR}/test/inspect.txt \
+    --metadata ${PROJECTDIR}/test/metadata.csv \
+    --columns Diagnosis_short,Site_group \
+    --prefix SebT \
+    --outdir ${PROJECTDIR}/test/outputs/ \
+    --verbose \
+    --no-eukaryotes \
+    --no-sample-names \
+    --domain Viruses
+```
