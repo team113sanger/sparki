@@ -71,7 +71,7 @@ option_list <- list(
         c("-v", "--verbose"),
         dest = "verbose",
         action = "store_true",
-        #default = TRUE,
+        default = FALSE,
         type = "logical",
         help = "Verbosity level."
     ),
