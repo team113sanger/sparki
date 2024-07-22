@@ -15,7 +15,8 @@ prepare_data <- function(
     metadata_columns,
     outdir_path,
     prefix,
-    verbose
+    verbose,
+    domain
 ) {
 
     ######################
@@ -82,6 +83,13 @@ prepare_data <- function(
     # Check the integrity of the output directory.
     outdir_path <- check_directory(outdir_path)
 
+    #####################
+    # CHECKS FOR DOMAIN #
+    #####################
+
+    # Check the integrity of the domain specified.
+    check_domain(domain)
+
     #############
     # LOAD DATA #
     #############
@@ -104,7 +112,16 @@ prepare_data <- function(
         std_reports <- addMetadata(std_reports, metadata, columns)
     }
 
-    return(list(std_reports, mpa_reports, ref_db, metadata, metadata_columns, outdir_path, prefix))
+    return(list(
+        std_reports, 
+        mpa_reports, 
+        ref_db, 
+        metadata, 
+        metadata_columns, 
+        outdir_path, 
+        prefix, 
+        domain
+    ))
 
 }
 
@@ -125,7 +142,10 @@ process_kraken2 <- function(
     metadata_columns, 
     outdir_path,
     prefix,
-    verbose
+    verbose,
+    include_eukaryotes,
+    include_sample_names,
+    domain
 ) {
 
     prepared_data <- prepare_data(
@@ -136,7 +156,8 @@ process_kraken2 <- function(
         metadata_columns = metadata_columns,
         outdir_path = outdir_path,
         prefix = prefix,
-        verbose = verbose
+        verbose = verbose,
+        domain = domain
     )
 
     std_reports <- prepared_data[[1]]
@@ -146,6 +167,7 @@ process_kraken2 <- function(
     columns <- prepared_data[[5]]
     outdir <- prepared_data[[6]]
     prefix <- prepared_data[[7]]
+    domain <- prepared_data[[8]]
 
     mpa_reports <- addRank(mpa_reports, verbose = verbose)
     mpa_reports <- addConciseTaxon(mpa_reports, verbose = verbose)
@@ -168,7 +190,7 @@ process_kraken2 <- function(
 
     plotClassificationSummary_barplot(
         std_reports, 
-        include_sample_names = FALSE, 
+        include_sample_names = include_sample_names, 
         orientation = "horizontal",
         return_plot = FALSE,
         outdir = outdir,
@@ -177,7 +199,7 @@ process_kraken2 <- function(
 
     plotDomainReads_violin(
         std_reports, 
-        include_eukaryotes = FALSE, 
+        include_eukaryotes = include_eukaryotes, 
         return_plot = FALSE,
         outdir = outdir,
         prefix = prefix
@@ -185,8 +207,8 @@ process_kraken2 <- function(
 
     plotDomainReads_barplot(
         std_reports, 
-        include_eukaryotes = FALSE, 
-        include_sample_names = FALSE, 
+        include_eukaryotes = include_eukaryotes, 
+        include_sample_names = include_sample_names, 
         orientation = "vertical", 
         return_plot = FALSE,
         outdir = outdir,
@@ -195,8 +217,8 @@ process_kraken2 <- function(
 
     plotMinimisers_dotplot(
         std_reports, 
-        domain = "Viruses", 
-        return_plot = TRUE, 
+        domain = domain, 
+        return_plot = FALSE, 
         fig_width = 25, 
         fig_height = 15, 
         outdir = outdir,
