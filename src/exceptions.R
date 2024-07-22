@@ -1,22 +1,11 @@
 check_report_directory <- function(dirpath, report_format) {
 
-    # Check that the directory exists.
-    if (!(dir.exists(dirpath)))  {
-        stop(paste0(
-            "The directory ", dirpath, " does not exist. ",
-            "Please review your input!"
-        ))
-
-    # Check that the directory is not empty.
-    } else if (length(list.files(dirpath)) == 0) {
-        stop(paste0(
-            "The directory ", dirpath, " is empty. ",
-            "Please review your input!"
-        ))
+    # Check that the directory exists and is not empty.
+    dirpath <- check_directory(dirpath)
 
     # Check that the directory contains MPA reports if it 
     # is supposed to.
-    } else if (
+    if (
         report_format == "mpa" && 
         length(list.files(dirpath, pattern = "mpa$")) == 0
     ) {
@@ -39,11 +28,13 @@ check_report_directory <- function(dirpath, report_format) {
     # Double-check that the report format specified is valid.
     } else if (!(report_format %in% c("std", "mpa"))) {
         stop(paste0("The format ", report_format, " is not valid."))
-
-    # Ensure that the directory path has a slash at the end.
-    } else if (substr(dirpath, nchar(dirpath), nchar(dirpath)) != "/") {
-        dirpath <- paste0(dirpath, "/")
-    }
+    
+    # Check that the directory is not empty.
+    } else if (length(list.files(dirpath)) == 0) {
+        stop(paste0(
+            "The directory ", dirpath, " is empty. ",
+            "Please review your input!"
+        ))
 
     return(dirpath)
 }
@@ -61,6 +52,23 @@ check_file <- function(file_path) {
             "Please review your input!"
         ))
     }
+}
+
+check_directory <- function(dirpath) {
+
+    # Check that the directory exists.
+    if (!(dir.exists(dirpath)))  {
+        stop(paste0(
+            "The directory ", dirpath, " does not exist. ",
+            "Please review your input!"
+        ))
+    
+    # Ensure that the directory path has a slash at the end.
+    } else if (substr(dirpath, nchar(dirpath), nchar(dirpath)) != "/") {
+        dirpath <- paste0(dirpath, "/")
+    }
+
+    return(dirpath)
 }
 
 check_columns <- function(df, columns) {
