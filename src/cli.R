@@ -76,21 +76,37 @@ option_list <- list(
         help = "Verbosity level."
     ),
     optparse::make_option(
-        c("-e", "--include-eukaryotes"),
+        c("--include-eukaryotes"),
         dest = "inc_eukaryotes",
         action = "store_true",
-        #default = FALSE,
+        default = FALSE,
         type = "logical",
-        help = "Whether to include eukaryotes in the final results table and plots."
+        help = "Include eukaryotes in the final results table and plots."
     ),
+    #optparse::make_option(
+    #    c("--no-eukaryotes"),
+    #    dest = "inc_eukaryotes",
+    #    action = "store_false",
+    #    #default = FALSE,
+    #    type = "logical",
+    #    help = "Do not include eukaryotes in the final results table and plots."
+    #),
     optparse::make_option(
         c("-s", "--include-sample-names"),
         dest = "inc_sample_names",
         action = "store_true",
-        #default = FALSE,
+        default = FALSE,
         type = "logical",
-        help = "Whether to include sample names in the plots."
+        help = "Include sample names in the plots."
     ),
+    #optparse::make_option(
+    #    c("--no-sample-names"),
+    #    dest = "inc_sample_names",
+    #    action = "store_false",
+    #    #default = FALSE,
+    #    type = "logical",
+    #    help = "Do not include sample names in the plots."
+    #),
     optparse::make_option(
         c("-d", "--domain"),
         dest = "domain",
@@ -98,8 +114,8 @@ option_list <- list(
         default = NA,
         type = "character",
         help = "Domain of interest (e.g. Viruses)."
+    )
 )
-
 
 ####################
 # Helper functions #
@@ -120,7 +136,7 @@ parse_options <- function(option_list, description = "") {
     prog_name <- read_prog_name_env_var()
 
     # CLI arguments need some pre-processing before they can be parsed.
-    raw_arguments <- optparse::commandArgs(trailingOnly = TRUE) # From the CLI
+    raw_arguments <- commandArgs(trailingOnly = TRUE) # From the CLI
     raw_arguments <- raw_arguments[-1] # We only want to handle the arguments that come after 
                                        # the function name which is the first element.
 
@@ -137,16 +153,19 @@ parse_options <- function(option_list, description = "") {
 
 # Compute PCA.
 run_sparki_analysis <- function(arguments) {
+
     process_kraken2(
-        std_reports_path = arguments$options$std_reports, 
-        mpa_reports_path = arguments$options$mpa_reports,
-        reference_path = arguments$options$refdb, 
-        metadata_path = arguments$options$metadata,
-        metadata_columns = arguments$options$columns,
-        verbose = arguments$options$verbose,
-        include_eukaryotes = arguments$options$inc_eukaryotes,
-        include_sample_names = arguments$options$inc_sample_names,
-        domain = arguments$options$domain
+        std_reports_path = arguments$std_reports, 
+        mpa_reports_path = arguments$mpa_reports,
+        reference_path = arguments$refdb, 
+        metadata_path = arguments$metadata,
+        metadata_columns = arguments$columns,
+        outdir_path = arguments$outdir,
+        prefix = arguments$prefix,
+        verbose = arguments$verbose,
+        include_eukaryotes = arguments$inc_eukaryotes,
+        include_sample_names = arguments$inc_sample_names,
+        domain = arguments$domain
     )
 }
 
@@ -154,7 +173,7 @@ run_sparki_analysis <- function(arguments) {
 # CLI entrypoints #
 ###################
 
-cli_sparki <- function() {
+cli_run_sparki <- function() {
 
     description <- "Run SPARKI on a given set of Kraken2 results."
 
