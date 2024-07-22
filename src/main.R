@@ -18,6 +18,10 @@ prepare_data <- function(
     verbose
 ) {
 
+    ######################
+    # CHECKS FOR REPORTS #
+    ######################
+
     # Check the integrity of the directories provided & read reports.
     reports_paths <- list(
         "std" = std_reports_path, 
@@ -29,6 +33,10 @@ prepare_data <- function(
             report_format = report_format
         )
     }
+
+    #######################
+    # CHECKS FOR METADATA #
+    #######################
 
     # Check the integrity of the metadata file (if provided).
     if (is.na(metadata_path)) {
@@ -48,8 +56,17 @@ prepare_data <- function(
             )
         }
     }
+
+    ########################
+    # CHECKS FOR REFERENCE #
+    ########################
+
     # Check the integrity of the reference file.
     check_file(reference_path)
+
+    #####################
+    # CHECKS FOR PREFIX #
+    #####################
 
     # Check prefix (if provided).
     if(is.na(prefix)) {
@@ -57,6 +74,17 @@ prepare_data <- function(
     } else {
         prefix <- check_prefix(prefix)
     }
+
+    ###############################
+    # CHECKS FOR OUTPUT DIRECTORY #
+    ###############################
+
+    # Check the integrity of the output directory.
+    outdir_path <- check_directory(outdir_path)
+
+    #############
+    # LOAD DATA #
+    #############
 
     # Read standard reports.
     std_reports <- load_STDreports(reports_paths[[1]], verbose = FALSE)
@@ -76,7 +104,7 @@ prepare_data <- function(
         std_reports <- addMetadata(std_reports, metadata, columns)
     }
 
-    return(list(std_reports, mpa_reports, ref_db, metadata, metadata_columns))
+    return(list(std_reports, mpa_reports, ref_db, metadata, metadata_columns, outdir_path, prefix))
 
 }
 
@@ -116,6 +144,8 @@ process_kraken2 <- function(
     ref_db <- prepared_data[[3]]
     mdata <- prepared_data[[4]]
     columns <- prepared_data[[5]]
+    outdir <- prepared_data[[6]]
+    prefix <- prepared_data[[7]]
 
     mpa_reports <- addRank(mpa_reports, verbose = verbose)
     mpa_reports <- addConciseTaxon(mpa_reports, verbose = verbose)
@@ -129,14 +159,47 @@ process_kraken2 <- function(
     std_reports <- assess_ratioMinimisers(std_reports)
     std_reports <- assess_statSig(std_reports, ref_db)
 
+    plotClassificationSummary_violin(
+        std_reports, 
+        return_plot = FALSE,
+        outdir = outdir,
+        prefix = prefix
+    )
+
     plotClassificationSummary_barplot(
         std_reports, 
         include_sample_names = FALSE, 
         orientation = "horizontal",
-        return_plot = TRUE,
-        outdir = "test/outputs/",
-        prefix = "SebT"
+        return_plot = FALSE,
+        outdir = outdir,
+        prefix = prefix
     )
 
+    plotDomainReads_violin(
+        std_reports, 
+        include_eukaryotes = FALSE, 
+        return_plot = FALSE,
+        outdir = outdir,
+        prefix = prefix
+    )
 
+    plotDomainReads_barplot(
+        std_reports, 
+        include_eukaryotes = FALSE, 
+        include_sample_names = FALSE, 
+        orientation = "vertical", 
+        return_plot = FALSE,
+        outdir = outdir,
+        prefix = prefix
+    )
+
+    plotMinimisers_dotplot(
+        std_reports, 
+        domain = "Viruses", 
+        return_plot = TRUE, 
+        fig_width = 25, 
+        fig_height = 15, 
+        outdir = outdir,
+        prefix = prefix
+    )   
 }
