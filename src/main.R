@@ -179,9 +179,6 @@ process_kraken2 <- function(
     std_reports <- add_DBinfo(std_reports, ref_db)
     mpa_reports <- transfer_nReads(mpa_reports, std_reports) 
     mpa_reports <- add_DBinfo(mpa_reports, ref_db)
-    std_reports <- subset_STDreport(std_reports, include_human = FALSE)
-    std_reports <- assess_ratioMinimisers(std_reports)
-    std_reports <- assess_statSig(std_reports, ref_db)
 
     plotClassificationSummary_violin(
         std_reports, 
@@ -217,6 +214,10 @@ process_kraken2 <- function(
         prefix = prefix
     )
 
+    std_reports <- subset_STDreport(std_reports, include_human = FALSE)
+    std_reports <- assess_ratioMinimisers(std_reports)
+    std_reports <- assess_statSig(std_reports, ref_db)
+
     plotMinimisers_dotplot(
         std_reports, 
         domain = domain, 
@@ -226,4 +227,9 @@ process_kraken2 <- function(
         outdir = outdir,
         prefix = prefix
     )   
+
+    write.csv(
+        std_reports,
+        paste0(outdir, prefix, "final_table_with_pvalues.csv")
+    )
 }
