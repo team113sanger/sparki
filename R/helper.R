@@ -77,44 +77,39 @@ load_MPAreports <- function(mpa_reports_dir, verbose = TRUE) {
     # Check if directory really has any MPA-style reports...
     if (length(mpa_file_names) == 0) {
         stop(paste0("No MPA-style reports were found at ", mpa_reports_dir, ". Please review your input."))
+    } 
+
+    # Create empty dataframe to store MPA-style reports.
+    mpa_reports <- data.frame(matrix(nrow = 0, ncol = 2))
+
+    # Iterate over files in specified MPA directory (ideally each file should be a different sample)...
+    for (file_name in mpa_file_names) {
+
+        # Get sample name.
+        sample_name <- gsub("\\..*", "", basename(file_name))
+
+        if (verbose == TRUE) message(paste0("Reading MPA-style report for sample ", sample_name))
+
+        # Read MPA-style report.
+        mpa_report <- read.csv(file = paste0(mpa_reports_dir, "/", file_name), header = FALSE, sep = "\t")
+
+        mpa_report_colnames <- c(COLNAME_MPA_TAXON, COLNAME_MPA_N_FRAG_CLADE)
+
+        # Add column names.
+        colnames(mpa_report) <- mpa_report_colnames
+
+        # Add sample name to MPA dataframe.
+        mpa_report[, COLNAME_MPA_SAMPLE] <- rep(sample_name, times = nrow(mpa_report))
+
+        # Reorder columns.
+        mpa_report <- mpa_report[, c(COLNAME_MPA_SAMPLE, mpa_report_colnames)]
+
+        # Add sample results to dataframe where all results will be stored.
+        mpa_reports <- rbind(mpa_reports, mpa_report) 
+
+    }    
     
-    # If it does, read MPA-style reports.
-    } else {
-
-        # Create empty dataframe to store MPA-style reports.
-        mpa_reports <- data.frame(matrix(nrow = 0, ncol = 2))
-
-        # Iterate over files in specified MPA directory (ideally each file should be a different sample)...
-        for (file_name in mpa_file_names) {
-
-            # Get sample name.
-            sample_name <- gsub("\\..*", "", basename(file_name))
-
-            if (verbose == TRUE) message(paste0("Reading MPA-style report for sample ", sample_name))
-
-            # Read MPA-style report.
-            mpa_report <- read.csv(file = paste0(mpa_reports_dir, "/", file_name), header = FALSE, sep = "\t")
-
-            mpa_report_colnames <- c(
-                COLNAME_MPA_TAXON, 
-                COLNAME_MPA_N_FRAG_CLADE
-            )
-
-            # Add column names.
-            colnames(mpa_report) <- mpa_report_colnames
-
-            # Add sample name to MPA dataframe.
-            mpa_report$sample <- rep(sample_name, times = nrow(mpa_report))
-
-            # Reorder columns.
-            mpa_report <- mpa_report[, c("sample", mpa_report_colnames)]
-
-            # Add sample results to dataframe where all results will be stored.
-            mpa_reports <- rbind(mpa_reports, mpa_report)
-        } 
-
-        return(mpa_reports) 
-    }
+    return(mpa_reports) 
 }
 
 load_STDreports <- function(std_reports_dir, verbose = TRUE) {
@@ -125,54 +120,56 @@ load_STDreports <- function(std_reports_dir, verbose = TRUE) {
     # Check if directory really has any reports...
     if (length(std_file_names) == 0) {
         stop(paste0("No reports were found at ", std_reports_dir, ". Please review your input."))
-    
-    # If it does, read reports.
-    } else {
-
-        # Create empty dataframe to store reports.
-        std_reports <- data.frame(matrix(nrow = 0, ncol = 2))
-
-        # Iterate over files in specified reports directory (ideally each file should be a different sample)...
-        for (file_name in std_file_names) {
-
-            # Get sample name.
-            sample_name <- gsub("\\..*", "", basename(file_name))               
-            
-            if (verbose == TRUE) message(paste0("Reading standard report for sample ", sample_name))
-
-            # Read report.
-            std_report <- read.csv(file = paste0(std_reports_dir, "/", file_name), header = FALSE, sep = "\t")
-            
-            std_report_colnames <- c(
-                COLNAME_STD_PCT_FRAG_CLADE, 
-                COLNAME_STD_N_FRAG_CLADE, 
-                COLNAME_STD_N_FRAG_TAXON, 
-                COLNAME_STD_MINIMISERS, 
-                COLNAME_STD_UNIQ_MINIMISERS,
-                COLNAME_STD_RANK, 
-                COLNAME_STD_NCBI_ID, 
-                COLNAME_STD_TAXON
-            )
-
-            # Add column names.
-            colnames(std_report) <- std_report_colnames
-
-            # Add sample name to report dataframe.
-            std_report[, COLNAME_STD_SAMPLE] <- rep(sample_name, times = nrow(std_report))
-
-            # Reorder columns.
-            std_report <- std_report[, c(COLNAME_STD_SAMPLE, std_report_colnames)]
-
-            # Remove identation.
-            std_report[, COLNAME_STD_TAXON] <- gsub("^[[:space:]]\\s*(.*?)", "", std_report[, COLNAME_STD_TAXON], perl = TRUE)
-
-            # Add sample results to dataframe where all results will be stored.
-            std_reports <- rbind(std_reports, std_report)
-        } 
-
-        return(std_reports) 
     }
+
+    # Create empty dataframe to store reports.
+    std_reports <- data.frame(matrix(nrow = 0, ncol = 2))
+
+    # Iterate over files in specified reports directory (ideally each file should be a different sample)...
+    for (file_name in std_file_names) {
+
+        # Get sample name.
+        sample_name <- gsub("\\..*", "", basename(file_name))               
+            
+        if (verbose == TRUE) message(paste0("Reading standard report for sample ", sample_name))
+
+        # Read report.
+        std_report <- read.csv(file = paste0(std_reports_dir, "/", file_name), header = FALSE, sep = "\t")
+        
+        std_report_colnames <- c(
+            COLNAME_STD_PCT_FRAG_CLADE, 
+            COLNAME_STD_N_FRAG_CLADE, 
+            COLNAME_STD_N_FRAG_TAXON, 
+            COLNAME_STD_MINIMISERS, 
+            COLNAME_STD_UNIQ_MINIMISERS,
+            COLNAME_STD_RANK, 
+            COLNAME_STD_NCBI_ID, 
+            COLNAME_STD_TAXON
+        )
+
+        # Add column names.
+        colnames(std_report) <- std_report_colnames
+
+        # Add sample name to report dataframe.
+        std_report[, COLNAME_STD_SAMPLE] <- rep(sample_name, times = nrow(std_report))
+
+        # Reorder columns.
+        std_report <- std_report[, c(COLNAME_STD_SAMPLE, std_report_colnames)]
+
+        # Remove identation.
+        std_report[, COLNAME_STD_TAXON] <- gsub(
+            "^[[:space:]]\\s*(.*?)", "", 
+            std_report[, COLNAME_STD_TAXON], 
+            perl = TRUE
+        )
+
+        # Add sample results to dataframe where all results will be stored.
+        std_reports <- rbind(std_reports, std_report)
+    } 
+
+    return(std_reports) 
 }
+
 
 #' ADD COLUMNS FROM ONE DATAFRAME TO ANOTHER
 #' 
@@ -197,7 +194,7 @@ addMetadata <- function(report, metadata, columns) {
     }
 
     # Create temporary sample columns to facilitate the matching between dataframes.
-    metadata$sample <- rownames(metadata)
+    metadata[["sample"]] <- rownames(metadata)
 
     # Iterate over categories...
     for (column in columns) {
@@ -205,7 +202,7 @@ addMetadata <- function(report, metadata, columns) {
         column <- gsub(" ", "_", column)
 
         # Add metadata from one dataframe to another based on sample IDs.
-        report[, column] <- metadata[, column][match(report[, colname_sample], metadata$sample)]
+        report[, column] <- metadata[, column][match(report[, colname_sample], metadata[["sample"]])]
     }
 
     # Remove temporary sample columns.
@@ -227,67 +224,51 @@ addMetadata <- function(report, metadata, columns) {
 is_mpa <- function(report) {
     
     if (COLNAME_MPA_TAXON == COLNAME_STD_TAXON ) {
-        stop("The column names are the same in both report formats and therefore it will not
-             be able to distinguish between them.")
-    } else {
-        # If the column "taxon" is present in the report, then it is an MPA-style report.
-        if (COLNAME_MPA_TAXON %in% colnames(report)) { 
-            return(TRUE)
-
-        # If the column "taxon" is not present...
-        } else {
-
-            # If the column "scientific_name" is present, then it is a standard report.
-            if (COLNAME_STD_TAXON %in% colnames(report)) {
-                return(FALSE)
-            
-            # If none of those columns are present then it is not an MPA-style or standard report.
-            } else {
-                stop(paste0(
-                    "There is no support for the report format that has been provided. ",
-                    "Please review your input. If your report is in standard or MPA format, ",
-                    "make sure you load it using load_STDreports() or load_MPAreports()."
-                ))
-            }
-        }
+        stop("The column names are the same in both report formats and therefore it will
+             not be possible to distinguish between them.")
+    } else if (
+        !(COLNAME_MPA_TAXON %in% colnames(report)) &&
+        !(COLNAME_STD_TAXON %in% colnames(report))
+    ) {
+        stop(paste0("There is no support for the report format that has been provided. ",
+            "Please review your input. If your report is in standard or MPA format, ",
+            "make sure you load it using load_STDreports() or load_MPAreports()."))
     }
+
+    # If the column "taxon" is present in the report, then it is an MPA-style report.
+    if (COLNAME_MPA_TAXON %in% colnames(report)) return(TRUE)
+    else if (COLNAME_STD_TAXON %in% colnames(report)) return(FALSE)
 }
 
 extract_taxon <- function(line, rank, last_in_hierarchy) {
 
-    taxon <- NA
-
-    # Domain.
-    if (rank == "D") {
-
-        if (last_in_hierarchy) {
-            taxon <- stringr::str_match(line, "^d__(.+)")[2]
-        }
-        else if (!(last_in_hierarchy)) {
-            taxon <- stringr::str_match(line, "^d__\\s*(.*?)\\s*[|](.*?)")[2]
-        }
-
-    # Kingdom, phylum, class, order, family, or genus.
-    } else if (rank %in% c("K", "P", "C", "O", "F", "G")) { 
-
-        if (last_in_hierarchy) {
-            taxon <- stringr::str_match(line, paste0(tolower(rank), "__(.+)"))[2]
-        }
-        else if (!(last_in_hierarchy)) {
-            taxon <- stringr::str_match(line, paste0("(.*?)[|]\\s*", tolower(rank), "__(.*?)\\s*[|](.*?)"))[3]
-        }
-
-    # Species.
-    } else if (rank == "S") { 
-
-        taxon <- stringr::str_match(line, "s__(.+)")[2] # Will always be the last.
-
-    } else {
+    if (!(rank %in% c("D", "K", "P", "C", "O", "F", "G", "S"))) {
         stop(paste0(
             "This function does not support the rank ", rank, ". Supported ranks are 'D' (domain), ", 
             "'K' (kingdom), 'P' (phylum), 'C' (class), 'O' (order), 'F' (family), 'G' (genus) and 'S' (species)."
         ))
     }
+
+    # Domain.
+    if (rank == "D") {
+
+        taxon <- ifelse(
+            last_in_hierarchy,
+            stringr::str_match(line, "^d__(.+)")[2],
+            stringr::str_match(line, "^d__\\s*(.*?)\\s*[|](.*?)")[2]
+        )
+
+    # Kingdom, phylum, class, order, family, or genus.
+    } else if (rank %in% c("K", "P", "C", "O", "F", "G")) { 
+
+        taxon <- ifelse(
+            last_in_hierarchy,
+            stringr::str_match(line, paste0(tolower(rank), "__(.+)"))[2],
+            stringr::str_match(line, paste0("(.*?)[|]\\s*", tolower(rank), "__(.*?)\\s*[|](.*?)"))[3]
+        )
+
+    # Species.
+    } else if (rank == "S") taxon <- stringr::str_match(line, "s__(.+)")[2] # Will always be the last.
 
     return(taxon)
 }
@@ -355,15 +336,11 @@ get_association <- function(ranks) {
 sum_domainReads <- function(report, domains) {
 
     if (is_mpa(report)) {
-        
         subset <- report[grep(domains, report[, COLNAME_MPA_TAXON]),]
         sum_domains <- sum(subset[, COLNAME_MPA_N_FRAG_CLADE])
-
     } else {
-
         subset <- report[grep(domains, report[, COLNAME_STD_TAXON]),]
         sum_domains <- sum(subset[, COLNAME_STD_N_FRAG_CLADE])
-
     }
 
     return(as.numeric(sum_domains))
@@ -871,7 +848,7 @@ subset_STDreport <- function(report, include_human = TRUE) {
     report <- report[report[, COLNAME_STD_RANK] %in% c("F", "G", "S"), ]
 
     # Filter out human results.    
-    if (include_human == FALSE) {
+    if (!(include_human)) {
         report <- report[!(report[, COLNAME_STD_TAXON] %in% c("Hominidae", "Homo", "Homo sapiens")), ]
     }
 

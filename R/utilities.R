@@ -4,33 +4,7 @@
 
 addRank <- function(report, verbose = TRUE) {
 
-    if (is_mpa(report)) {
-
-        if (verbose) {
-            cat("Adding", COLNAME_MPA_RANK, "column to the MPA-style report\n")
-            pb <- txtProgressBar(min = 0, max = nrow(report), style = 3)
-        }
-
-        report[, COLNAME_MPA_RANK] <- sapply(seq_len(nrow(report)), function(x) {
-
-            if (verbose) setTxtProgressBar(pb, x)
-
-            # Get scientific name (in this case it will have a prefix indicating the taxonomic rank).
-            rank <- tail(unlist(stringr::str_split(report[, COLNAME_MPA_TAXON][x], "\\|")), n = 1)
-
-            # Identify which taxonomic rank the scientific name belongs to.
-            if(grepl("s__", rank)) return("S")
-            if(grepl("g__", rank)) return("G")
-            if(grepl("f__", rank)) return("F")
-            if(grepl("o__", rank)) return("O")
-            if(grepl("c__", rank)) return("C")
-            if(grepl("p__", rank)) return("P")
-            if(grepl("k__", rank)) return("K")
-            if(grepl("d__", rank)) return("D")
-        })
-        cat("\n")
-
-    } else {
+    if (!(is_mpa(report))) {
         stop(paste0(
             "This function is not applicable to a standard report (i.e. not MPA-style). ",
             "The standard report format already has the column ", COLNAME_STD_RANK, ", which ", 
@@ -38,63 +12,80 @@ addRank <- function(report, verbose = TRUE) {
         ))   
     }
 
+    if (verbose) {
+        cat("Adding", COLNAME_MPA_RANK, "column to the MPA-style report\n")
+        pb <- txtProgressBar(min = 0, max = nrow(report), style = 3)
+    }
+
+    report[, COLNAME_MPA_RANK] <- sapply(seq_len(nrow(report)), function(x) {
+
+        if (verbose) setTxtProgressBar(pb, x)
+
+        # Get scientific name (in this case it will have a prefix indicating the taxonomic rank).
+        rank <- tail(unlist(stringr::str_split(report[, COLNAME_MPA_TAXON][x], "\\|")), n = 1)
+
+        # Identify which taxonomic rank the scientific name belongs to.
+        if(grepl("s__", rank)) return("S")
+        if(grepl("g__", rank)) return("G")
+        if(grepl("f__", rank)) return("F")
+        if(grepl("o__", rank)) return("O")
+        if(grepl("c__", rank)) return("C")
+        if(grepl("p__", rank)) return("P")
+        if(grepl("k__", rank)) return("K")
+        if(grepl("d__", rank)) return("D")
+    })
+    
+    if (verbose) cat("\n")
+
     return(report)
 }
 
 addConciseTaxon <- function(report, verbose = TRUE) {
 
-    # If report is in MPA format...
-    if (is_mpa(report)) {
-
-        ranks <- c("D", "K", "P", "C", "O", "F", "G", "S")
-        ranks <- get_association(ranks)
-
-        # Iterate over ranks... 
-        for (rank in ranks) {
-
-            if (verbose) {
-                cat("Adding column with taxon names for rank:", names(ranks)[ranks == rank], "\n")
-                pb <- txtProgressBar(min = 0, max = nrow(report), style = 3)
-            }
-
-            # Get name for column that will be added to the MPA-style report.
-            colname <- names(ranks)[ranks == rank]
-
-            # Create column with concise taxon name at a given rank.
-            # Examples:
-            #
-            # "d__Eukaryota" -> "Eukaryota" (under "domain")
-            #
-            # "(...)f__Papillomaviridae|g__Alphapapillomavirus" -> "Papillomaviridae" (under "family") and 
-            # "Alphapapillomavirus" (under "genus")
-            #
-            # "(...)g__Homo|s__Homo sapiens" -> "Homo" (under "genus") and "Homo sapiens" (under "species")
-            report[, colname] <- sapply(seq_len(nrow(report)), function(x) {
-
-                if (verbose) setTxtProgressBar(pb, x)
-
-                if (report[, COLNAME_MPA_RANK][x] == rank) {
-
-                    return(extract_taxon(report[, COLNAME_MPA_TAXON][x], rank = rank, last_in_hierarchy = TRUE))
-
-                } else {
-
-                    return(extract_taxon(report[, COLNAME_MPA_TAXON][x], rank = rank, last_in_hierarchy = FALSE))
-
-                }
-            })
-
-            cat("\n")
-
-        }
-
-    } else {
+    if(!(is_mpa(report))) {
         stop(paste0(
             "This function is not applicable to a standard report (i.e. not MPA-style). The standard report ",
             "format already has the column ", COLNAME_STD_TAXON, ", which has concise taxon names instead of ",
             "taxon hierarchies."
-        ))   
+        )) 
     }
+
+    ranks <- c("D", "K", "P", "C", "O", "F", "G", "S")
+    ranks <- get_association(ranks)
+    
+    # Iterate over ranks... 
+    for (rank in ranks) {
+
+        if (verbose) {
+            cat("Adding column with taxon names for rank:", names(ranks)[ranks == rank], "\n")
+            pb <- txtProgressBar(min = 0, max = nrow(report), style = 3)
+        }
+
+        # Get name for column that will be added to the MPA-style report.
+        colname <- names(ranks)[ranks == rank]
+
+        # Create column with concise taxon name at a given rank.
+        # Examples:
+        #
+        # "d__Eukaryota" -> "Eukaryota" (under "domain")
+        #
+        # "(...)f__Papillomaviridae|g__Alphapapillomavirus" -> "Papillomaviridae" (under "family") and 
+        # "Alphapapillomavirus" (under "genus")
+        #
+        # "(...)g__Homo|s__Homo sapiens" -> "Homo" (under "genus") and "Homo sapiens" (under "species")
+        report[, colname] <- sapply(seq_len(nrow(report)), function(x) {
+
+            if (verbose) setTxtProgressBar(pb, x)
+
+            ifelse(
+                report[, COLNAME_MPA_RANK][x] == rank,
+                return(extract_taxon(report[, COLNAME_MPA_TAXON][x], rank = rank, last_in_hierarchy = TRUE)),
+                return(extract_taxon(report[, COLNAME_MPA_TAXON][x], rank = rank, last_in_hierarchy = FALSE))
+            )
+        })
+    }
+
+    cat("\n")
 
     return(report)
 }
@@ -115,25 +106,24 @@ add_nReads <- function(report) {
             "std_reports <- add_nReads(std_reports)\n", "mpa_reports <- transfer_nReads(mpa_reports, ",
             "std_reports)\n\n"
         ))
-    } else {
+    }
 
-        report[, COLNAME_STD_TOTAL_READS] <- NA
+    report[, COLNAME_STD_TOTAL_READS] <- NA
 
-        # Get numbers of classified/unclassified reads for each sample.
-        subset <- report[report[, COLNAME_STD_TAXON] %in% c("unclassified", "root"), ]
+    # Get numbers of classified/unclassified reads for each sample.
+    subset <- report[report[, COLNAME_STD_TAXON] %in% c("unclassified", "root"), ]
 
-        for (sample in unique(subset[, COLNAME_STD_SAMPLE])) {
+    for (sample in unique(subset[, COLNAME_STD_SAMPLE])) {
 
-            subset_sample <- subset[subset[, COLNAME_STD_SAMPLE] == sample, ]
-            n_unclassified_reads <- as.numeric(
-                subset_sample[, COLNAME_STD_N_FRAG_CLADE][subset_sample[, COLNAME_STD_TAXON] == "unclassified"]
-            )
-            n_classified_reads <- as.numeric(
-                subset_sample[, COLNAME_STD_N_FRAG_CLADE][subset_sample[, COLNAME_STD_TAXON] == "root"]
-            )
+        subset_sample <- subset[subset[, COLNAME_STD_SAMPLE] == sample, ]
 
-            report[, COLNAME_STD_TOTAL_READS][report[, COLNAME_STD_SAMPLE] == sample] <- (n_unclassified_reads + n_classified_reads)
-        }
+        n_unclassified_reads <- subset_sample[, COLNAME_STD_N_FRAG_CLADE][subset_sample[, COLNAME_STD_TAXON] == "unclassified"]
+        n_classified_reads <- subset_sample[, COLNAME_STD_N_FRAG_CLADE][subset_sample[, COLNAME_STD_TAXON] == "root"]
+
+        n_unclassified_reads <- as.numeric(n_unclassified_reads)
+        n_classified_reads <- as.numeric(n_classified_reads)
+
+        report[, COLNAME_STD_TOTAL_READS][report[, COLNAME_STD_SAMPLE] == sample] <- (n_unclassified_reads + n_classified_reads)
     }
 
     return(report)
@@ -483,95 +473,90 @@ assess_ratioMinimisers <- function(report) {
 assess_statSig <- function(report, ref_db, verbose = TRUE) {
 
     if (is_mpa(report)) {
+        stop(paste0("This function does not support MPA-style reports. Please provide a standard report."))
+    } 
 
-        stop(paste0(
-            "This function does not support MPA-style reports. Please provide a standard report."
-        ))
+    p_clade_in_db <- numeric(nrow(report))
+    pval <- numeric(nrow(report))
 
-    } else {
-
-        p_clade_in_db <- numeric(nrow(report))
-        pval <- numeric(nrow(report))
-
-        if (verbose) {
-            cat("Assessing the statistical significance of results at the family, genus and species levels\n")
-            pb <- txtProgressBar(min = 0, max = nrow(report), style = 3)
-        }
-
-        for (i in seq_len(nrow(report))) {
-
-            if (verbose) setTxtProgressBar(pb, i)
-
-            # Get proportion of clade-level minimisers of a given taxon in the reference database (DB).
-            p_clade_in_db_ <- (report[, COLNAME_STD_DB_MINIMISERS_CLADE][i] / sum(ref_db[, COLNAME_REF_DB_MINIMISERS_CLADE]))
-
-            # Mean is the total number of reads analysed from the sample (sample size) times the probability of success which 
-            # is equal to the proportion of clade-level minimisers of the taxon out of the total available in the reference DB.
-            mean_ <- (report[, COLNAME_STD_TOTAL_READS][i] * p_clade_in_db_)
-
-            # Standard deviation = sqrt(n*P*(1-p))
-            sdev <- sqrt(report[, COLNAME_STD_TOTAL_READS][i] * p_clade_in_db_ * (1 - p_clade_in_db_)) 
-
-            # Get p-values.
-            pval_ <- pnorm(
-                q = report[, COLNAME_STD_UNIQ_MINIMISERS][i], 
-                mean = mean_, 
-                sd = sdev, 
-                lower.tail = FALSE
-            )
-            
-            # Saving probability of success.
-            p_clade_in_db[i] <- p_clade_in_db_
-
-            # Saving p-value.
-            pval[i] <- pval_
-        }
-
-        report[, COLNAME_STD_P_CLADE_IN_DB] <- p_clade_in_db
-        report[, COLNAME_STD_PVALUE] <- pval
-
-        # Create vector to store adjusted p-values.
-        padj <- rep(0, times = nrow(report))
-
-        if (verbose) {
-            cat("\nCorrecting p-values\n")
-            pb <- txtProgressBar(min = 0, max = nrow(report), style = 3)
-        }
-
-        # Iterate over dataframe rows...
-        for (i in seq_len(nrow(report))){
-
-            if (verbose) setTxtProgressBar(pb, i)
-            
-            # Identify how many families, genuses or species were identified in a given sample.
-            n_taxa_rank <- NA
-
-            if (report[, COLNAME_STD_RANK][i] %in% c("F", "G", "S")) {
-                n_taxa_rank <- get_nTaxaInRank(
-                    report = report, 
-                    rank = report[, COLNAME_STD_RANK][i], 
-                    sample = report[, COLNAME_STD_SAMPLE][i]
-                )
-            } else {
-                stop(paste0("Invalid rank value in row: ", i))
-            }
-
-            # Perform p-value correction.
-            padj[i] <- p.adjust(report[, COLNAME_STD_PVALUE][i], method = "BH", n = n_taxa_rank)
-        }
-
-        # Add adjusted p-values to dataframe.
-        report[, COLNAME_STD_PADJ] <- padj
-
-        # Add column stating whether results are significant or not based on the adjusted p-value.
-        report[, COLNAME_STD_SIGNIF] <- ifelse(
-            report[, COLNAME_STD_PADJ] <= 0.05,
-            "Significant",
-            "Non-significant"
-        )
-
-        cat("\n")
-
-        return(report)
+    if (verbose) {
+        cat("Assessing the statistical significance of results at the family, genus and species levels\n")
+        pb <- txtProgressBar(min = 0, max = nrow(report), style = 3)
     }
+
+    for (i in seq_len(nrow(report))) {
+
+        if (verbose) setTxtProgressBar(pb, i)
+
+        # Get proportion of clade-level minimisers of a given taxon in the reference database (DB).
+        p_clade_in_db_ <- (report[, COLNAME_STD_DB_MINIMISERS_CLADE][i] / sum(ref_db[, COLNAME_REF_DB_MINIMISERS_CLADE]))
+
+        # Mean is the total number of reads analysed from the sample (sample size) times the probability of success which 
+        # is equal to the proportion of clade-level minimisers of the taxon out of the total available in the reference DB.
+        mean_ <- (report[, COLNAME_STD_TOTAL_READS][i] * p_clade_in_db_)
+
+        # Standard deviation = sqrt(n*P*(1-p))
+        sdev <- sqrt(report[, COLNAME_STD_TOTAL_READS][i] * p_clade_in_db_ * (1 - p_clade_in_db_)) 
+
+        # Get p-values.
+        pval_ <- pnorm(
+            q = report[, COLNAME_STD_UNIQ_MINIMISERS][i], 
+            mean = mean_, 
+            sd = sdev, 
+            lower.tail = FALSE
+        )
+            
+        # Saving probability of success.
+        p_clade_in_db[i] <- p_clade_in_db_
+
+        # Saving p-value.
+        pval[i] <- pval_
+    }
+
+    report[, COLNAME_STD_P_CLADE_IN_DB] <- p_clade_in_db
+    report[, COLNAME_STD_PVALUE] <- pval
+
+    # Create vector to store adjusted p-values.
+    padj <- rep(0, times = nrow(report))
+
+    if (verbose) {
+        cat("\nCorrecting p-values\n")
+        pb <- txtProgressBar(min = 0, max = nrow(report), style = 3)
+    }
+
+    # Iterate over dataframe rows...
+    for (i in seq_len(nrow(report))){
+
+        if (verbose) setTxtProgressBar(pb, i)
+        
+        # Identify how many families, genuses or species were identified in a given sample.
+        n_taxa_rank <- NA
+
+        if (report[, COLNAME_STD_RANK][i] %in% c("F", "G", "S")) {
+            n_taxa_rank <- get_nTaxaInRank(
+            report = report, 
+                rank = report[, COLNAME_STD_RANK][i], 
+                sample = report[, COLNAME_STD_SAMPLE][i]
+            )
+        } else {
+            stop(paste0("Invalid rank value in row: ", i))
+        }
+
+        # Perform p-value correction.
+        padj[i] <- p.adjust(report[, COLNAME_STD_PVALUE][i], method = "BH", n = n_taxa_rank)
+    }
+
+    # Add adjusted p-values to dataframe.
+    report[, COLNAME_STD_PADJ] <- padj
+
+    # Add column stating whether results are significant or not based on the adjusted p-value.
+    report[, COLNAME_STD_SIGNIF] <- ifelse(
+        report[, COLNAME_STD_PADJ] <= 0.05,
+        "Significant",
+        "Non-significant"
+    )
+
+    cat("\n")
+
+    return(report)
 }
