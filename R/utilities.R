@@ -60,30 +60,25 @@ addRank <- function(report, verbose = TRUE) {
         ))   
     }
 
-    if (verbose) {
-        cat("Adding", COLNAME_MPA_RANK, "column to the MPA-style report\n")
-        pb <- txtProgressBar(min = 0, max = nrow(report), style = 3)
-    }
+    if (verbose) cat("Adding", COLNAME_MPA_RANK, "column to the MPA-style report...\n")
 
-    report[, COLNAME_MPA_RANK] <- sapply(seq_len(nrow(report)), function(x) {
+    # Define rank prefixes and corresponding letters.
+    rank_prefixes <- c("d__", "k__", "p__", "c__", "o__", "f__", "g__", "s__")
+    rank_letters <- c("D", "K", "P", "C", "O", "F", "G", "S")
 
-        if (verbose) setTxtProgressBar(pb, x)
+    # Create a single regex pattern.
+    pattern <- paste0("(", paste(rank_prefixes, collapse = "|"), ")")
 
-        # Get scientific name (in this case it will have a prefix indicating the taxonomic rank).
-        rank <- tail(unlist(stringr::str_split(report[, COLNAME_MPA_TAXON][x], "\\|")), n = 1)
+    # Extract all rank prefixes from each taxon string.
+    all_matches <- stringr::str_extract_all(report[, COLNAME_MPA_TAXON], pattern)
 
-        # Identify which taxonomic rank the scientific name belongs to.
-        if(grepl("s__", rank)) return("S")
-        if(grepl("g__", rank)) return("G")
-        if(grepl("f__", rank)) return("F")
-        if(grepl("o__", rank)) return("O")
-        if(grepl("c__", rank)) return("C")
-        if(grepl("p__", rank)) return("P")
-        if(grepl("k__", rank)) return("K")
-        if(grepl("d__", rank)) return("D")
-    })
-    
-    if (verbose) cat("\n")
+    # Find the last (most specific) rank for each taxon.
+    last_ranks <- sapply(all_matches, function(x) tail(x, 1))
+
+    # Map rank prefixes to letters.
+    report[, COLNAME_MPA_RANK] <- rank_letters[match(last_ranks, rank_prefixes)]
+
+    if (verbose) cat("\tRank column added successfully.\n")
 
     return(report)
 }
@@ -98,19 +93,18 @@ addConciseTaxon <- function(report, verbose = TRUE) {
         )) 
     }
 
+    if (verbose) cat("Adding columns with taxon names for all ranks...\n")
+
     ranks <- c("D", "K", "P", "C", "O", "F", "G", "S")
     ranks <- get_association(ranks)
     
     # Iterate over ranks... 
     for (rank in ranks) {
 
-        if (verbose) {
-            cat("Adding column with taxon names for rank:", names(ranks)[ranks == rank], "\n")
-            pb <- txtProgressBar(min = 0, max = nrow(report), style = 3)
-        }
-
         # Get name for column that will be added to the MPA-style report.
         colname <- names(ranks)[ranks == rank]
+
+        if (verbose) cat("\tProcessing rank:", colname, "...\n")
 
         # Create column with concise taxon name at a given rank.
         # Examples:
@@ -123,8 +117,6 @@ addConciseTaxon <- function(report, verbose = TRUE) {
         # "(...)g__Homo|s__Homo sapiens" -> "Homo" (under "genus") and "Homo sapiens" (under "species")
         report[, colname] <- sapply(seq_len(nrow(report)), function(x) {
 
-            if (verbose) setTxtProgressBar(pb, x)
-
             ifelse(
                 report[, COLNAME_MPA_RANK][x] == rank,
                 return(extract_taxon(report[, COLNAME_MPA_TAXON][x], rank = rank, last_in_hierarchy = TRUE)),
@@ -133,7 +125,7 @@ addConciseTaxon <- function(report, verbose = TRUE) {
         })
     }
 
-    cat("\n")
+    if (verbose) cat("\tAll columns added successfully.\n")
 
     return(report)
 }
@@ -165,11 +157,12 @@ add_nReads <- function(report) {
 
         subset_sample <- subset[subset[, COLNAME_STD_SAMPLE] == sample, ]
 
-        n_unclassified_reads <- subset_sample[, COLNAME_STD_N_FRAG_CLADE][subset_sample[, COLNAME_STD_TAXON] == "unclassified"]
-        n_classified_reads <- subset_sample[, COLNAME_STD_N_FRAG_CLADE][subset_sample[, COLNAME_STD_TAXON] == "root"]
-
-        n_unclassified_reads <- as.numeric(n_unclassified_reads)
-        n_classified_reads <- as.numeric(n_classified_reads)
+        n_unclassified_reads <- as.numeric(
+            subset_sample[, COLNAME_STD_N_FRAG_CLADE][subset_sample[, COLNAME_STD_TAXON] == "unclassified"]
+        )
+        n_classified_reads <- as.numeric(
+            subset_sample[, COLNAME_STD_N_FRAG_CLADE][subset_sample[, COLNAME_STD_TAXON] == "root"]
+        )
 
         report[, COLNAME_STD_TOTAL_READS][report[, COLNAME_STD_SAMPLE] == sample] <- (n_unclassified_reads + n_classified_reads)
     }
@@ -351,7 +344,9 @@ get_nDomainReads <- function(report) {
         COLNAME_DOMAIN_READS_N_READS
     )
     
-    n_domainReads[, COLNAME_DOMAIN_READS_N_READS] <- as.numeric(n_domainReads[, COLNAME_DOMAIN_READS_N_READS])
+    n_domainReads[, COLNAME_DOMAIN_READS_N_READS] <- as.numeric(
+        n_domainReads[, COLNAME_DOMAIN_READS_N_READS]
+    )
 
     return(n_domainReads)
 }
