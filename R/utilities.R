@@ -1,55 +1,24 @@
 merge_sample <- function(std_subset, mpa_subset) {
 
-    #pb <- txtProgressBar(min = 0, max = nrow(std_subset), style = 3)
-
     std_subset[, "mpa_style_info"] <- sapply(seq_len(nrow(std_subset)), function(x) {
 
-        #setTxtProgressBar(pb, x)
-
         rank_std <- std_subset[, COLNAME_STD_RANK][x]
-        #cat("\tRank:", rank_std, "\n")
 
         if (!(rank_std %in% mpa_subset[, COLNAME_MPA_RANK])) return(NA)
 
         taxon_std <- std_subset[, COLNAME_STD_TAXON][x]
-        #cat("\tTaxon:", taxon_std, "\n")
-
         taxcol_mpa <- names(get_association(rank_std))
 
         pos <- which(
             (mpa_subset[, COLNAME_MPA_RANK] == rank_std) & 
             (mpa_subset[, taxcol_mpa] == taxon_std)
         )
-        #cat("\tPosition:", pos, "\n")
 
         return(mpa_subset[, COLNAME_MPA_TAXON][pos])
     })
 
     return(std_subset)
 }
-        #cat("STD:", rank_x, "\n")
-
-        #for (y in 1:nrow(mpa_subset)) {
-        #    
-        #    rank_y <- mpa_subset$rank[y]          
-            #cat("\t", "MPA:", rank_y, "\n")
-
-        #    taxcol <- names(get_association(rank_y))
-            #cat("\t", taxcol, "\n")
-
-        #    if (rank_x == rank_y) {
-
-                # Need the taxon to be the same.
-        #        if (std_subset$taxon[x] == mpa_subset[, taxcol][y]) {
-        #            print(mpa_subset$taxon_hierarchy[y])
-        #            return(mpa_subset$taxon_hierarchy[y])
-        #        } else {
-        #            return(NA)
-        #        }
-        #    }
-
-            #cat("\n")
-        #}
 
 # Look at last rank and taxon name to compare
 mergeReports <- function(std_report, mpa_report) {
@@ -63,8 +32,6 @@ mergeReports <- function(std_report, mpa_report) {
 
         setTxtProgressBar(pb, i)
 
-        #cat("Running", sample, "\n")
-
         std_subset <- std_report[std_report[, COLNAME_STD_SAMPLE] == sample, ]
         mpa_subset <- mpa_report[mpa_report[, COLNAME_MPA_SAMPLE] == sample, ]
 
@@ -72,11 +39,9 @@ mergeReports <- function(std_report, mpa_report) {
 
         updated_std_report <- rbind(updated_std_report, updated_std_subset)
 
-        #cat("\n")
         i <- i + 1
     }
     cat("\n")
-    #colnames(updated_std_report) <- colnames(std_report)
 
     return(updated_std_report)
 }
