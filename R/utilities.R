@@ -1,6 +1,6 @@
 merge_sample <- function(std_subset, mpa_subset) {
 
-    std_subset[, "mpa_style_info"] <- sapply(seq_len(nrow(std_subset)), function(x) {
+    std_subset[, COLNAME_STD_HIERARCHY] <- sapply(seq_len(nrow(std_subset)), function(x) {
 
         rank_std <- std_subset[, COLNAME_STD_RANK][x]
 
@@ -242,7 +242,7 @@ transfer_ncbiID <- function(report_mpa, report_std) {
     ranks <- ranks[ranks %in% report_mpa[, COLNAME_MPA_RANK]]
     ranks <- get_association(ranks)
 
-    report_mpa$temp_column <- seq_len(nrow(report_mpa))
+    report_mpa[["temp_column"]] <- seq_len(nrow(report_mpa))
 
     final_report <- data.frame(matrix(nrow = 0, ncol = (ncol(report_mpa) + 1)))
 
@@ -258,8 +258,8 @@ transfer_ncbiID <- function(report_mpa, report_std) {
 
     }
 
-    final_report <- final_report[order(final_report$temp_column, decreasing = FALSE), ]
-    final_report$temp_column <- NULL
+    final_report <- final_report[order(final_report[["temp_column"]], decreasing = FALSE), ]
+    final_report[["temp_column"]] <- NULL
 
     return(final_report)
 }
@@ -295,32 +295,33 @@ transferDomains <- function(report_std, report_mpa, verbose = TRUE, inference = 
 
 get_nDomainReads <- function(report) {
 
+    # Identify if report follows a standard or MPA format; there are some slight 
+    # differences in how domains are written depending on the format!
+    if (is_mpa(report)) {
+
+        # In an MPA-style report, the domain will have a prefix ("d__"). Additionally,
+        # since the MPA format shows the hierarchy of each taxon, we also need to select
+        # specifically the lines that have only the domain-level information.
+        all_domains <- "d__Eukaryota$|d__Viruses$|d__Archaea$|d__Bacteria$"
+        subset_domains <- "d__Viruses$|d__Archaea$|d__Bacteria$"
+        colname_sample <- COLNAME_MPA_SAMPLE
+        
+    } else {
+
+        # In a standard report, each taxon is shown independently from their hierarchy,
+        # therefore it is easier to select the lines that contain domain-level information.
+        all_domains <- "Eukaryota|Viruses|Archaea|Bacteria"
+        subset_domains <- "Viruses|Archaea|Bacteria"
+        colname_sample <- COLNAME_STD_SAMPLE
+    }
+
     n_domainReads <- data.frame(matrix(nrow = 0, ncol = 4))
 
     # Iterate over samples in report...
-    for (sample in unique(report$sample)) {
+    for (sample in unique(report[, colname_sample])) {
 
         # Subset report to keep only a given sample.
-        report_sample <- report[report$sample == sample,]
-
-        # Identify if report follows a standard or MPA format; there are some slight 
-        # differences in how domains are written depending on the format!
-        if (is_mpa(report)) {
-
-            # In an MPA-style report, the domain will have a prefix ("d__"). Additionally,
-            # since the MPA format shows the hierarchy of each taxon, we also need to select
-            # specifically the lines that have only the domain-level information.
-            all_domains <- "d__Eukaryota$|d__Viruses$|d__Archaea$|d__Bacteria$"
-            subset_domains <- "d__Viruses$|d__Archaea$|d__Bacteria$"
-        
-        } else {
-
-            # In a standard report, each taxon is shown independently from their hierarchy,
-            # therefore it is easier to select the lines that contain domain-level information.
-            all_domains <- "Eukaryota|Viruses|Archaea|Bacteria"
-            subset_domains <- "Viruses|Archaea|Bacteria"
-
-        }
+        report_sample <- report[report[, colname_sample] == sample,]
 
         # Here we create a named vector to establish an association between the domain vectors
         # we created above and what is their scope (all domains or only non-eukaryote domains).
@@ -366,10 +367,13 @@ get_nTaxa <- function(report, ranks) {
         colname_sample <- COLNAME_MPA_SAMPLE
         colname_taxon <- COLNAME_MPA_TAXON
         colname_rank <- COLNAME_MPA_RANK
+        colname_domain <- "domain"
+
     } else {
         colname_sample <- COLNAME_STD_SAMPLE
         colname_taxon <- COLNAME_STD_TAXON
         colname_rank <- COLNAME_STD_RANK
+        colname_domain <- COLNAME_STD_DOMAIN
     }
 
     n_taxa_in_samples <- data.frame(matrix(nrow = 0, ncol = 4))
@@ -381,13 +385,13 @@ get_nTaxa <- function(report, ranks) {
         report_sample <- report[report[, colname_sample] == sample,]
 
         # Iterate over domains...
-        for (domain in unique(report$domain)) {
+        for (domain in unique(report[, colname_domain])) {
 
             # Iterate over ranks...
             for (rank in ranks) {
 
                 n_taxa <- length(unique(
-                    report_sample[, colname_taxon][report[, colname_rank] == rank & report$domain == domain]
+                    report_sample[, colname_taxon][report[, colname_rank] == rank & report[, colname_domain] == domain]
                 ))
                 n_taxa_in_samples <- rbind(n_taxa_in_samples, c(sample, domain, rank, n_taxa))
 

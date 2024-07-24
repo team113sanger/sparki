@@ -206,7 +206,7 @@ addMetadata <- function(report, metadata, columns) {
     }
 
     # Remove temporary sample columns.
-    metadata$sample <- NULL
+    metadata[["sample"]] <- NULL
 
     # Get names of columns that contain results (and not sample names / metadata).
     results_cols <- colnames(report)[!(colnames(report) %in% c(colname_sample, columns))]
@@ -432,8 +432,8 @@ prepare_for_plotDomainReads <- function(report, include_eukaryotes) {
 
     report <- report[grep(domains, report[, colname_taxon]), ]
 
-    report$colname_taxon <- report[, colname_taxon]
-    report$colname_n_frag_clade <- report[, colname_n_frag_clade]
+    report[["colname_taxon"]] <- report[, colname_taxon]
+    report[["colname_n_frag_clade"]] <- report[, colname_n_frag_clade]
 
     return(report)
 }
@@ -793,20 +793,6 @@ retrieve_subrankDomains <- function(report_std, report_mpa, inference = TRUE, ve
 
 }
 
-
-#subset_mpa <- function(merged_mpa, include_human = TRUE) {
-
-    # Subsetting family-, genus- and species-level results
-#    merged_mpa <- merged_mpa[merged_mpa$last_rank_in_line %in% c("family", "genus", "species"),]
-
-#    if (include_human) {
-#        return(merged_mpa)
-#    } else {
-#        merged_mpa <- merged_mpa[!(merged_mpa$family %in% c("Hominidae", "Homo", "Homo sapiens")), ]
-#        return(merged_mpa)
-#    }
-#}
-
 ##################################
 ## HELPER FUNCTIONS FOR REPORTS ##
 #######################################################################################################
@@ -836,7 +822,7 @@ get_ProportionClassifiedReads <- function(report) {
     }
 
     colnames(class_unclass_df) <- c("sample", "type", "value")
-    class_unclass_df$value <- as.numeric(class_unclass_df$value)
+    class_unclass_df[["value"]] <- as.numeric(class_unclass_df[["value"]])
 
     return(class_unclass_df)    
 }

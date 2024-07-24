@@ -288,13 +288,13 @@ plotMinimisers_dotplot <- function(
         std_reports = std_reports,
         domain = domain
     )
-    df$sample <- df[, COLNAME_STD_SAMPLE]
-    df$taxon <- df[, COLNAME_STD_TAXON]
-    df$rank <- df[, COLNAME_STD_RANK]
-    df$ratio_clade <- df[, COLNAME_STD_RATIO_CLADE]
-    df$padj <- df[, COLNAME_STD_PADJ]
-    df$significance <- df[, COLNAME_STD_SIGNIF]
-    df$n_frag_clade <- df[, COLNAME_STD_N_FRAG_CLADE]
+    df[["sample"]] <- df[, COLNAME_STD_SAMPLE]
+    df[["taxon"]] <- df[, COLNAME_STD_TAXON]
+    df[["rank"]] <- df[, COLNAME_STD_RANK]
+    df[["ratio_clade"]] <- df[, COLNAME_STD_RATIO_CLADE]
+    df[["padj"]] <- df[, COLNAME_STD_PADJ]
+    df[["significance"]] <- df[, COLNAME_STD_SIGNIF]
+    df[["n_frag_clade"]] <- df[, COLNAME_STD_N_FRAG_CLADE]
 
     plot <- ggplot2::ggplot(
         df,
