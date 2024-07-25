@@ -72,102 +72,99 @@ loadMetadata <- function(mdata_path) {
 load_MPAreports <- function(mpa_reports_dir, verbose = TRUE) {
 
     # Get paths to MPA-style reports in a specified directory.
-    mpa_file_names <- list.files(mpa_reports_dir, pattern = "mpa$")
+    mpa_files <- fs::dir_ls(mpa_reports_dir, glob = "*.mpa$")
 
     # Check if directory really has any MPA-style reports...
-    if (length(mpa_file_names) == 0) {
-        stop(paste0("No MPA-style reports were found at ", mpa_reports_dir, ". Please review your input."))
+    if (length(mpa_files) == 0) {
+        stop(paste0(
+            "No MPA-style reports were found at ", mpa_reports_dir, ". Please review your input."
+        ))
     } 
 
-    # Create empty dataframe to store MPA-style reports.
-    mpa_reports <- data.frame(matrix(nrow = 0, ncol = 2))
+    taxonomy <- c(
+        "domain", "kingdom", "phylum", "class",
+        "order", "family", "genus", "species"
+    )
 
-    # Iterate over files in specified MPA directory (ideally each file should be a different sample)...
-    for (file_name in mpa_file_names) {
-
-        # Get sample name.
-        sample_name <- gsub("\\..*", "", basename(file_name))
-
-        if (verbose == TRUE) message(paste0("Reading MPA-style report for sample ", sample_name))
-
-        # Read MPA-style report.
-        mpa_report <- read.csv(file = paste0(mpa_reports_dir, "/", file_name), header = FALSE, sep = "\t")
-
-        mpa_report_colnames <- c(COLNAME_MPA_TAXON, COLNAME_MPA_N_FRAG_CLADE)
-
-        # Add column names.
-        colnames(mpa_report) <- mpa_report_colnames
-
-        # Add sample name to MPA dataframe.
-        mpa_report[, COLNAME_MPA_SAMPLE] <- rep(sample_name, times = nrow(mpa_report))
-
-        # Reorder columns.
-        mpa_report <- mpa_report[, c(COLNAME_MPA_SAMPLE, mpa_report_colnames)]
-
-        # Add sample results to dataframe where all results will be stored.
-        mpa_reports <- rbind(mpa_reports, mpa_report) 
-
-    }    
+    # Create a dataframe (tibble) and process.
+    mpa_reports <- readr::read_tsv(
+        mpa_files, 
+        col_names = c(COLNAME_MPA_TAXON_HIERARCHY, COLNAME_MPA_N_FRAG_CLADE), 
+        id = "sample"
+    ) |>
+        # Split rows by "|" into primary taxa.
+        tidyr::separate(col = COLNAME_MPA_TAXON, into = taxonomy, sep = "\\|") |>
+        # Cleanup the names in the taxonomy columns.
+        dplyr::mutate(across(taxonomy, ~ stringr::str_remove(.x, pattern = "[a-z]__"))) |>
+        # Simplify sample IDs.
+        dplyr::mutate(sample = stringr::str_remove(basename(sample), ".kraken.mpa")) |>
+        # Collect the rightmost non-NA item in each row.
+        dplyr::mutate(
+            taxon_leaf = coalesce(species, genus, family, order, class, phylum, kingdom, domain),
+            .before = "domain"
+        ) |>
+        # Replace underscores with spaces in taxon names.
+        dplyr::mutate(
+            taxon_leaf = stringr::str_replace_all(taxon_leaf, pattern = "_", replacement = " ")
+        ) |>
+        # Rename some of the columns.
+        dplyr::rename(sample = COLNAME_MPA_SAMPLE, taxon_leaf = COLNAME_MPA_TAXON_LEAF)
     
     return(mpa_reports) 
 }
 
 load_STDreports <- function(std_reports_dir, verbose = TRUE) {
 
-    # Get paths to reports in a specified directory.
-    std_file_names <- list.files(std_reports_dir, pattern = "kraken$")
+    # Get paths to standard reports in a specified directory.
+    std_files <- fs::dir_ls(std_reports_dir, glob = "*.kraken$")
 
-    # Check if directory really has any reports...
-    if (length(std_file_names) == 0) {
-        stop(paste0("No reports were found at ", std_reports_dir, ". Please review your input."))
+    # Check if directory really has any standard reports...
+    if (length(std_files) == 0) {
+        stop(paste0(
+            "No standard reports were found at ", std_reports_dir, ". Please review your input."
+        ))
     }
 
-    # Create empty dataframe to store reports.
-    std_reports <- data.frame(matrix(nrow = 0, ncol = 2))
-
-    # Iterate over files in specified reports directory (ideally each file should be a different sample)...
-    for (file_name in std_file_names) {
-
-        # Get sample name.
-        sample_name <- gsub("\\..*", "", basename(file_name))               
-            
-        if (verbose == TRUE) message(paste0("Reading standard report for sample ", sample_name))
-
-        # Read report.
-        std_report <- read.csv(file = paste0(std_reports_dir, "/", file_name), header = FALSE, sep = "\t")
-        
-        std_report_colnames <- c(
+    # Create a dataframe (tibble) and process.
+    std_reports <- read_tsv(
+        std_files,
+        col_names = c(
             COLNAME_STD_PCT_FRAG_CLADE, 
             COLNAME_STD_N_FRAG_CLADE, 
             COLNAME_STD_N_FRAG_TAXON, 
             COLNAME_STD_MINIMISERS, 
             COLNAME_STD_UNIQ_MINIMISERS,
-            COLNAME_STD_RANK, 
+            "rank", 
             COLNAME_STD_NCBI_ID, 
             COLNAME_STD_TAXON
-        )
-
-        # Add column names.
-        colnames(std_report) <- std_report_colnames
-
-        # Add sample name to report dataframe.
-        std_report[, COLNAME_STD_SAMPLE] <- rep(sample_name, times = nrow(std_report))
-
-        # Reorder columns.
-        std_report <- std_report[, c(COLNAME_STD_SAMPLE, std_report_colnames)]
-
-        # Remove identation.
-        std_report[, COLNAME_STD_TAXON] <- gsub(
-            "^[[:space:]]\\s*(.*?)", "", 
-            std_report[, COLNAME_STD_TAXON], 
-            perl = TRUE
-        )
-
-        # Add sample results to dataframe where all results will be stored.
-        std_reports <- rbind(std_reports, std_report)
-    } 
+        ),
+        id = "sample"
+    ) |>
+        # Remove the subranks.
+        dplyr::filter(!grepl(rank, pattern = "[0-9]")) |>
+        # Simplify sample IDs.
+        dplyr::mutate(sample = stringr::str_remove(basename(sample), ".kraken")) |>
+        # Rename some of the columns.
+        dplyr::rename(sample = COLNAME_MPA_SAMPLE, rank = COLNAME_STD_RANK)
 
     return(std_reports) 
+}
+
+mergeReports <- function(std_reports, mpa_reports) {
+
+    std_reports[["taxon"]] <- std_reports[[COLNAME_STD_TAXON]]
+    mpa_reports[["taxon_leaf"]] <- mpa_reports[[COLNAME_MPA_TAXON_LEAF]]
+    std_reports[["sample"]] <- std_reports[[COLNAME_STD_SAMPLE]]
+        
+    # The primary keys that will be used for joining are "taxon leaf"/"name" and "sample_id"
+    merged_reports <- dplyr::left_join( 
+        std_reports, 
+        mpa_reports,
+        by = c("taxon" = "taxon_leaf", "sample")
+    ) |>
+        dplyr::rename(taxon = COLNAME_STD_TAXON, sample = COLNAME_STD_SAMPLE)
+
+    return(merged_reports)
 }
 
 
