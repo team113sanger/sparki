@@ -2,11 +2,14 @@ merge_sample <- function(std_subset, mpa_subset) {
 
     std_subset[, COLNAME_STD_HIERARCHY] <- sapply(seq_len(nrow(std_subset)), function(x) {
 
+        # Get rank and taxon at a given line.
         rank_std <- std_subset[, COLNAME_STD_RANK][x]
+        taxon_std <- std_subset[, COLNAME_STD_TAXON][x]
 
+        # For subranks (i.e. ranks followed by a number), return NA,
+        # as subranks are not present in MPA-style reports.
         if (!(rank_std %in% mpa_subset[, COLNAME_MPA_RANK])) return(NA)
 
-        taxon_std <- std_subset[, COLNAME_STD_TAXON][x]
         taxcol_mpa <- names(get_association(rank_std))
 
         pos <- which(
@@ -21,16 +24,21 @@ merge_sample <- function(std_subset, mpa_subset) {
 }
 
 # Look at last rank and taxon name to compare
-mergeReports <- function(std_report, mpa_report) {
+mergeReports <- function(std_report, mpa_report, verbose) {
 
-    pb <- txtProgressBar(min = 0, max = length(unique(std_report[, COLNAME_STD_SAMPLE])), style = 3)
+    if (verbose) {
+        pb <- txtProgressBar(min = 0, max = length(unique(std_report[, COLNAME_STD_SAMPLE])), style = 3)
+        i <- 1
+    }
 
     updated_std_report <- data.frame(matrix(nrow = 0, ncol = (ncol(std_report) + 1)))
 
-    i <- 1
     for (sample in unique(std_report[, COLNAME_STD_SAMPLE])) {
 
-        setTxtProgressBar(pb, i)
+        if (verbose) {
+            setTxtProgressBar(pb, i)
+            i <- i + 1
+        }
 
         std_subset <- std_report[std_report[, COLNAME_STD_SAMPLE] == sample, ]
         mpa_subset <- mpa_report[mpa_report[, COLNAME_MPA_SAMPLE] == sample, ]
@@ -38,10 +46,8 @@ mergeReports <- function(std_report, mpa_report) {
         updated_std_subset <- merge_sample(std_subset, mpa_subset)
 
         updated_std_report <- rbind(updated_std_report, updated_std_subset)
-
-        i <- i + 1
     }
-    cat("\n")
+    if (verbose) cat("\n")
 
     return(updated_std_report)
 }
