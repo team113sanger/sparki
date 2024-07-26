@@ -55,11 +55,10 @@ loadMetadata <- function(mdata_path) {
     return(mdata)
 }
 
-#' PREPARE DATAFRAME WITH CONCATENATED MPA-STYLE REPORTS 
+#' LOAD MPA-STYLE REPORTS 
 #' 
-#' This function takes a path to a metadata file and reads the table.
-#' and reads the table. The first 7 lines are skipped, as they correspond to header lines.
-#' Column names are added before the reference database dataframe is returned.
+#' This function takes a path to directory containing MPA-style reports, reading and processing
+#' all reports into a single dataframe.
 #' 
 #' @param mdata_path Path to a metadata table.
 #' @return 
@@ -71,27 +70,21 @@ load_MPAreports <- function(mpa_reports_dir, verbose = TRUE) {
 
     # Check if directory really has any MPA-style reports...
     if (length(mpa_files) == 0) {
-        stop(paste0(
-            "No MPA-style reports were found at ", mpa_reports_dir, ". Please review your input."
-        ))
+        stop(paste0("No MPA-style reports were found at ", mpa_reports_dir, ". Please review your input."))
     } 
 
-    taxonomy <- c(
-        "domain", "kingdom", "phylum", "class",
-        "order", "family", "genus", "species"
-    )
+    # Create vector with taxonomic rank names.
+    taxonomy <- c("domain", "kingdom", "phylum", "class", "order", "family", "genus", "species")
 
     # Create a dataframe (tibble).
     mpa_reports <- readr::read_tsv(
         mpa_files, 
         col_names = c(COLNAME_MPA_TAXON_HIERARCHY, COLNAME_MPA_N_FRAG_CLADE), 
-        id = "sample"
+        id = get("COLNAME_MPA_SAMPLE")
     ) 
 
     # Add rank column.
-    mpa_reports[, COLNAME_MPA_RANK] <- lapply(
-        mpa_reports[, COLNAME_MPA_TAXON_HIERARCHY], addRank
-    )
+    mpa_reports[, COLNAME_MPA_RANK] <- lapply(mpa_reports[, COLNAME_MPA_TAXON_HIERARCHY], addRank)
 
     # Further process the dataframe.
     mpa_reports <- mpa_reports |>
@@ -100,18 +93,18 @@ load_MPAreports <- function(mpa_reports_dir, verbose = TRUE) {
         # Cleanup the names in the taxonomy columns.
         dplyr::mutate(across(taxonomy, ~ stringr::str_remove(.x, pattern = "[a-z]__"))) |>
         # Simplify sample IDs.
-        dplyr::mutate(sample = stringr::str_remove(basename(sample), ".kraken.mpa")) |>
+        dplyr::mutate(!!COLNAME_MPA_SAMPLE := stringr::str_remove(basename(sample), ".kraken.mpa")) |>
         # Collect the rightmost non-NA item in each row.
         dplyr::mutate(
-            taxon_leaf = dplyr::coalesce(species, genus, family, order, class, phylum, kingdom, domain),
+            !!COLNAME_MPA_TAXON_LEAF := dplyr::coalesce(species, genus, family, order, class, phylum, kingdom, domain),
             .before = "domain"
         ) |>
         # Replace underscores with spaces in taxon names.
         dplyr::mutate(
-            taxon_leaf = stringr::str_replace_all(taxon_leaf, pattern = "_", replacement = " ")
+            !!COLNAME_MPA_TAXON_LEAF := stringr::str_replace_all(taxon_leaf, pattern = "_", replacement = " ")
         ) |>
-        # Rename some of the columns.
-        dplyr::rename(sample = COLNAME_MPA_SAMPLE, taxon_leaf = COLNAME_MPA_TAXON_LEAF)
+        # Put rank column right after the taxon leaf column.
+        dplyr::relocate(!!COLNAME_MPA_RANK, !!COLNAME_MPA_N_FRAG_CLADE, .after = !!COLNAME_MPA_TAXON_LEAF)
 
     if (verbose) cat("MPA-style reports loaded successfully.\n")
     
@@ -125,32 +118,21 @@ load_STDreports <- function(std_reports_dir, verbose = TRUE) {
 
     # Check if directory really has any standard reports...
     if (length(std_files) == 0) {
-        stop(paste0(
-            "No standard reports were found at ", std_reports_dir, ". Please review your input."
-        ))
+        stop(paste0("No standard reports were found at ", std_reports_dir, ". Please review your input."))
     }
 
     # Create a dataframe (tibble) and process.
     std_reports <- readr::read_tsv(
         std_files,
-        col_names = c(
-            COLNAME_STD_PCT_FRAG_CLADE, 
-            COLNAME_STD_N_FRAG_CLADE, 
-            COLNAME_STD_N_FRAG_TAXON, 
-            COLNAME_STD_MINIMISERS, 
-            COLNAME_STD_UNIQ_MINIMISERS,
-            "rank", 
-            COLNAME_STD_NCBI_ID, 
-            COLNAME_STD_TAXON
-        ),
-        id = "sample"
+        col_names = c(COLNAME_STD_PCT_FRAG_CLADE, COLNAME_STD_N_FRAG_CLADE, COLNAME_STD_N_FRAG_TAXON, 
+            COLNAME_STD_MINIMISERS, COLNAME_STD_UNIQ_MINIMISERS, COLNAME_STD_RANK, COLNAME_STD_NCBI_ID, 
+            COLNAME_STD_TAXON),
+        id = get("COLNAME_STD_SAMPLE")
     ) |>
         # Remove the subranks.
-        dplyr::filter(!grepl(rank, pattern = "[0-9]")) |>
+        dplyr::filter(!grepl(!!as.name(COLNAME_STD_RANK), pattern = "[0-9]")) |>
         # Simplify sample IDs.
-        dplyr::mutate(sample = stringr::str_remove(basename(sample), ".kraken")) |>
-        # Rename some of the columns.
-        dplyr::rename(sample = COLNAME_MPA_SAMPLE, rank = COLNAME_STD_RANK)
+        dplyr::mutate(!!COLNAME_STD_SAMPLE := stringr::str_remove(basename(sample), ".kraken"))
 
     if (verbose) cat("Standard reports loaded successfully.\n")
 
@@ -159,17 +141,18 @@ load_STDreports <- function(std_reports_dir, verbose = TRUE) {
 
 mergeReports <- function(std_reports, mpa_reports) {
 
-    std_reports[["taxon"]] <- std_reports[[COLNAME_STD_TAXON]]
-    mpa_reports[["taxon_leaf"]] <- mpa_reports[[COLNAME_MPA_TAXON_LEAF]]
-    std_reports[["sample"]] <- std_reports[[COLNAME_STD_SAMPLE]]
+    mpa_reports <- mpa_reports |> 
+        # Rename column for consistency with the standard report.
+        dplyr::rename(!!COLNAME_STD_TAXON := !!COLNAME_MPA_TAXON_LEAF) |>
+        # Drop columns that are already present in the standard report.
+        dplyr::select(!c(!!COLNAME_MPA_N_FRAG_CLADE, !!COLNAME_MPA_RANK))
         
     # The primary keys that will be used for joining are "taxon leaf"/"name" and "sample_id"
     merged_reports <- dplyr::left_join( 
         std_reports, 
         mpa_reports,
-        by = c("taxon" = "taxon_leaf", "sample")
-    ) |>
-        dplyr::rename(taxon = COLNAME_STD_TAXON, sample = COLNAME_STD_SAMPLE)
+        by = dplyr::join_by(!!COLNAME_STD_TAXON, !!COLNAME_STD_SAMPLE)
+    )
 
     return(merged_reports)
 }
@@ -189,8 +172,14 @@ mergeReports <- function(std_reports, mpa_reports) {
 #' @param categories Categories of interest from df2 that should be added to df1.
 #' @return An updated version of df1.
 #' @export
-addMetadata <- function(report, metadata, metadata_sample_col, metadata_columns) {
+addMetadata <- function(
+    report, 
+    metadata, 
+    metadata_sample_col, 
+    metadata_columns
+) {
 
+    # Check report format.
     report_colname_sample <- ifelse(
         is_mpa(report),
         COLNAME_MPA_SAMPLE,
@@ -204,6 +193,7 @@ addMetadata <- function(report, metadata, metadata_sample_col, metadata_columns)
         # Rename column with sample IDs to keep its name consistent
         # with the report.
         dplyr::rename(!!report_colname_sample := sample_col)
+    
     # Replace spaces (if any) with underscores.
     colnames(metadata) <- gsub(" ", "_", colnames(metadata))
     metadata_columns <- gsub(" ", "_", metadata_columns)
@@ -223,7 +213,12 @@ addMetadata <- function(report, metadata, metadata_sample_col, metadata_columns)
     return(report)
 }
 
-calculate_p_value <- function(sample_n_uniq_minimisers_taxon, db_n_minimisers_taxon, db_n_minimisers_total, sample_size) {
+calculate_p_value <- function(
+    sample_n_uniq_minimisers_taxon, 
+    db_n_minimisers_taxon, 
+    db_n_minimisers_total, 
+    sample_size
+) {
 
     # Get proportion of clade-level minimisers of a given taxon in the reference database (DB).
     # This is the same as the probability of getting this taxon from the database.
