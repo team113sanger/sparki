@@ -266,39 +266,6 @@ is_mpa <- function(report) {
     )
 }
 
-extract_taxon <- function(line, rank, last_in_hierarchy) {
-
-    if (!(rank %in% c("D", "K", "P", "C", "O", "F", "G", "S"))) {
-        stop(paste0(
-            "This function does not support the rank ", rank, ". Supported ranks are 'D' (domain), ", 
-            "'K' (kingdom), 'P' (phylum), 'C' (class), 'O' (order), 'F' (family), 'G' (genus) and 'S' (species)."
-        ))
-    }
-
-    # Domain.
-    if (rank == "D") {
-
-        taxon <- ifelse(
-            last_in_hierarchy,
-            stringr::str_match(line, "^d__(.+)")[2],
-            stringr::str_match(line, "^d__\\s*(.*?)\\s*[|](.*?)")[2]
-        )
-
-    # Kingdom, phylum, class, order, family, or genus.
-    } else if (rank %in% c("K", "P", "C", "O", "F", "G")) { 
-
-        taxon <- ifelse(
-            last_in_hierarchy,
-            stringr::str_match(line, paste0(tolower(rank), "__(.+)"))[2],
-            stringr::str_match(line, paste0("(.*?)[|]\\s*", tolower(rank), "__(.*?)\\s*[|](.*?)"))[3]
-        )
-
-    # Species.
-    } else if (rank == "S") taxon <- stringr::str_match(line, "s__(.+)")[2] # Will always be the last.
-
-    return(taxon)
-}
-
 get_association <- function(ranks) {
     names(ranks) <- dplyr::case_when(
         ranks == "U" ~ NAME_RANK_UNCLASS,

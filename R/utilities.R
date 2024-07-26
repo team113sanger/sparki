@@ -89,53 +89,6 @@ addRank <- function(report, verbose = TRUE) {
     return(report)
 }
 
-addConciseTaxon <- function(report, verbose = TRUE) {
-
-    if(!(is_mpa(report))) {
-        stop(paste0(
-            "This function is not applicable to a standard report (i.e. not MPA-style). The standard report ",
-            "format already has the column ", COLNAME_STD_TAXON, ", which has concise taxon names instead of ",
-            "taxon hierarchies."
-        )) 
-    }
-
-    if (verbose) cat("Adding columns with taxon names for all ranks...\n")
-
-    ranks <- c("D", "K", "P", "C", "O", "F", "G", "S")
-    ranks <- get_association(ranks)
-    
-    # Iterate over ranks... 
-    for (rank in ranks) {
-
-        # Get name for column that will be added to the MPA-style report.
-        colname <- names(ranks)[ranks == rank]
-
-        if (verbose) cat("\tProcessing rank:", colname, "...\n")
-
-        # Create column with concise taxon name at a given rank.
-        # Examples:
-        #
-        # "d__Eukaryota" -> "Eukaryota" (under "domain")
-        #
-        # "(...)f__Papillomaviridae|g__Alphapapillomavirus" -> "Papillomaviridae" (under "family") and 
-        # "Alphapapillomavirus" (under "genus")
-        #
-        # "(...)g__Homo|s__Homo sapiens" -> "Homo" (under "genus") and "Homo sapiens" (under "species")
-        report[, colname] <- sapply(seq_len(nrow(report)), function(x) {
-
-            ifelse(
-                report[, COLNAME_MPA_RANK][x] == rank,
-                return(extract_taxon(report[, COLNAME_MPA_TAXON][x], rank = rank, last_in_hierarchy = TRUE)),
-                return(extract_taxon(report[, COLNAME_MPA_TAXON][x], rank = rank, last_in_hierarchy = FALSE))
-            )
-        })
-    }
-
-    if (verbose) cat("\tAll columns added successfully.\n")
-
-    return(report)
-}
-
 #' ASSESS THE TOTAL NUMBER OF READS ANALYSED FOR EACH SAMPLE
 #' 
 #' @param merged_reports
