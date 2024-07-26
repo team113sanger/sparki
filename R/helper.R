@@ -36,7 +36,6 @@ loadReference <- function(reference_path) {
     ref[, COLNAME_REF_DB_TAXON] <- gsub("^[[:space:]]\\s*(.*?)", "", ref[, COLNAME_REF_DB_TAXON], perl = TRUE)
 
     return(ref)
-
 }
 
 #' LOAD METADATA TABLE
@@ -82,12 +81,20 @@ load_MPAreports <- function(mpa_reports_dir, verbose = TRUE) {
         "order", "family", "genus", "species"
     )
 
-    # Create a dataframe (tibble) and process.
+    # Create a dataframe (tibble).
     mpa_reports <- readr::read_tsv(
         mpa_files, 
         col_names = c(COLNAME_MPA_TAXON_HIERARCHY, COLNAME_MPA_N_FRAG_CLADE), 
         id = "sample"
-    ) |>
+    ) 
+
+    # Add rank column.
+    mpa_reports[, COLNAME_MPA_RANK] <- lapply(
+        mpa_reports[, COLNAME_MPA_TAXON_HIERARCHY], addRank
+    )
+
+    # Further process the dataframe.
+    mpa_reports <- mpa_reports |>
         # Split rows by "|" into primary taxa.
         tidyr::separate(col = COLNAME_MPA_TAXON_HIERARCHY, into = taxonomy, sep = "\\|") |>
         # Cleanup the names in the taxonomy columns.
@@ -105,6 +112,8 @@ load_MPAreports <- function(mpa_reports_dir, verbose = TRUE) {
         ) |>
         # Rename some of the columns.
         dplyr::rename(sample = COLNAME_MPA_SAMPLE, taxon_leaf = COLNAME_MPA_TAXON_LEAF)
+
+    if (verbose) cat("MPA-style reports loaded successfully.\n")
     
     return(mpa_reports) 
 }
@@ -143,6 +152,8 @@ load_STDreports <- function(std_reports_dir, verbose = TRUE) {
         # Rename some of the columns.
         dplyr::rename(sample = COLNAME_MPA_SAMPLE, rank = COLNAME_STD_RANK)
 
+    if (verbose) cat("Standard reports loaded successfully.\n")
+
     return(std_reports) 
 }
 
@@ -178,34 +189,36 @@ mergeReports <- function(std_reports, mpa_reports) {
 #' @param categories Categories of interest from df2 that should be added to df1.
 #' @return An updated version of df1.
 #' @export
-addMetadata <- function(report, metadata, sample_col, columns) {
+addMetadata <- function(report, metadata, metadata_sample_col, metadata_columns) {
 
-    colname_sample <- ifelse(
+    report_colname_sample <- ifelse(
         is_mpa(report),
         COLNAME_MPA_SAMPLE,
         COLNAME_STD_SAMPLE
     )
 
-    # Select metadata columns that will be added to the report.
+    # Process metadata dataframe (tibble).
     metadata <- metadata |> 
-        dplyr::select(get("sample_col"), columns)
+        # Select metadata columns that will be added to the report.
+        dplyr::select(metadata_sample_col, metadata_columns) |>
+        # Rename column with sample IDs to keep its name consistent
+        # with the report.
+        dplyr::rename(!!report_colname_sample := sample_col)
+    # Replace spaces (if any) with underscores.
     colnames(metadata) <- gsub(" ", "_", colnames(metadata))
+    metadata_columns <- gsub(" ", "_", metadata_columns)
 
-    report[["sample"]] <- report[[COLNAME_STD_SAMPLE]]
-    metadata[[""]]
-
+    # Add metadata columns to the report.
     report <- dplyr::left_join(
-        report,
-        metadata,
-        by = c(COLNAME_STD_SAMPLE = sample_col)
-    ) #|>
-      #  dplyr::rename(sample = COLNAME_STD_SAMPLE)
+        report, metadata,
+        by = dplyr::join_by(!!report_colname_sample)
+    ) 
 
     # Get names of columns that contain results (and not sample names / metadata) and
     # reorder the columns so that the metadata stays between the sample IDs and the
     # Kraken2 results.
-    results_cols <- colnames(report)[!(colnames(report) %in% c(colname_sample, columns))]
-    report <- report[, c(colname_sample, columns, results_cols)]
+    results_cols <- colnames(report)[!(colnames(report) %in% c(report_colname_sample, metadata_columns))]
+    report <- report[, c(report_colname_sample, metadata_columns, results_cols)]
 
     return(report)
 }
@@ -249,7 +262,26 @@ adjust_p_value <- function(report, pval, rank, sample) {
     return(padj)
 }
 
+addRank <- function(taxon) {
 
+    # Define rank prefixes and corresponding letters.
+    rank_prefixes <- c("d__", "k__", "p__", "c__", "o__", "f__", "g__", "s__")
+    rank_letters <- c("D", "K", "P", "C", "O", "F", "G", "S")
+
+    # Create a single regex pattern.
+    pattern <- paste0("(", paste(rank_prefixes, collapse = "|"), ")")
+
+    # Extract all rank prefixes from each taxon string.
+    all_matches <- stringr::str_extract_all(taxon, pattern)
+
+    # Find the last (most specific) rank for each taxon.
+    last_ranks <- sapply(all_matches, function(x) tail(x, 1))
+
+    # Map rank prefixes to letters.
+    rank <- rank_letters[match(last_ranks, rank_prefixes)]
+
+    return(rank)
+}
 
 
 
