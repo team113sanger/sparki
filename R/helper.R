@@ -55,14 +55,20 @@ loadMetadata <- function(mdata_path) {
     return(mdata)
 }
 
+######################################################
+## HELPER FUNCTIONS FOR READING AND MERGING REPORTS ##
+#######################################################################################################
+
 #' LOAD MPA-STYLE REPORTS 
 #' 
-#' This function takes a path to directory containing MPA-style reports, reading and processing
+#' This function takes a path to a directory containing MPA-style reports, reading and processing
 #' all reports into a single dataframe.
 #' 
-#' @param mdata_path Path to a metadata table.
-#' @return 
-#' 
+#' @param mpa_reports_dir Path to a directory containing MPA-style reports.
+#' @param verbose Whether to output log messages.
+#' @return A dataframe (tibble) with the content of all MPA-style reports from the specified directory.
+#' @export
+#'
 load_MPAreports <- function(mpa_reports_dir, verbose = TRUE) {
 
     # Get paths to MPA-style reports in a specified directory.
@@ -111,6 +117,16 @@ load_MPAreports <- function(mpa_reports_dir, verbose = TRUE) {
     return(mpa_reports) 
 }
 
+#' LOAD STANDARD REPORTS 
+#' 
+#' This function takes a path to a directory containing standard reports, reading and processing
+#' all reports into a single dataframe.
+#' 
+#' @param mpa_reports_dir Path to a directory containing standard reports.
+#' @param verbose Whether to output log messages.
+#' @return A dataframe (tibble) with the content of all standard reports from the specified directory.
+#' @export
+#'
 load_STDreports <- function(std_reports_dir, verbose = TRUE) {
 
     # Get paths to standard reports in a specified directory.
@@ -139,6 +155,17 @@ load_STDreports <- function(std_reports_dir, verbose = TRUE) {
     return(std_reports) 
 }
 
+#' MERGE STANDARD AND MPA-STYLE REPORTS
+#' 
+#' This function takes a standard and an MPA-style dataframe, loaded with load_STDreports() and
+#' load_MPAreports() respectively, and merges the latter into the former.
+#' 
+#' @param std_reports A dataframe (tibble) with standard reports, loaded with load_STDreports().
+#' @param mpa_reports A dataframe (tibble) with MPA-style reports, loaded with load_MPAreports().
+#' @return An updated version of the dataframe (tibble) with standard reports, now containing the
+#' information from the dataframe (tibble) with MPA-style reports.
+#' @export
+#'
 mergeReports <- function(std_reports, mpa_reports) {
 
     mpa_reports <- mpa_reports |> 
