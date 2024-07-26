@@ -56,39 +56,6 @@ mergeReports <- function(std_report, mpa_report, verbose) {
 ## UTILITY FUNCTIONS FOR ADDING COLUMNS TO REPORTS ##
 #######################################################################################################
 
-addRank <- function(report, verbose = TRUE) {
-
-    if (!(is_mpa(report))) {
-        stop(paste0(
-            "This function is not applicable to a standard report (i.e. not MPA-style). ",
-            "The standard report format already has the column ", COLNAME_STD_RANK, ", which ", 
-            "indicates the taxonomic rank of each line."
-        ))   
-    }
-
-    if (verbose) cat("Adding", COLNAME_MPA_RANK, "column to the MPA-style report...\n")
-
-    # Define rank prefixes and corresponding letters.
-    rank_prefixes <- c("d__", "k__", "p__", "c__", "o__", "f__", "g__", "s__")
-    rank_letters <- c("D", "K", "P", "C", "O", "F", "G", "S")
-
-    # Create a single regex pattern.
-    pattern <- paste0("(", paste(rank_prefixes, collapse = "|"), ")")
-
-    # Extract all rank prefixes from each taxon string.
-    all_matches <- stringr::str_extract_all(report[, COLNAME_MPA_TAXON], pattern)
-
-    # Find the last (most specific) rank for each taxon.
-    last_ranks <- sapply(all_matches, function(x) tail(x, 1))
-
-    # Map rank prefixes to letters.
-    report[, COLNAME_MPA_RANK] <- rank_letters[match(last_ranks, rank_prefixes)]
-
-    if (verbose) cat("\tRank column added successfully.\n")
-
-    return(report)
-}
-
 #' ASSESS THE TOTAL NUMBER OF READS ANALYSED FOR EACH SAMPLE
 #' 
 #' @param merged_reports
