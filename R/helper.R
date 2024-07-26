@@ -51,11 +51,7 @@ loadReference <- function(reference_path) {
 loadMetadata <- function(mdata_path) {
 
     # Read metadata file.
-    mdata <- read.csv(
-        mdata_path,
-        row.names = 1,
-        header = TRUE
-    )
+    mdata <- readr::read_delim(mdata_path)
 
     return(mdata)
 }
@@ -93,14 +89,14 @@ load_MPAreports <- function(mpa_reports_dir, verbose = TRUE) {
         id = "sample"
     ) |>
         # Split rows by "|" into primary taxa.
-        tidyr::separate(col = COLNAME_MPA_TAXON, into = taxonomy, sep = "\\|") |>
+        tidyr::separate(col = COLNAME_MPA_TAXON_HIERARCHY, into = taxonomy, sep = "\\|") |>
         # Cleanup the names in the taxonomy columns.
         dplyr::mutate(across(taxonomy, ~ stringr::str_remove(.x, pattern = "[a-z]__"))) |>
         # Simplify sample IDs.
         dplyr::mutate(sample = stringr::str_remove(basename(sample), ".kraken.mpa")) |>
         # Collect the rightmost non-NA item in each row.
         dplyr::mutate(
-            taxon_leaf = coalesce(species, genus, family, order, class, phylum, kingdom, domain),
+            taxon_leaf = dplyr::coalesce(species, genus, family, order, class, phylum, kingdom, domain),
             .before = "domain"
         ) |>
         # Replace underscores with spaces in taxon names.
@@ -126,7 +122,7 @@ load_STDreports <- function(std_reports_dir, verbose = TRUE) {
     }
 
     # Create a dataframe (tibble) and process.
-    std_reports <- read_tsv(
+    std_reports <- readr::read_tsv(
         std_files,
         col_names = c(
             COLNAME_STD_PCT_FRAG_CLADE, 
@@ -182,36 +178,79 @@ mergeReports <- function(std_reports, mpa_reports) {
 #' @param categories Categories of interest from df2 that should be added to df1.
 #' @return An updated version of df1.
 #' @export
-addMetadata <- function(report, metadata, columns) {
+addMetadata <- function(report, metadata, sample_col, columns) {
 
-    if (is_mpa(report)) {
-        colname_sample <- COLNAME_MPA_SAMPLE
-    } else {
-        colname_sample <- COLNAME_STD_SAMPLE
-    }
+    colname_sample <- ifelse(
+        is_mpa(report),
+        COLNAME_MPA_SAMPLE,
+        COLNAME_STD_SAMPLE
+    )
 
-    # Create temporary sample columns to facilitate the matching between dataframes.
-    metadata[["sample"]] <- rownames(metadata)
+    # Select metadata columns that will be added to the report.
+    metadata <- metadata |> 
+        dplyr::select(get("sample_col"), columns)
+    colnames(metadata) <- gsub(" ", "_", colnames(metadata))
 
-    # Iterate over categories...
-    for (column in columns) {
+    report[["sample"]] <- report[[COLNAME_STD_SAMPLE]]
+    metadata[[""]]
 
-        column <- gsub(" ", "_", column)
+    report <- dplyr::left_join(
+        report,
+        metadata,
+        by = c(COLNAME_STD_SAMPLE = sample_col)
+    ) #|>
+      #  dplyr::rename(sample = COLNAME_STD_SAMPLE)
 
-        # Add metadata from one dataframe to another based on sample IDs.
-        report[, column] <- metadata[, column][match(report[, colname_sample], metadata[["sample"]])]
-    }
-
-    # Remove temporary sample columns.
-    metadata[["sample"]] <- NULL
-
-    # Get names of columns that contain results (and not sample names / metadata).
+    # Get names of columns that contain results (and not sample names / metadata) and
+    # reorder the columns so that the metadata stays between the sample IDs and the
+    # Kraken2 results.
     results_cols <- colnames(report)[!(colnames(report) %in% c(colname_sample, columns))]
-
     report <- report[, c(colname_sample, columns, results_cols)]
 
     return(report)
 }
+
+calculate_p_value <- function(sample_n_uniq_minimisers_taxon, db_n_minimisers_taxon, db_n_minimisers_total, sample_size) {
+
+    # Get proportion of clade-level minimisers of a given taxon in the reference database (DB).
+    # This is the same as the probability of getting this taxon from the database.
+    p_clade_in_db <- (db_n_minimisers_taxon / db_n_minimisers_total)
+
+    # Mean is the total number of reads analysed from the sample (sample size) times the probability of success which 
+    # is equal to the proportion of clade-level minimisers of the taxon out of the total available in the reference DB.
+    mean <- (sample_size * p_clade_in_db)
+
+    # Standard deviation = sqrt(n*P*(1-p))
+    sdev <- sqrt(sample_size * p_clade_in_db * (1 - p_clade_in_db)) 
+
+    # Calculate p-values.
+    pval <- pnorm(
+        q = sample_n_uniq_minimisers_taxon, 
+        mean = mean, 
+        sd = sdev, 
+        lower.tail = FALSE
+    )
+            
+    return(pval)
+}
+
+adjust_p_value <- function(report, pval, rank, sample) {
+
+    # Get number of taxa identified in a given rank for a given sample.
+    n_taxa_rank <- get_nTaxaInRank(
+        report = report, 
+        rank = rank, 
+        sample = sample
+    )
+
+    # Perform p-value correction.
+    padj <- p.adjust(pval, method = "BH", n = n_taxa_rank)
+
+    return(padj)
+}
+
+
+
 
 
 ############################################
@@ -219,22 +258,12 @@ addMetadata <- function(report, metadata, columns) {
 #######################################################################################################
 
 is_mpa <- function(report) {
-    
-    if (COLNAME_MPA_TAXON == COLNAME_STD_TAXON ) {
-        stop("The column names are the same in both report formats and therefore it will
-             not be possible to distinguish between them.")
-    } else if (
-        !(COLNAME_MPA_TAXON %in% colnames(report)) &&
-        !(COLNAME_STD_TAXON %in% colnames(report))
-    ) {
-        stop(paste0("There is no support for the report format that has been provided. ",
-            "Please review your input. If your report is in standard or MPA format, ",
-            "make sure you load it using load_STDreports() or load_MPAreports()."))
-    }
 
-    # If the column "taxon" is present in the report, then it is an MPA-style report.
-    if (COLNAME_MPA_TAXON %in% colnames(report)) return(TRUE)
-    else if (COLNAME_STD_TAXON %in% colnames(report)) return(FALSE)
+    ifelse(
+        COLNAME_MPA_TAXON_LEAF %in% colnames(report),
+        return(TRUE),
+        return(FALSE)
+    )
 }
 
 extract_taxon <- function(line, rank, last_in_hierarchy) {
@@ -333,7 +362,7 @@ get_association <- function(ranks) {
 sum_domainReads <- function(report, domains) {
 
     if (is_mpa(report)) {
-        subset <- report[grep(domains, report[, COLNAME_MPA_TAXON]),]
+        subset <- report[grep(domains, report[, COLNAME_MPA_TAXON_HIERARCHY]),]
         sum_domains <- sum(subset[, COLNAME_MPA_N_FRAG_CLADE])
     } else {
         subset <- report[grep(domains, report[, COLNAME_STD_TAXON]),]
@@ -415,10 +444,10 @@ prepare_for_plotDomainReads <- function(report, include_eukaryotes) {
 
     if (is_mpa(report)) {
            
-        colname_taxon <- COLNAME_MPA_TAXON
+        colname_taxon <- COLNAME_MPA_TAXON_HIERARCHY
         colname_n_frag_clade <- COLNAME_MPA_N_FRAG_CLADE
 
-        report[, COLNAME_MPA_TAXON] <- gsub("d__", "", report[, COLNAME_MPA_TAXON])
+        report[, COLNAME_MPA_TAXON_HIERARCHY] <- gsub("d__", "", report[, COLNAME_MPA_TAXON_HIERARCHY])
         
     } else {
 
