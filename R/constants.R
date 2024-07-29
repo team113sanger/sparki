@@ -21,7 +21,7 @@ COLNAME_STD_RANK <- "rank"
 COLNAME_STD_NCBI_ID <- "ncbi_id"
 COLNAME_STD_TAXON <- "taxon"
 COLNAME_STD_HIERARCHY <- "info_from_mpa_report"
-COLNAME_STD_TOTAL_READS <- "n_total_reads_in_sample"
+COLNAME_STD_SAMPLE_SIZE <- "sample_size"
 COLNAME_STD_DOMAIN <- "domain"
 COLNAME_STD_DB_MINIMISERS_CLADE <- "db_n_minimisers_clade"
 COLNAME_STD_DB_MINIMISERS_TAXON <- "db_n_minimisers_taxon"
@@ -31,6 +31,7 @@ COLNAME_STD_P_CLADE_IN_DB <- "p_clade_in_db"
 COLNAME_STD_PVALUE <- "pvalue"
 COLNAME_STD_PADJ <- "padj"
 COLNAME_STD_SIGNIF <- "significance"
+COLNAME_STD_N_TAXA_RANK <- "n_taxa_in_rank"
 
 #### MPA-style report #### 
 COLNAME_MPA_SAMPLE <- "sample"
@@ -38,11 +39,6 @@ COLNAME_MPA_N_FRAG_CLADE <- "n_fragments_clade"
 COLNAME_MPA_TAXON_HIERARCHY <- "taxon_hierarchy"
 COLNAME_MPA_TAXON_LEAF <- "taxon_leaf"
 COLNAME_MPA_RANK <- "rank"
-COLNAME_MPA_NCBI_ID <- "ncbi_id"
-COLNAME_MPA_TOTAL_READS <- "n_total_reads_in_sample"
-COLNAME_MPA_DB_MINIMISERS_CLADE <- "db_n_minimisers_clade"
-COLNAME_MPA_DB_MINIMISERS_TAXON <- "db_n_minimisers_taxon"
-COLNAME_MPA_RATIO_CLADE <- "ratio_clade"
 
 #### Auxiliary dataframes ####
 
