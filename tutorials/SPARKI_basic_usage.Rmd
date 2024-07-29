@@ -31,6 +31,7 @@ source("R/constants.R")
 ```{r load_data}
 mpa_reports <- load_MPAreports("test/mpa", verbose = FALSE)
 std_reports <- load_STDreports("test/reports", verbose = FALSE)
+merged_reports <- mergeReports(std_reports, mpa_reports)
 
 mdata <- loadMetadata("test/metadata.csv") # Optional
 ref_db <- loadReference("test/inspect.txt")
@@ -38,23 +39,22 @@ ref_db <- loadReference("test/inspect.txt")
 
 ```{r add_metadata}
 mdata_columns <- c("Diagnosis_short", "Site_group")
-
-mpa_reports <- addMetadata(mpa_reports, mdata, mdata_columns)
-std_reports <- addMetadata(std_reports, mdata, mdata_columns)
+merged_reports <- addMetadata(merged_reports, mdata, "Tumour_RNA", mdata_columns)
 ```
 
 # Process data
 
 ```{r process_data}
-mpa_reports <- addRank(mpa_reports, verbose = FALSE)
-mpa_reports <- addConciseTaxon(mpa_reports, verbose = FALSE)
-mpa_reports <- transfer_ncbiID(mpa_reports, std_reports)
-std_reports <- transferDomains(std_reports, mpa_reports, verbose = FALSE)
-std_reports <- add_nReads(std_reports)
-std_reports <- add_DBinfo(std_reports, ref_db)
-mpa_reports <- transfer_nReads(mpa_reports, std_reports) # To be run after: std_reports <- add_nReads(std_reports)
-mpa_reports <- add_DBinfo(mpa_reports, ref_db)
+merged_reports <- addSampleSize(merged_reports)
+merged_reports <- add_DBinfo(merged_reports, ref_db)
 ```
+
+```{r assessing_significance, echo = TRUE}
+merged_reports <- subsetReports(merged_reports, include_human = FALSE)
+merged_reports <- assess_ratioMinimisers(merged_reports)
+merged_reports <- assess_statSig(merged_reports, ref_db)
+```
+
 
 # Summary of read classification
 
@@ -180,12 +180,6 @@ plotDomainReads_barplot(
   outdir = "test/outputs/",
   prefix = "SebT"
 )
-```
-
-```{r assessing_significance, echo = TRUE}
-std_reports <- subset_STDreport(std_reports, include_human = FALSE)
-std_reports <- assess_ratioMinimisers(std_reports)
-std_reports <- assess_statSig(std_reports, ref_db)
 ```
 
 ```{r plots10, echo = TRUE, fig.retina = 1, fig.width = 25, fig.height = 15, fig.align = 'center'}
