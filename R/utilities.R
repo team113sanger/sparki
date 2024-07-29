@@ -52,169 +52,6 @@ mergeReports <- function(std_report, mpa_report, verbose) {
     return(updated_std_report)
 }
 
-#####################################################
-## UTILITY FUNCTIONS FOR ADDING COLUMNS TO REPORTS ##
-#######################################################################################################
-
-#' ASSESS THE TOTAL NUMBER OF READS ANALYSED FOR EACH SAMPLE
-#' 
-#' @param merged_reports
-#' @return An updated version of the input dataframe, with a new column containing sample sizes.
-add_nReads <- function(report) {
-
-    # If report is in MPA format...
-    if (is_mpa(report)) {
-        stop(paste0(
-            "This function is not applicable to MPA-style reports. The purpose of this function ",
-            "is to assess the total number of reads (classified + unclassified) assessed in each ",
-            "sample, but the MPA-style reports do not contain information on unclassified reads. ",
-            "If you would like to have the total number of reads in your MPA-style report, please do:\n\n",
-            "std_reports <- add_nReads(std_reports)\n", "mpa_reports <- transfer_nReads(mpa_reports, ",
-            "std_reports)\n\n"
-        ))
-    }
-
-    report[, COLNAME_STD_TOTAL_READS] <- NA
-
-    # Get numbers of classified/unclassified reads for each sample.
-    subset <- report[report[, COLNAME_STD_TAXON] %in% c("unclassified", "root"), ]
-
-    for (sample in unique(subset[, COLNAME_STD_SAMPLE])) {
-
-        subset_sample <- subset[subset[, COLNAME_STD_SAMPLE] == sample, ]
-
-        n_unclassified_reads <- as.numeric(
-            subset_sample[, COLNAME_STD_N_FRAG_CLADE][subset_sample[, COLNAME_STD_TAXON] == "unclassified"]
-        )
-        n_classified_reads <- as.numeric(
-            subset_sample[, COLNAME_STD_N_FRAG_CLADE][subset_sample[, COLNAME_STD_TAXON] == "root"]
-        )
-
-        report[, COLNAME_STD_TOTAL_READS][report[, COLNAME_STD_SAMPLE] == sample] <- (n_unclassified_reads + n_classified_reads)
-    }
-
-    return(report)
-}
-
-add_DBinfo <- function(report, ref_db) {
-
-    if (is_mpa(report)) {
-
-        colname_db_minimisers_taxon <- COLNAME_MPA_DB_MINIMISERS_TAXON
-        colname_db_minimisers_clade <- COLNAME_MPA_DB_MINIMISERS_CLADE
-        colname_ncbi_id <- COLNAME_MPA_NCBI_ID
-
-    } else {
-
-        colname_db_minimisers_taxon <- COLNAME_STD_DB_MINIMISERS_TAXON
-        colname_db_minimisers_clade <- COLNAME_STD_DB_MINIMISERS_CLADE
-        colname_ncbi_id <- COLNAME_STD_NCBI_ID
-
-    }
-
-    report[, colname_db_minimisers_taxon] <- ref_db[, COLNAME_REF_DB_MINIMISERS_TAXON][match(
-        report[, colname_ncbi_id], ref_db[, COLNAME_REF_DB_NCBI_ID]
-    )]
-    report[, colname_db_minimisers_clade] <- ref_db[, COLNAME_REF_DB_MINIMISERS_CLADE][match(
-        report[, colname_ncbi_id], ref_db[, COLNAME_REF_DB_NCBI_ID]
-    )]
-
-    return(report)
-}
-
-
-#################################################################################
-## UTILITY FUNCTIONS FOR TRANSFERRING COLUMNS BETWEEN DIFFERENT REPORT FORMATS ##
-#######################################################################################################
-
-transfer_nReads <- function(report_mpa, report_std) {
-
-    if (is_mpa(report_std)) {
-        stop(paste0(
-            "The report you provided as 'report_std' is not actually in standard format. ",
-            "Please review your input!"
-        ))
-    } else if (!(is_mpa(report_mpa))) {
-        stop(paste0(
-            "The report you provided as 'report_mpa' is not actually in MPA format. ",
-            "Please review your input!"
-        ))
-    }
-
-    report_mpa[, COLNAME_MPA_TOTAL_READS] <- report_std[, COLNAME_STD_TOTAL_READS][match(
-        report_mpa[, COLNAME_MPA_SAMPLE], report_std[, COLNAME_STD_SAMPLE]
-    )]
-    report_mpa[, COLNAME_MPA_TOTAL_READS] <- as.numeric(report_mpa[, COLNAME_MPA_TOTAL_READS])
-
-    return(report_mpa)
-}
-
-
-transfer_ncbiID <- function(report_mpa, report_std) {
-
-    if (is_mpa(report_std)) {
-        stop(paste0(
-            "The report you provided as 'report_std' is not actually in standard format. ",
-            "Please review your input!"
-        ))
-    } else if (!(is_mpa(report_mpa))) {
-        stop(paste0(
-            "The report you provided as 'report_mpa' is not actually in MPA format. ",
-            "Please review your input!"
-        ))
-    }
-
-    ranks <- unique(report_std[, COLNAME_STD_RANK])
-    ranks <- ranks[ranks %in% report_mpa[, COLNAME_MPA_RANK]]
-    ranks <- get_association(ranks)
-
-    report_mpa[["temp_column"]] <- seq_len(nrow(report_mpa))
-
-    final_report <- data.frame(matrix(nrow = 0, ncol = (ncol(report_mpa) + 1)))
-
-    for (rank in ranks) {
-
-        subset <- report_mpa[report_mpa[, COLNAME_MPA_RANK] == rank, ]
-
-        subset[, COLNAME_MPA_NCBI_ID] <- report_std[, COLNAME_STD_NCBI_ID][match(
-            subset[, names(ranks)[ranks == rank]], report_std[, COLNAME_STD_TAXON]
-        )]
-
-        final_report <- rbind(final_report, subset)
-
-    }
-
-    final_report <- final_report[order(final_report[["temp_column"]], decreasing = FALSE), ]
-    final_report[["temp_column"]] <- NULL
-
-    return(final_report)
-}
-
-transferDomains <- function(report_std, report_mpa, verbose = TRUE, inference = TRUE) {
-
-    if (is_mpa(report_std)) {
-        stop(paste0(
-            "The report you provided as 'report_std' is not actually in standard format. ",
-            "Please review your input!"
-        ))
-    } else if (!(is_mpa(report_mpa))) {
-        stop(paste0(
-            "The report you provided as 'report_mpa' is not actually in MPA format. ",
-            "Please review your input!"
-        ))
-    }
-
-    if (verbose) {
-        cat("Adding domain info from the MPA-style report to the standard report\n")
-    }
-
-    report_std <- retrieve_rankDomains(report_std, report_mpa, verbose)
-    #report_std <- retrieve_subrankDomains(report_std, report_mpa, verbose, inference)
-    
-    return(report_std)
-}
-
-
 #########################################################
 ## UTILITY FUNCTIONS FOR CREATING AUXILIARY DATAFRAMES ##
 #######################################################################################################
@@ -417,22 +254,11 @@ getProportion <- function(report, taxon) {
 assess_ratioMinimisers <- function(report) {
 
     if (is_mpa(report)) {
-        
-        stop(paste0(
-            "This function does not support MPA-style reports. Please provide a standard report."
-        ))
-
-    } else {
-
-        colname_uniq_minimisers <- COLNAME_STD_UNIQ_MINIMISERS
-        colname_db_minimisers_clade <- COLNAME_STD_DB_MINIMISERS_CLADE
-        colname_db_minimisers_taxon <- COLNAME_STD_DB_MINIMISERS_TAXON
-        colname_ratio_clade <- COLNAME_STD_RATIO_CLADE
-        colname_ratio_taxon <- COLNAME_STD_RATIO_TAXON
+        stop(paste0("This function does not support MPA-style reports. Please provide a standard report."))
+    } 
     
-        report[, colname_ratio_taxon] <- (report[, colname_uniq_minimisers] / report[, colname_db_minimisers_taxon])
-        report[, colname_ratio_clade] <- (report[, colname_uniq_minimisers] / report[, colname_db_minimisers_clade])
-    }
+    report[, COLNAME_STD_RATIO_TAXON] <- (report[, COLNAME_STD_UNIQ_MINIMISERS] / report[, COLNAME_STD_DB_MINIMISERS_TAXON])
+    report[, COLNAME_STD_RATIO_CLADE] <- (report[, COLNAME_STD_UNIQ_MINIMISERS] / report[, COLNAME_STD_DB_MINIMISERS_CLADE])
 
     return(report)
 }
@@ -445,25 +271,27 @@ assess_ratioMinimisers <- function(report) {
 #' @return An updated version of the input dataframe, with new columns containing statistical significance results.
 assess_statSig <- function(report, ref_db, verbose = TRUE) {
 
-    if (is_mpa(report)) {
-        stop(paste0("This function does not support MPA-style reports. Please provide a standard report."))
-    } 
+    if (is_mpa(report)) stop(paste0("This function does not support MPA-style reports."))
 
     # Calculate p-values.
     report[, COLNAME_STD_PVALUE] <- calculate_p_value(
-        sample_n_uniq_minimisers_taxon = report[, COLNAME_STD_UNIQ_MINIMISERS],
-        db_n_minimisers_taxon = report[, COLNAME_STD_DB_MINIMISERS_CLADE],
-        db_n_minimisers_total = sum(ref_db[, COLNAME_REF_DB_MINIMISERS_CLADE]),
-        sample_size = report[, COLNAME_STD_TOTAL_READS]
+        report[[COLNAME_STD_UNIQ_MINIMISERS]], 
+        report[[COLNAME_STD_DB_MINIMISERS_CLADE]], 
+        report[[COLNAME_STD_SAMPLE_SIZE]]
     )
 
-    # Adjust p-values.
-    report[, COLNAME_STD_PADJ] <- adjust_p_value(
-        report = report,
-        pval = report[, COLNAME_STD_PVALUE],
-        rank = report[, COLNAME_STD_RANK],
-        sample = report[, COLNAME_STD_SAMPLE]
-    )
+    # Add number of taxa identified in a given rank for a given sample.
+    report <- add_nTaxaInRank(report)
+
+    # Perform p-value correction.
+    report[, COLNAME_STD_PADJ] <- sapply(seq_len(nrow(report)), function(x) {
+
+        p.adjust(
+            report[[COLNAME_STD_PVALUE]][x], 
+            method = "BH",
+            n = report[["n_taxa_in_rank"]][x]
+        )
+    })
 
     # Add column stating whether results are significant or not based on the adjusted p-value.
     report[, COLNAME_STD_SIGNIF] <- ifelse(
