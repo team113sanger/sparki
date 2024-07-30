@@ -46,15 +46,11 @@ merged_reports <- addMetadata(merged_reports, mdata, "Tumour_RNA", mdata_columns
 
 ```{r process_data}
 merged_reports <- addSampleSize(merged_reports)
-merged_reports <- add_DBinfo(merged_reports, ref_db)
-```
-
-```{r assessing_significance, echo = TRUE}
+merged_reports <- addMinimiserData(merged_reports, ref_db)
 merged_reports <- subsetReports(merged_reports, include_human = FALSE)
-merged_reports <- assess_ratioMinimisers(merged_reports)
-merged_reports <- assess_statSig(merged_reports, ref_db)
+merged_reports <- assessMinimiserRatio(merged_reports)
+merged_reports <- assessStatistics(merged_reports, verbose = TRUE)
 ```
-
 
 # Summary of read classification
 
@@ -62,7 +58,7 @@ merged_reports <- assess_statSig(merged_reports, ref_db)
 
 ```{r plots1, echo = TRUE, fig.retina = 1, fig.width = 4, fig.height = 3.5, fig.align = 'center'}
 plotClassificationSummary_violin(
-  std_reports, 
+  merged_reports, 
   return_plot = TRUE,
   outdir = "test/outputs/",
   prefix = "SebT"
@@ -76,7 +72,7 @@ plotClassificationSummary_violin(
 ```{r plots2, echo = TRUE, fig.retina = 1, fig.width = 6, fig.height = 5, fig.align = 'center'}
 
 plotClassificationSummary_barplot(
-  std_reports, 
+  merged_reports, 
   include_sample_names = FALSE, 
   orientation = "horizontal",
   return_plot = TRUE,
@@ -91,7 +87,7 @@ plotClassificationSummary_barplot(
 ```{r plots3, echo = TRUE, fig.retina = 1, fig.width = 6, fig.height = 5, fig.align = 'center'}
 
 plotClassificationSummary_barplot(
-  std_reports, 
+  merged_reports, 
   include_sample_names = TRUE, 
   orientation = "horizontal",
   return_plot = TRUE,
@@ -108,7 +104,7 @@ plotClassificationSummary_barplot(
 ```{r plots4, echo = TRUE, fig.retina = 1, fig.width = 5, fig.height = 5, fig.align = 'center'}
 
 plotClassificationSummary_barplot(
-  std_reports, 
+  merged_reports, 
   include_sample_names = FALSE, 
   orientation = "vertical",
   return_plot = TRUE,
@@ -123,7 +119,7 @@ plotClassificationSummary_barplot(
 ```{r plots5, echo = TRUE, fig.retina = 1, fig.width = 5, fig.height = 5, fig.align = 'center'}
 
 plotClassificationSummary_barplot(
-  std_reports, 
+  merged_reports, 
   include_sample_names = TRUE, 
   orientation = "vertical", 
   return_plot = TRUE,
@@ -137,7 +133,7 @@ plotClassificationSummary_barplot(
 
 ```{r plots6, echo = TRUE, fig.retina = 1, fig.width = 4, fig.height = 5, fig.align = 'center'}
 plotDomainReads_violin(
-  std_reports, 
+  merged_reports, 
   include_eukaryotes = FALSE, 
   return_plot = TRUE,
   outdir = "test/outputs/",
@@ -147,7 +143,7 @@ plotDomainReads_violin(
 
 ```{r plots7, echo = TRUE, fig.retina = 1, fig.width = 4, fig.height = 5, fig.align = 'center'}
 plotDomainReads_barplot(
-  std_reports, 
+  merged_reports, 
   include_eukaryotes = FALSE, 
   include_sample_names = FALSE, 
   orientation = "vertical", 
@@ -162,7 +158,7 @@ plotDomainReads_barplot(
 
 ```{r plots8, echo = TRUE, fig.retina = 1, fig.width = 4, fig.height = 5, fig.align = 'center'}
 plotDomainReads_violin(
-  std_reports, 
+  merged_reports, 
   include_eukaryotes = TRUE, 
   return_plot = TRUE,
   outdir = "test/outputs/",
@@ -172,7 +168,7 @@ plotDomainReads_violin(
 
 ```{r plots9, echo = TRUE, fig.retina = 1, fig.width = 4, fig.height = 5, fig.align = 'center'}
 plotDomainReads_barplot(
-  std_reports, 
+  merged_reports, 
   include_eukaryotes = TRUE, 
   return_plot = TRUE, 
   include_sample_names = FALSE, 
@@ -185,7 +181,7 @@ plotDomainReads_barplot(
 ```{r plots10, echo = TRUE, fig.retina = 1, fig.width = 25, fig.height = 15, fig.align = 'center'}
 
 plotMinimisers_dotplot(
-  std_reports, 
+  merged_reports, 
   domain = "Viruses", 
   return_plot = TRUE, 
   fig_width = 25, 

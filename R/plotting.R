@@ -17,16 +17,21 @@ plotClassificationSummary_violin <- function(report, return_plot, outdir, prefix
     if (missing(outdir)) outdir <- NA
 
     # Prepare data for plotting.
-    class_unclass_df <- getClassificationSummary(report)
+    summary <- getClassificationSummary(report)
+    summary[["type"]] <- summary[[COLNAME_CLASSIF_SUMMARY_N_READS]]
+    summary[["log10nReads"]] <- log10(summary[[COLNAME_CLASSIF_SUMMARY_N_READS]])
 
     # Create violin plot.
     plot <- ggplot2::ggplot(
-            class_unclass_df, 
-            ggplot2::aes(x = type, y = log10(n_reads))
-        ) +
+        summary, 
+        ggplot2::aes(
+            x = type, 
+            y = log10nReads
+        )
+    ) +
         ggplot2::geom_violin(scale = "width", fill = "white", color = "black") +
-        ggplot2::geom_line(ggplot2::aes(group = sample), alpha = 0.25) +
-        ggplot2::geom_point(ggplot2::aes(color = type), alpha = 0.5) +
+        ggplot2::geom_line(ggplot2::aes(group = !!COLNAME_CLASSIF_SUMMARY_SAMPLE), alpha = 0.25) +
+        ggplot2::geom_point(ggplot2::aes(color = !!COLNAME_CLASSIF_SUMMARY_READ_TYPE), alpha = 0.5) +
         ggplot2::theme_classic() +
         ggplot2::theme(
             # x-axis
@@ -40,9 +45,7 @@ plotClassificationSummary_violin <- function(report, return_plot, outdir, prefix
         ) +
         ggplot2::xlab("\nRead classification") +
         ggplot2::ylab(expression("log"[10]~"(# reads)")) +
-        ggplot2::scale_color_manual(
-            values = c("indianred2", "royalblue")
-        )
+        ggplot2::scale_color_manual(values = c("indianred2", "royalblue"))
 
     # Decide what to do with plot based on user-defined options.
     handlePlot(
@@ -77,13 +80,17 @@ plotClassificationSummary_barplot <- function(
     if (missing(outdir)) outdir <- NA
 
     # Prepare data for plotting.
-    class_unclass_df <- getClassificationSummary(report)
+    summary <- getClassificationSummary(report)
 
     # Create bar plot.
     plot <- ggplot2::ggplot(
-            class_unclass_df, 
-            ggplot2::aes(x = n_reads, y = sample, fill = type)
-        ) +
+        summary, 
+        ggplot2::aes(
+            x = !!COLNAME_CLASSIF_SUMMARY_N_READS, 
+            y = !!COLNAME_CLASSIF_SUMMARY_SAMPLE, 
+            fill = !!COLNAME_CLASSIF_SUMMARY_READ_TYPE
+        )
+    ) +
         ggplot2::theme_void() +
         ggplot2::theme(
             # x-axis
@@ -141,29 +148,31 @@ plotDomainReads_violin <- function(
     prefix = "", fig_width, fig_height
 ) {
 
-    if (include_eukaryotes == TRUE) {
-        x_lab <- "\nProportion of classified reads\n(all domains)"
-        filename <- "nReadsDomains_violin_with_eukaryotes.pdf"
-        plot_width <- 5
-        plot_height <- 5
-    } else if (include_eukaryotes == FALSE) {
-        x_lab <- "\nProportion of classified reads\n(non-eukaryotes only)"
-        filename <- "nReadsDomains_violin_without_eukaryotes.pdf"
-        plot_width <- 5
-        plot_height <- 3.5
-    } else {
+    if (!(include_eukaryotes %in% c(TRUE, FALSE))) {
         stop(paste0(
             "The value of include_eukaryotes should be either TRUE or FALSE, but ",
             include_eukaryotes, " was provided. Please review your input."
         ))
     }
 
+    x_lab <- ifelse(
+        include_eukaryotes == TRUE,
+        "\nProportion of classified reads\n(all domains)",
+        "\nProportion of classified reads\n(non-eukaryotes only)"
+    )
+    filename <- ifelse(
+        include_eukaryotes == TRUE, "nReadsDomains_violin_with_eukaryotes.pdf",
+        "nReadsDomains_violin_without_eukaryotes.pdf"
+    )
+    plot_height <- ifelse(include_eukaryotes == TRUE, 5, 3.5)
+
+    # Prepare data for plotting.
     report <- prepare_for_plotDomainReads(report, include_eukaryotes)
 
     # Create violin plot.
     plot <- ggplot2::ggplot(
             report, 
-            ggplot2::aes(x = colname_taxon, y = log10(colname_n_frag_clade), fill = colname_taxon)
+            ggplot2::aes(x = domain, y = log10(colname_n_frag_clade), fill = domain)
         ) +
         ggplot2::geom_violin(scale = "width") +
         ggplot2::geom_jitter(size = 0.5) +
@@ -182,12 +191,12 @@ plotDomainReads_violin <- function(
         ) +
         ggplot2::ylab(expression("log"[10]~"(# classified reads)")) +
         ggplot2::scale_fill_manual(values = c("gold1", "royalblue", "snow2", "indianred2")) +
-        ggplot2::facet_wrap(~colname_taxon, scales = "free")
+        ggplot2::facet_wrap(~domain, scales = "free")
 
     # Decide what to do with plot based on user-defined options.
     handlePlot(
         plot = plot, prefix = prefix, return_plot = return_plot, filename = filename,
-        outdir = outdir, fig_width = plot_width, fig_height = plot_height
+        outdir = outdir, fig_width = 5, fig_height = plot_height
     )
 }
 
