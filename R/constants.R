@@ -14,6 +14,7 @@ COLNAME_REF_DB_TAXON <- "taxon"
 COLNAME_STD_SAMPLE <- "sample"
 COLNAME_STD_PCT_FRAG_CLADE <- "pct_fragments_clade"
 COLNAME_STD_N_FRAG_CLADE <- "n_fragments_clade"
+COLNAME_STD_LOG_N_FRAG_CLADE <- "log10_n_fragments_clade"
 COLNAME_STD_N_FRAG_TAXON <- "n_fragments_taxon"
 COLNAME_STD_MINIMISERS <- "n_minimisers"
 COLNAME_STD_UNIQ_MINIMISERS <- "n_distinct_minimisers"
@@ -42,16 +43,17 @@ COLNAME_MPA_RANK <- "rank"
 
 #### Auxiliary dataframes ####
 
-# Number of domain reads per sample.
-COLNAME_DOMAIN_READS_SAMPLE <- "sample"
-COLNAME_DOMAIN_READS_TAXON <- "taxon"
-COLNAME_DOMAIN_READS_N_READS <- "n_clade_reads"
-
 # Number of classified/unclassified reads per sample.
 COLNAME_CLASSIF_SUMMARY_SAMPLE <- "sample"
 COLNAME_CLASSIF_SUMMARY_READ_TYPE <- "type"
-COLNAME_CLASSIF_SUMMARY_N_READS <- "n_reads"
+COLNAME_CLASSIF_SUMMARY_N_FRAG <- "n_fragments_clade"
+COLNAME_CLASSIF_SUMMARY_LOG_N_FRAG <- "log10_n_fragments_clade"
 
 # Proportion of classified reads per sample.
 COLNAME_PROP_SAMPLE <- "sample"
 COLNAME_PROP_CLASSIFIED <- "proportion_classified"
+
+# Number of domain reads per sample.
+COLNAME_DOMAIN_READS_SAMPLE <- "sample"
+COLNAME_DOMAIN_READS_N_FRAG <- "n_fragments_clade"
+COLNAME_DOMAIN_READS_LOG_N_FRAG <- "log10_n_fragments_clade"

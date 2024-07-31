@@ -47,9 +47,6 @@ merged_reports <- addMetadata(merged_reports, mdata, "Tumour_RNA", mdata_columns
 ```{r process_data}
 merged_reports <- addSampleSize(merged_reports)
 merged_reports <- addMinimiserData(merged_reports, ref_db)
-merged_reports <- subsetReports(merged_reports, include_human = FALSE)
-merged_reports <- assessMinimiserRatio(merged_reports)
-merged_reports <- assessStatistics(merged_reports, verbose = TRUE)
 ```
 
 # Summary of read classification
@@ -179,6 +176,10 @@ plotDomainReads_barplot(
 ```
 
 ```{r plots10, echo = TRUE, fig.retina = 1, fig.width = 25, fig.height = 15, fig.align = 'center'}
+
+merged_reports <- subsetReports(merged_reports, include_human = FALSE)
+merged_reports <- assessMinimiserRatio(merged_reports)
+merged_reports <- assessStatistics(merged_reports, verbose = TRUE)
 
 plotMinimisers_dotplot(
   merged_reports, 

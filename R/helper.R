@@ -50,21 +50,32 @@ is_mpa <- function(report) {
 
 prepare_for_plotDomainReads <- function(report, include_eukaryotes) {
 
+    if (is_mpa(report)) stop(paste0("This function does not support MPA-style reports."))
+
     domains <- "Viruses|Archaea|Bacteria"
-    if (include_eukaryotes) domains <- paste("Eukaryota|", domains)
+    if (include_eukaryotes == TRUE) domains <- paste0("Eukaryota|", domains)
 
-    colname_n_frag_clade <- ifelse(
-        is_mpa(report),
-        COLNAME_MPA_N_FRAG_CLADE,
-        COLNAME_STD_N_FRAG_CLADE
-    )
-
-    report <- report |> dplyr::filter(grepl(domain, pattern = domains))
-    report[["colname_n_frag_clade"]] <- report[, colname_n_frag_clade]
+    report <- report |> 
+        # Select relevant columns.
+        dplyr::select(
+            !!COLNAME_STD_SAMPLE,
+            !!COLNAME_STD_TAXON,
+            !!COLNAME_STD_N_FRAG_CLADE) |>
+        # Select relevant rows.
+        dplyr::filter(grepl(!!as.name(COLNAME_STD_TAXON), pattern = domains)) |>
+        # Rename columns.
+        dplyr::rename(
+            !!COLNAME_DOMAIN_READS_SAMPLE := !!COLNAME_STD_SAMPLE,
+            !!COLNAME_DOMAIN_READS_TAXON := !!COLNAME_STD_TAXON,
+            !!COLNAME_DOMAIN_READS_N_FRAG := !!COLNAME_STD_N_FRAG_CLADE
+        ) |>
+        # Create column with log-transformed number of clade-level fragments.
+        dplyr::mutate(
+            !!COLNAME_DOMAIN_READS_LOG_N_FRAG := log10(!!as.name(COLNAME_DOMAIN_READS_N_FRAG))
+        )
 
     return(report)
 }
-
 
 prepare_for_plotMinimisers <- function(report, domain_of_interest) {
 
@@ -74,63 +85,26 @@ prepare_for_plotMinimisers <- function(report, domain_of_interest) {
         # Select relevant rows.
         dplyr::filter(domain == domain_of_interest) |>
         # Select relevant columns.
-        dplyr::select(!!COLNAME_STD_SAMPLE, !!COLNAME_STD_TAXON, !!COLNAME_STD_RATIO_CLADE)
+        dplyr::select(
+            !!COLNAME_STD_SAMPLE,
+            !!COLNAME_STD_TAXON,
+            !!COLNAME_STD_RANK,
+            domain,
+            !!COLNAME_STD_N_FRAG_CLADE,
+            !!COLNAME_STD_RATIO_CLADE,
+            !!COLNAME_STD_PADJ,
+            !!COLNAME_STD_SIGNIF
+        ) |>
+        # Create column with log-transformed number of clade-level fragments.
+        dplyr::mutate(
+            !!COLNAME_STD_LOG_N_FRAG_CLADE := log10(!!as.name(COLNAME_STD_N_FRAG_CLADE))
+        ) |>
+        # Reorder columns.
+        dplyr::relocate(
+            !!COLNAME_STD_LOG_N_FRAG_CLADE, .after = !!COLNAME_STD_N_FRAG_CLADE
+        )
 
-
-    # Subset report to keep only a given domain.
-    subset <- std_reports[std_reports[, COLNAME_STD_DOMAIN] == domain, ]
-
-    df <- data.frame(matrix(nrow = 0, ncol = 8))
-
-    # Iterate over all samples....
-    for (sample in unique(subset[, COLNAME_STD_SAMPLE])) {
-
-        # Iterate over all taxa in a given domain...
-        for (taxon in unique(subset[, COLNAME_STD_TAXON])) {
-
-            # Identify whether a given taxon was identified in a given sample.
-            n_res <- length(subset[, COLNAME_STD_RATIO_CLADE][((subset[, COLNAME_STD_TAXON] == taxon) & 
-                (subset[, COLNAME_STD_SAMPLE] == sample))])
-
-            # If a given taxon WAS NOT identified in a given sample...
-            if(n_res == 0) {
-                
-                df <- rbind(
-                    df, 
-                    c(sample, domain, taxon, unique(subset[, COLNAME_STD_RANK][subset[, COLNAME_STD_TAXON] == taxon]),
-                      NA, NA, "Non-significant", NA)
-                )
-
-            # If a given taxon WAS identified in a given sample...
-            } else {
-
-                sample_taxon <- subset[(subset[, COLNAME_STD_TAXON] == taxon) & (subset[, COLNAME_STD_SAMPLE] == sample), ]
-
-                df <- rbind(
-                    df, 
-                    c(sample, domain, taxon, sample_taxon[, COLNAME_STD_RANK], sample_taxon[, COLNAME_STD_RATIO_CLADE],
-                      sample_taxon[, COLNAME_STD_PADJ], sample_taxon[, COLNAME_STD_SIGNIF], sample_taxon[, COLNAME_STD_N_FRAG_CLADE])
-                )
-            }
-        }
-    }
-
-    colnames(df) <- c(
-        COLNAME_STD_SAMPLE,
-        COLNAME_STD_DOMAIN, 
-        COLNAME_STD_TAXON, 
-        COLNAME_STD_RANK,
-        COLNAME_STD_RATIO_CLADE,
-        COLNAME_STD_PADJ,
-        COLNAME_STD_SIGNIF,
-        COLNAME_STD_N_FRAG_CLADE
-    )
-
-    df[, COLNAME_STD_RATIO_CLADE] <- as.numeric(df[, COLNAME_STD_RATIO_CLADE])
-    df[, COLNAME_STD_PADJ] <- as.numeric(df[, COLNAME_STD_PADJ])
-    df[, COLNAME_STD_N_FRAG_CLADE] <- as.numeric(df[, COLNAME_STD_N_FRAG_CLADE])
-
-    return(df)
+    return(subset)
 }
 
 ###################################

@@ -94,13 +94,11 @@ addMetadata <- function(report, metadata, metadata_sample_col, metadata_columns)
     report <- dplyr::left_join(
         report, metadata,
         by = dplyr::join_by(!!report_colname_sample)
-    ) 
-
-    # Get names of columns that contain results (and not sample names / metadata) and
-    # reorder the columns so that the metadata stays between the sample IDs and the
-    # Kraken2 results.
-    results_cols <- colnames(report)[!(colnames(report) %in% c(report_colname_sample, metadata_columns))]
-    report <- report[, c(report_colname_sample, metadata_columns, results_cols)]
+    ) |>
+        # Get names of columns that contain results (and not sample names / metadata) and
+        # reorder the columns so that the metadata stays between the sample IDs and the
+        # Kraken2 results.
+        dplyr::relocate(metadata_columns, .after = !!report_colname_sample)
 
     return(report)
 }
@@ -270,7 +268,7 @@ get_nDomainReads <- function(report, include_eukaryotes) {
         dplyr::group_by(!!as.name(colname_sample), !!as.name(colname_taxon)) |>
         # Sum classified reads for each sample + taxon group.
         dplyr::summarise(
-            !!COLNAME_DOMAIN_READS_N_READS := sum(!!as.name(colname_n_frag_clade)),
+            !!COLNAME_DOMAIN_READS_N_FRAG := sum(!!as.name(colname_n_frag_clade)),
             .groups = "keep"
         ) |>
         # Rename columns.
@@ -301,14 +299,22 @@ getClassificationSummary <- function(report) {
         dplyr::rename(
             !!COLNAME_CLASSIF_SUMMARY_SAMPLE := !!COLNAME_STD_SAMPLE,
             !!COLNAME_CLASSIF_SUMMARY_READ_TYPE := !!COLNAME_STD_TAXON,
-            !!COLNAME_CLASSIF_SUMMARY_N_READS := !!COLNAME_STD_N_FRAG_CLADE
+            !!COLNAME_CLASSIF_SUMMARY_N_FRAG := !!COLNAME_STD_N_FRAG_CLADE
         ) |>
         # Rename elements in column.
         dplyr::mutate(!!COLNAME_CLASSIF_SUMMARY_READ_TYPE := dplyr::case_when(
             !!as.name(COLNAME_CLASSIF_SUMMARY_READ_TYPE) == "unclassified" ~ "Unclassified",
             !!as.name(COLNAME_CLASSIF_SUMMARY_READ_TYPE) == "root" ~ "Classified"
-        ))
-
+        )) |>
+        # Create column with log-transformed number of clade-level fragments.
+        dplyr::mutate(
+            !!COLNAME_CLASSIF_SUMMARY_LOG_N_FRAG := log10(!!as.name(COLNAME_CLASSIF_SUMMARY_N_FRAG))
+        ) |>
+        # Reorder columns.
+        dplyr::relocate(
+            !!COLNAME_CLASSIF_SUMMARY_LOG_N_FRAG, .after = !!COLNAME_CLASSIF_SUMMARY_N_FRAG
+        )
+        
     return(summary)
 }
 
@@ -326,7 +332,7 @@ getClassificationProportion <- function(report, taxon) {
         # Reformat dataframe into a more convenient shape.
         tidyr::pivot_wider(
             names_from = !!COLNAME_CLASSIF_SUMMARY_READ_TYPE, 
-            values_from = !!COLNAME_CLASSIF_SUMMARY_N_READS
+            values_from = !!COLNAME_CLASSIF_SUMMARY_N_FRAG
         ) |>
         # Create temporary column with sample sizes (i.e. sum of unclasified and classified reads).
         dplyr::mutate(temp := rowSums(dplyr::across((where(is.numeric))))) |>
