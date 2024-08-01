@@ -128,6 +128,46 @@ plotClassificationSummary_barplot <- function(
     )
 }
 
+plotClassificationProportion <- function(report, return_plot, outdir, prefix = "") {
+
+    # Stop if report provided is in MPA-style format.
+    if (is_mpa(report)) stop(paste0("This function is not applicable to MPA-style reports."))
+
+    # Assign NA to outdir in case it has not been provided by the user.
+    if (missing(outdir)) outdir <- NA
+
+    # Prepare data for plotting.
+    summary <- getClassificationProportion(report)
+
+    # Create violin plot.
+    plot <- ggplot2::ggplot(
+        summary, 
+        ggplot2::aes(x = "", y = get(COLNAME_PROP_CLASSIFIED))
+    ) +
+        ggplot2::geom_violin(scale = "width", fill = "palegreen1", color = "black") +
+        ggplot2::geom_jitter(color = "black") +
+        ggplot2::theme_classic() +
+        ggplot2::theme(
+            # x-axis
+            axis.text.x = ggplot2::element_blank(),
+            axis.title.x = ggplot2::element_blank(),
+            axis.ticks.x = ggplot2::element_blank(),
+            # y-axis
+            axis.text.y = ggplot2::element_text(size = 12),
+            axis.title.y = ggplot2::element_text(size = 14, angle = 90),
+            # legend
+            legend.position = "none"
+        ) +
+        ggplot2::ylab("Proportion of\nclassified reads")
+
+    # Decide what to do with plot based on user-defined options.
+    handlePlot(
+        plot = plot, prefix = prefix, return_plot = return_plot, 
+        filename = "nReads_classifiedProportion_violinPlot.pdf", 
+        outdir = outdir, fig_width = 3, fig_height = 4
+    )
+}
+
 
 #' PLOT NUMBERS OF CLASSIFIED READS PER DOMAIN (VIOLIN PLOT)
 #' 
@@ -276,6 +316,41 @@ plotDomainReads_barplot <- function(
         plot = adjusted_plot[[1]], prefix = prefix, return_plot = return_plot, 
         filename = adjusted_plot[[2]], outdir = outdir, fig_width = adjusted_plot[[3]], 
         fig_height = adjusted_plot[[4]]
+    )
+}
+
+plotSignificanceSummary <- function(report, return_plot, outdir, prefix = "") {
+
+    summary <- getSignificanceSummary(report)
+
+    plot <- ggplot2::ggplot(
+        summary, ggplot2::aes(x = sample, y = n_taxa, fill = significance) 
+    ) +
+        ggplot2::geom_bar(position = "fill", stat = "identity") +
+        ggplot2::facet_wrap(~rank, ncol = 1) +
+        ggplot2::theme_classic() +
+        ggplot2::theme(
+            # x-axis
+            axis.text.x = ggplot2::element_blank(),
+            axis.title.x = ggplot2::element_text(size = 16),
+            axis.ticks.x = ggplot2::element_blank(),
+            # y-axis
+            axis.text.y = ggplot2::element_text(size = 15),
+            axis.title.y = ggplot2::element_text(size = 16, angle = 90),
+            # legend
+            legend.text = ggplot2::element_text(size = 15),
+            legend.title = ggplot2::element_text(size = 16),
+            legend.justification = "top"
+        ) +
+        ggplot2::xlab("\nSample\n") +
+        ggplot2::ylab("# Taxa\n") +
+        ggplot2::scale_fill_manual(name = "Significance", values = c("snow2", "indianred1"))
+
+    # Decide what to do with plot based on user-defined options.
+    handlePlot(
+        plot = plot, prefix = prefix, return_plot = return_plot, 
+        filename = "SignificanceSummary.pdf", outdir = outdir, fig_width = 10, 
+        fig_height = 5
     )
 }
 

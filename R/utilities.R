@@ -328,20 +328,54 @@ getClassificationProportion <- function(report, taxon) {
         ))
     }
 
-    proportion <- getClassificationSummary(report) |>
-        # Reformat dataframe into a more convenient shape.
-        tidyr::pivot_wider(
-            names_from = !!COLNAME_CLASSIF_SUMMARY_READ_TYPE, 
-            values_from = !!COLNAME_CLASSIF_SUMMARY_N_FRAG
+    proportion <- report |>
+        # Select relevant columns.
+        dplyr::select(
+            !!COLNAME_STD_SAMPLE,
+            !!COLNAME_STD_SAMPLE_SIZE,
+            !!COLNAME_STD_TAXON,
+            !!COLNAME_STD_N_FRAG_CLADE
         ) |>
-        # Create temporary column with sample sizes (i.e. sum of unclasified and classified reads).
-        dplyr::mutate(temp := rowSums(dplyr::across((where(is.numeric))))) |>
-        # Create column with the proportion of classified reads.
-        dplyr::mutate(!!COLNAME_PROP_CLASSIFIED := (Classified / temp)) |>
-        # Remove columns.
-        dplyr::select(!c(Unclassified, Classified, temp))
+        # Select relevant rows.
+        dplyr::filter(!!as.name(COLNAME_STD_TAXON) == "root") |>
+        # Create column with proportion of classified reads.
+        dplyr::mutate(
+            !!COLNAME_PROP_CLASSIFIED := (!!as.name(COLNAME_STD_N_FRAG_CLADE) / !!as.name(COLNAME_STD_SAMPLE_SIZE))
+        ) |>
+        # Remove columns.
+        dplyr::select(!c(!!COLNAME_STD_SAMPLE_SIZE, !!COLNAME_STD_TAXON, !!COLNAME_STD_N_FRAG_CLADE)) |>
+        # Rename columns.
+        dplyr::rename(!!COLNAME_PROP_SAMPLE := !!COLNAME_STD_SAMPLE)
 
     return(proportion)
+}
+
+getSignificanceSummary <- function(report) {
+
+    if (is_mpa(report)) stop(paste0("This function does not support MPA-style reports."))
+
+    summary <- report |>
+        # Select relevant columns.
+        dplyr::select(
+            !!COLNAME_STD_SAMPLE,
+            !!COLNAME_STD_RANK,
+            !!COLNAME_STD_TAXON,
+            !!COLNAME_STD_SIGNIF
+        ) |>
+        # Create grouping based on sample ID, rank and statistical significance.
+        dplyr::group_by(
+            !!as.name(COLNAME_STD_SAMPLE),
+            !!as.name(COLNAME_STD_RANK),
+            !!as.name(COLNAME_STD_SIGNIF)
+        ) |>
+        # Count number of taxa per group.
+        dplyr::summarise(
+            n_taxa = length(!!as.name(COLNAME_STD_TAXON)),
+            .groups = "keep"
+        )
+
+    return(summary)
+
 }
 
 #####################################################
