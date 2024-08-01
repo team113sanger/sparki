@@ -55,5 +55,17 @@ COLNAME_PROP_CLASSIFIED <- "proportion_classified"
 
 # Number of domain reads per sample.
 COLNAME_DOMAIN_READS_SAMPLE <- "sample"
+COLNAME_DOMAIN_READS_TAXON <- "taxon"
 COLNAME_DOMAIN_READS_N_FRAG <- "n_fragments_clade"
 COLNAME_DOMAIN_READS_LOG_N_FRAG <- "log10_n_fragments_clade"
+
+# Significance summary.
+COLNAME_SIGNIF_SUMMARY_SAMPLE <- "sample"
+COLNAME_SIGNIF_SUMMARY_RANK <- "rank"
+COLNAME_SIGNIF_SUMMARY_N_TAXA <- "n_taxa"
+COLNAME_SIGNIF_SUMMARY_SIGNIF <- "significance"
+
+# Significance per sample.
+COLNAME_N_SAMPLES_SIGNIF_RANK <- "rank"
+COLNAME_N_SAMPLES_SIGNIF_SIGNIF <- "significance"
+COLNAME_N_SAMPLES_SIGNIF_N_SAMPLES <- "n_samples"

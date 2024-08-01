@@ -370,9 +370,21 @@ getSignificanceSummary <- function(report) {
         ) |>
         # Count number of taxa per group.
         dplyr::summarise(
-            n_taxa = length(!!as.name(COLNAME_STD_TAXON)),
+            !!COLNAME_SIGNIF_SUMMARY_N_TAXA := length(!!as.name(COLNAME_STD_TAXON)),
             .groups = "keep"
-        )
+        ) |>
+        # Rename columns.
+        dplyr::rename(
+            !!COLNAME_SIGNIF_SUMMARY_SAMPLE := !!COLNAME_STD_SAMPLE,
+            !!COLNAME_SIGNIF_SUMMARY_RANK := !!COLNAME_STD_RANK,
+            !!COLNAME_SIGNIF_SUMMARY_SIGNIF := !!COLNAME_STD_SIGNIF
+        ) |>
+        # Replace values in column.
+        dplyr::mutate(!!COLNAME_SIGNIF_SUMMARY_RANK := dplyr::case_when(
+            !!as.name(COLNAME_SIGNIF_SUMMARY_RANK) == "F" ~ "Family",
+            !!as.name(COLNAME_SIGNIF_SUMMARY_RANK) == "G" ~ "Genus",
+            !!as.name(COLNAME_SIGNIF_SUMMARY_RANK) == "S" ~ "Species"
+        ))
 
     return(summary)
 

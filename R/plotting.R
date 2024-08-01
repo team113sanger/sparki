@@ -152,6 +152,7 @@ plotClassificationProportion <- function(report, return_plot, outdir, prefix = "
             axis.text.x = ggplot2::element_blank(),
             axis.title.x = ggplot2::element_blank(),
             axis.ticks.x = ggplot2::element_blank(),
+            axis.line.x = ggplot2::element_blank(),
             # y-axis
             axis.text.y = ggplot2::element_text(size = 12),
             axis.title.y = ggplot2::element_text(size = 14, angle = 90),
@@ -166,6 +167,74 @@ plotClassificationProportion <- function(report, return_plot, outdir, prefix = "
         filename = "nReads_classifiedProportion_violinPlot.pdf", 
         outdir = outdir, fig_width = 3, fig_height = 4
     )
+}
+
+plotDistribution_histogram <- function(report, return_plot, outdir, prefix = "") {
+
+    if (is_mpa(report)) stop(paste0("This function does not support MPA-style reports."))
+
+    report <- prepare_for_plotDistribution(report)
+
+    plot <- ggplot2::ggplot(
+        report, ggplot2::aes(x = get(COLNAME_STD_N_FRAG_CLADE), fill = get(COLNAME_STD_RANK))
+    ) +
+            ggplot2::geom_histogram() +
+            ggplot2::facet_wrap(~get(COLNAME_STD_RANK), nrow = 2, scale = "free") +
+            ggplot2::theme_classic() +
+            ggplot2::theme(
+                # x-axis
+                axis.text.x = ggplot2::element_text(size = 12, angle = 45, vjust = 1, hjust = 1),
+                axis.title.x = ggplot2::element_text(size = 14),
+                # y-axis
+                axis.text.y = ggplot2::element_text(size = 12),
+                axis.title.y = ggplot2::element_text(size = 14),
+                # legend
+                legend.position = "none"
+            ) +
+            ggplot2::xlab("\n# Clade-level fragments") +
+            ggplot2::ylab("Frequency\n")
+
+    # Decide what to do with plot based on user-defined options.
+    handlePlot(
+        plot = plot, prefix = prefix, return_plot = return_plot, filename = "distribution_histogram.pdf",
+        outdir = outdir, fig_width = 8, fig_height = 5
+    )    
+}
+
+plotDistribution_violin <- function(report, return_plot, outdir, prefix = "") {
+
+    if (is_mpa(report)) stop(paste0("This function does not support MPA-style reports."))
+
+    report <- prepare_for_plotDistribution(report)
+
+    plot2 <- ggplot2::ggplot(
+        report, 
+        ggplot2::aes(
+            x = get(COLNAME_STD_RANK),
+            y = get(COLNAME_STD_N_FRAG_CLADE),
+            fill = get(COLNAME_STD_RANK)
+        )
+    ) +
+            ggplot2::geom_violin(scale = "width", color = "black") +
+            ggplot2::theme_classic() +
+            ggplot2::theme(
+                # x-axis
+                axis.text.x = ggplot2::element_text(size = 12, angle = 45, vjust = 1, hjust = 1),
+                axis.title.x = ggplot2::element_text(size = 14),
+                # y-axis
+                axis.text.y = ggplot2::element_text(size = 12),
+                axis.title.y = ggplot2::element_text(size = 14),
+                # legend
+                legend.position = "none"
+            ) +
+            ggplot2::xlab("\nRank") +
+            ggplot2::ylab("# Clade-level fragments\n")
+
+    # Decide what to do with plot based on user-defined options.
+    handlePlot(
+        plot = plot, prefix = prefix, return_plot = return_plot, filename = "distribution_violin.pdf",
+        outdir = outdir, fig_width = 8, fig_height = 5
+    )    
 }
 
 
@@ -324,10 +393,18 @@ plotSignificanceSummary <- function(report, return_plot, outdir, prefix = "") {
     summary <- getSignificanceSummary(report)
 
     plot <- ggplot2::ggplot(
-        summary, ggplot2::aes(x = sample, y = n_taxa, fill = significance) 
+        summary, 
+        ggplot2::aes(
+            x = get(COLNAME_SIGNIF_SUMMARY_SAMPLE), 
+            y = get(COLNAME_SIGNIF_SUMMARY_N_TAXA), 
+            fill = get(COLNAME_SIGNIF_SUMMARY_SIGNIF)
+        ) 
     ) +
         ggplot2::geom_bar(position = "fill", stat = "identity") +
-        ggplot2::facet_wrap(~rank, ncol = 1) +
+        ggplot2::facet_wrap(
+            ~get(COLNAME_SIGNIF_SUMMARY_RANK),
+            ncol = 1
+        ) +
         ggplot2::theme_classic() +
         ggplot2::theme(
             # x-axis
@@ -336,15 +413,15 @@ plotSignificanceSummary <- function(report, return_plot, outdir, prefix = "") {
             axis.ticks.x = ggplot2::element_blank(),
             # y-axis
             axis.text.y = ggplot2::element_text(size = 15),
-            axis.title.y = ggplot2::element_text(size = 16, angle = 90),
+            axis.title.y = ggplot2::element_text(size = 16),
             # legend
             legend.text = ggplot2::element_text(size = 15),
             legend.title = ggplot2::element_text(size = 16),
             legend.justification = "top"
         ) +
         ggplot2::xlab("\nSample\n") +
-        ggplot2::ylab("# Taxa\n") +
-        ggplot2::scale_fill_manual(name = "Significance", values = c("snow2", "indianred1"))
+        ggplot2::ylab("Proportion of taxa\n") +
+        ggplot2::scale_fill_manual(name = "Significance", values = c("snow3", "indianred1"))
 
     # Decide what to do with plot based on user-defined options.
     handlePlot(
@@ -377,12 +454,6 @@ plotMinimisers_dotplot <- function(
 
     df <- prepare_for_plotMinimisers(report, domain)
 
-    rank_labels <- list(
-        "Species" = "S",
-        "Genus" = "G",
-        "Family" = "F"
-    )
-
     plot <- ggplot2::ggplot(
         df,
         ggplot2::aes(
@@ -397,8 +468,7 @@ plotMinimisers_dotplot <- function(
         ggplot2::facet_grid(
             rows = ggplot2::vars(get(COLNAME_STD_RANK)), 
             scales = "free_y",
-            space = "free_y",
-            labeller = ggplot2::as_labeller(rank_labels)
+            space = "free_y"
         ) +
         ggplot2::theme_bw() +
         ggplot2::theme(

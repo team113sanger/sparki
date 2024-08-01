@@ -48,6 +48,28 @@ is_mpa <- function(report) {
 ## HELPER FUNCTIONS FOR PREPARING DATA FOR PLOTTING ##
 #######################################################################################################
 
+prepare_for_plotDistribution <- function(report) {
+
+    if (is_mpa(report)) stop(paste0("This function does not support MPA-style reports."))
+
+    report <- report |>
+        # Filter out rows.
+        dplyr::filter(!(!!as.name(COLNAME_STD_TAXON) %in% c("root", "unclassified"))) |>
+        # Rename elements in column.
+        dplyr::mutate(!!COLNAME_STD_RANK := dplyr::case_when(
+            !!as.name(COLNAME_STD_RANK) == "D" ~ "Domain",
+            !!as.name(COLNAME_STD_RANK) == "K" ~ "Kingdom",
+            !!as.name(COLNAME_STD_RANK) == "P" ~ "Phylum",
+            !!as.name(COLNAME_STD_RANK) == "C" ~ "Class",
+            !!as.name(COLNAME_STD_RANK) == "O" ~ "Order",
+            !!as.name(COLNAME_STD_RANK) == "F" ~ "Family",
+            !!as.name(COLNAME_STD_RANK) == "G" ~ "Genus",
+            !!as.name(COLNAME_STD_RANK) == "S" ~ "Species"
+        ))
+
+    return(report)
+}
+
 prepare_for_plotDomainReads <- function(report, include_eukaryotes) {
 
     if (is_mpa(report)) stop(paste0("This function does not support MPA-style reports."))
@@ -102,7 +124,13 @@ prepare_for_plotMinimisers <- function(report, domain_of_interest) {
         # Reorder columns.
         dplyr::relocate(
             !!COLNAME_STD_LOG_N_FRAG_CLADE, .after = !!COLNAME_STD_N_FRAG_CLADE
-        )
+        ) |>
+        # Replace values in column.
+        dplyr::mutate(!!COLNAME_STD_RANK := dplyr::case_when(
+            !!as.name(COLNAME_STD_RANK) == "F" ~ "Family",
+            !!as.name(COLNAME_STD_RANK)  == "G" ~ "Genus",
+            !!as.name(COLNAME_STD_RANK) == "S" ~ "Species"
+        ))
 
     return(subset)
 }
