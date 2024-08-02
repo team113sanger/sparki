@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2024.3.26)  2 AUG 2024 14:13
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2024.3.26)  2 AUG 2024 14:25
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -748,75 +748,54 @@ KI_basic_usage_files/figure-latex/domain_reads_barplot-1.pdf> </lustre/scratch1
 26/casm/team113da/users/jb62/projects/sparki/tutorials/SPARKI_basic_usage_files
 /figure-latex/domain_reads_violin_eukaryotes-1.pdf>]
 </lustre/scratch126/casm/team113da/users/jb62/projects/sparki/tutorials/SPARKI_
-basic_usage_files/figure-latex/plots8-1.pdf, id=135, 279.0425pt x 348.30125pt>
+basic_usage_files/figure-latex/unnamed-chunk-2-1.pdf, id=135, 453.695pt x 298.1
+1375pt>
 File: /lustre/scratch126/casm/team113da/users/jb62/projects/sparki/tutorials/SP
-ARKI_basic_usage_files/figure-latex/plots8-1.pdf Graphic file (type pdf)
+ARKI_basic_usage_files/figure-latex/unnamed-chunk-2-1.pdf Graphic file (type pd
+f)
 <use /lustre/scratch126/casm/team113da/users/jb62/projects/sparki/tutorials/SPA
-RKI_basic_usage_files/figure-latex/plots8-1.pdf>
+RKI_basic_usage_files/figure-latex/unnamed-chunk-2-1.pdf>
 Package pdftex.def Info: /lustre/scratch126/casm/team113da/users/jb62/projects/
-sparki/tutorials/SPARKI_basic_usage_files/figure-latex/plots8-1.pdf  used on in
-put line 549.
-(pdftex.def)             Requested size: 279.05032pt x 348.31102pt.
+sparki/tutorials/SPARKI_basic_usage_files/figure-latex/unnamed-chunk-2-1.pdf  u
+sed on input line 562.
+(pdftex.def)             Requested size: 453.6939pt x 298.11302pt.
 [9 </lustre/scratch126/casm/team113da/users/jb62/projects/sparki/tutorials/SPAR
-KI_basic_usage_files/figure-latex/domain_reads_barplot_eukaryotes-1.pdf> </lust
-re/scratch126/casm/team113da/users/jb62/projects/sparki/tutorials/SPARKI_basic_
-usage_files/figure-latex/plots8-1.pdf>]
+KI_basic_usage_files/figure-latex/domain_reads_barplot_eukaryotes-1.pdf>]
 </lustre/scratch126/casm/team113da/users/jb62/projects/sparki/tutorials/SPARKI_
-basic_usage_files/figure-latex/plots9-1.pdf, id=158, 289.08pt x 361.35pt>
+basic_usage_files/figure-latex/unnamed-chunk-2-2.pdf, id=149, 469.755pt x 320.1
+9624pt>
 File: /lustre/scratch126/casm/team113da/users/jb62/projects/sparki/tutorials/SP
-ARKI_basic_usage_files/figure-latex/plots9-1.pdf Graphic file (type pdf)
+ARKI_basic_usage_files/figure-latex/unnamed-chunk-2-2.pdf Graphic file (type pd
+f)
 <use /lustre/scratch126/casm/team113da/users/jb62/projects/sparki/tutorials/SPA
-RKI_basic_usage_files/figure-latex/plots9-1.pdf>
+RKI_basic_usage_files/figure-latex/unnamed-chunk-2-2.pdf>
 Package pdftex.def Info: /lustre/scratch126/casm/team113da/users/jb62/projects/
-sparki/tutorials/SPARKI_basic_usage_files/figure-latex/plots9-1.pdf  used on in
-put line 565.
-(pdftex.def)             Requested size: 289.07928pt x 361.34912pt.
-</lustre/scratch126/casm/team113da/users/jb62/projects/sparki/tutorials/SPARKI_
-basic_usage_files/figure-latex/plots10-1.pdf, id=159, 1790.69pt x 1056.94875pt>
-
-File: /lustre/scratch126/casm/team113da/users/jb62/projects/sparki/tutorials/SP
-ARKI_basic_usage_files/figure-latex/plots10-1.pdf Graphic file (type pdf)
-<use /lustre/scratch126/casm/team113da/users/jb62/projects/sparki/tutorials/SPA
-RKI_basic_usage_files/figure-latex/plots10-1.pdf>
-Package pdftex.def Info: /lustre/scratch126/casm/team113da/users/jb62/projects/
-sparki/tutorials/SPARKI_basic_usage_files/figure-latex/plots10-1.pdf  used on i
-nput line 592.
-(pdftex.def)             Requested size: 469.74895pt x 277.26773pt.
+sparki/tutorials/SPARKI_basic_usage_files/figure-latex/unnamed-chunk-2-2.pdf  u
+sed on input line 578.
+(pdftex.def)             Requested size: 469.75386pt x 320.19545pt.
 [10 </lustre/scratch126/casm/team113da/users/jb62/projects/sparki/tutorials/SPA
-RKI_basic_usage_files/figure-latex/plots9-1.pdf>]
-</lustre/scratch126/casm/team113da/users/jb62/projects/sparki/tutorials/SPARKI_
-basic_usage_files/figure-latex/plots10-2.pdf, id=171, 1790.69pt x 1074.0125pt>
-File: /lustre/scratch126/casm/team113da/users/jb62/projects/sparki/tutorials/SP
-ARKI_basic_usage_files/figure-latex/plots10-2.pdf Graphic file (type pdf)
-<use /lustre/scratch126/casm/team113da/users/jb62/projects/sparki/tutorials/SPA
-RKI_basic_usage_files/figure-latex/plots10-2.pdf>
-Package pdftex.def Info: /lustre/scratch126/casm/team113da/users/jb62/projects/
-sparki/tutorials/SPARKI_basic_usage_files/figure-latex/plots10-2.pdf  used on i
-nput line 608.
-(pdftex.def)             Requested size: 469.74895pt x 281.74403pt.
-[11 </lustre/scratch126/casm/team113da/users/jb62/projects/sparki/tutorials/SPA
-RKI_basic_usage_files/figure-latex/plots10-1.pdf>] [12 </lustre/scratch126/casm
-/team113da/users/jb62/projects/sparki/tutorials/SPARKI_basic_usage_files/figure
--latex/plots10-2.pdf>] (./SPARKI_basic_usage.aux) ) 
+RKI_basic_usage_files/figure-latex/unnamed-chunk-2-1.pdf>] [11 </lustre/scratch
+126/casm/team113da/users/jb62/projects/sparki/tutorials/SPARKI_basic_usage_file
+s/figure-latex/unnamed-chunk-2-2.pdf>] (./SPARKI_basic_usage.aux) ) 
 Here is how much of TeX's memory you used:
- 13873 strings out of 480218
- 233118 string characters out of 5894882
- 560841 words of memory out of 5000000
- 31505 multiletter control sequences out of 15000+600000
+ 13850 strings out of 480218
+ 230659 string characters out of 5894882
+ 560846 words of memory out of 5000000
+ 31485 multiletter control sequences out of 15000+600000
  503409 words of font info for 84 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  74i,6n,77p,1086b,406s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/share/texmf/fonts/enc/
-dvips/lm/lm-ts1.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-ec.enc}</usr/share/
-texmf/fonts/type1/public/lm/lmbx12.pfb></usr/share/texmf/fonts/type1/public/lm/
-lmr10.pfb></usr/share/texmf/fonts/type1/public/lm/lmr12.pfb></usr/share/texmf/f
-onts/type1/public/lm/lmr17.pfb></usr/share/texmf/fonts/type1/public/lm/lmtk10.p
-fb></usr/share/texmf/fonts/type1/public/lm/lmtt10.pfb></usr/share/texmf/fonts/t
-ype1/public/lm/lmtti10.pfb>
-Output written on SPARKI_basic_usage.pdf (12 pages, 641359 bytes).
+{/usr/share/
+texmf/fonts/enc/dvips/lm/lm-ts1.enc}{/usr/share/texmf/fonts/enc/dvips/lm/lm-ec.
+enc}</usr/share/texmf/fonts/type1/public/lm/lmbx12.pfb></usr/share/texmf/fonts/
+type1/public/lm/lmr10.pfb></usr/share/texmf/fonts/type1/public/lm/lmr12.pfb></u
+sr/share/texmf/fonts/type1/public/lm/lmr17.pfb></usr/share/texmf/fonts/type1/pu
+blic/lm/lmtk10.pfb></usr/share/texmf/fonts/type1/public/lm/lmtt10.pfb></usr/sha
+re/texmf/fonts/type1/public/lm/lmtti10.pfb>
+Output written on SPARKI_basic_usage.pdf (11 pages, 506788 bytes).
 PDF statistics:
- 268 PDF objects out of 1000 (max. 8388607)
- 197 compressed objects within 2 object streams
- 31 named destinations out of 1000 (max. 500000)
- 20618 words of extra memory for PDF output out of 20736 (max. 10000000)
+ 246 PDF objects out of 1000 (max. 8388607)
+ 182 compressed objects within 2 object streams
+ 30 named destinations out of 1000 (max. 500000)
+ 20608 words of extra memory for PDF output out of 20736 (max. 10000000)
 
