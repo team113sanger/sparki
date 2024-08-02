@@ -207,7 +207,7 @@ plotDistribution_violin <- function(report, return_plot, outdir, prefix = "") {
 
     report <- prepare_for_plotDistribution(report)
 
-    plot2 <- ggplot2::ggplot(
+    plot <- ggplot2::ggplot(
         report, 
         ggplot2::aes(
             x = get(COLNAME_STD_RANK),
@@ -227,8 +227,8 @@ plotDistribution_violin <- function(report, return_plot, outdir, prefix = "") {
                 # legend
                 legend.position = "none"
             ) +
-            ggplot2::xlab("\nRank") +
-            ggplot2::ylab("# Clade-level fragments\n")
+            ggplot2::xlab("Rank") +
+            ggplot2::ylab("# Clade-level\nfragments\n")
 
     # Decide what to do with plot based on user-defined options.
     handlePlot(
@@ -295,8 +295,8 @@ plotDomainReads_violin <- function(
             axis.ticks.x = ggplot2::element_blank(),
             strip.text.x = ggplot2::element_text(size = 15),
             # y-axis
-            axis.text.y = ggplot2::element_text(size = 15),
-            axis.title.y = ggplot2::element_text(size = 16),
+            axis.text.y = ggplot2::element_text(size = 10),
+            axis.title.y = ggplot2::element_text(size = 12),
             # legend
             legend.position = "none"
         ) +
@@ -357,14 +357,14 @@ plotDomainReads_barplot <- function(
         ggplot2::theme_void() +
         ggplot2::theme(
             # x-axis
-            axis.text.x = ggplot2::element_text(size = 15),
-            axis.title.x = ggplot2::element_text(size = 16),
+            axis.text.x = ggplot2::element_text(size = 10),
+            axis.title.x = ggplot2::element_text(size = 10),
             # y-axis
-            axis.text.y = ggplot2::element_text(size = 15),
-            axis.title.y = ggplot2::element_text(size = 16, angle = 90),
+            axis.text.y = ggplot2::element_text(size = 10),
+            axis.title.y = ggplot2::element_text(size = 10, angle = 90),
             # legend
-            legend.text = ggplot2::element_text(size = 15),
-            legend.title = ggplot2::element_text(size = 16),
+            legend.text = ggplot2::element_text(size = 10),
+            legend.title = ggplot2::element_text(size = 12),
             legend.justification = "top"
         ) +
         ggplot2::xlab(x_lab) +
