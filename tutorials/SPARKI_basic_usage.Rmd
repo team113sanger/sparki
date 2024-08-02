@@ -3,8 +3,7 @@ title: "Basic usage of SPARKI!"
 author: "Jacqueline M. Boccacino"
 date: "`r Sys.Date()`"
 output: 
-  html_document:
-    code_folding: show
+  pdf_document
 fontsize: 14pt
 ---
 
@@ -26,35 +25,155 @@ source("R/plotting.R")
 source("R/constants.R")
 ```
 
-# Load data
+This tutorial will demonstrate how to run SPARKI on Kraken2 results. First of all, we will need Kraken2 reports in both standard and MPA-style formats. 
+A standard report can be generated with the option `r I("--report")` when running Kraken2 on the command line; please note that the flag `r I("--report-minimizer-data")`
+must also be used. An MPA-style report can be generated when the options `r I("--report")` and `r I("--use-mpa-style")` are combined on the command line; alternatively, 
+MPA-style reports can be generated from a standard report with the script `r I("kreport2mpa.py")` from the KrakenTools toolkit.
 
-```{r load_data}
+## Loading Kraken2 results
+
+The first step in the SPARKI workflow is to load the standard and MPA-style reports. In the example below, our files are located in the test directory.
+The functions `r I("load_MPAreports()")` and `r I("load_STDreports()")` will create dataframes containing all samples that are present in the directory
+we specified.\
+
+```{r loading_kraken2_results}
 mpa_reports <- load_MPAreports("test/mpa", verbose = FALSE)
 std_reports <- load_STDreports("test/reports", verbose = FALSE)
-merged_reports <- mergeReports(std_reports, mpa_reports)
+```
 
-mdata <- loadMetadata("test/metadata.csv") # Optional
+We can now inspect the dataframes that were created:\
+
+```{r mpa_inspect_after_loading}
+mpa_reports
+```
+
+\
+
+```{r std_inspect_after_loading}
+std_reports
+```
+
+## Merging reports
+
+Next, we will combine the information present in the standard and MPA-style dataframes into a single dataframe. Note that the Kraken2 results present in the
+different report formats are the same; however, they are represented in slightly different ways, and here we want to benefit from both types of representations.
+The function `r I("mergeReports()")` will do the merging task:\
+
+```{r merge_reports}
+merged_reports <- mergeReports(std_reports, mpa_reports)
+```
+
+Let's have a look at the merged dataframe:\
+
+```{r inspect_after_merging}
+merged_reports
+```
+
+## Loading metadata (optional)
+
+Now that we have our merged dataframe, we can add sample metadata to it. This step is optional, but it can be very helpful to have
+additional sample information in our dataset when we interpret the final results. We can load metadata very easily by using the function
+`r I("loadMetadata()")`.\
+
+```{r load_data}
+mdata <- loadMetadata("test/metadata.csv")
+```
+
+To add metadata to our merged dataframe, we can simply use the function `r I("addMetadata()")`, specifying the columns that we want to add
+and the column that contains sample IDs in our metadata table:\
+
+```{r add_metadata}
+mdata_sample_col <- "Tumour_RNA"
+mdata_columns_to_add <- c("Diagnosis_short", "Site_group")
+
+merged_reports <- addMetadata(
+  merged_reports,
+  mdata,
+  mdata_sample_col,
+  mdata_columns_to_add
+)
+```
+
+If we inspect our merged dataframe again, we will see that it now contains sample metadata information:\
+```{r inspect_report_with_metadata}
+merged_reports
+```
+
+## Loading Kraken2's reference database information
+
+Before we can start processing the Kraken2 results, the last thing we need to do is load the file inspect.txt from the Kraken2 reference
+database we used to generate our Kraken2 reports:\
+
+```{r}
 ref_db <- loadReference("test/inspect.txt")
 ```
 
-```{r add_metadata}
-mdata_columns <- c("Diagnosis_short", "Site_group")
-merged_reports <- addMetadata(merged_reports, mdata, "Tumour_RNA", mdata_columns)
-```
+# Processing Kraken2 results
 
-# Process data
+Now that all data is ready, we can start processing and visualising our Kraken2 results.
 
-```{r process_data}
+The initial processing of the data will be fairly simple; we will basically add a few columns to our merged dataframe:\
+
+* The function `r I("addSampleSize()")` will add a column with the total number of fragments that were analysed by Kraken2 per sample.
+* The function `r I("addMinimiserData()")` will add columns with minimiser data from Kraken2's reference database.
+
+\
+
+```{r add_sample_size_and_minimisers}
 merged_reports <- addSampleSize(merged_reports)
 merged_reports <- addMinimiserData(merged_reports, ref_db)
 ```
 
-# Summary of read classification
+Let's inspect the updated dataframe:\
 
-## Violin plot
+```{r inspect_report_with_sample_size_and_minimisers}
+merged_reports
+```
 
-```{r plots1, echo = TRUE, fig.retina = 1, fig.width = 4, fig.height = 3.5, fig.align = 'center'}
+Note that the columns `r I("sample_size")`, `r I("db_n_minimisers_taxon")`, and `r I("db_n_minimisers_clade")` have been added.\
+
+At this stage, it will be interesting to visualise the Kraken2 results we are working on.
+
+## Read classification summary
+
+We can start off by looking into the numbers of reads that Kraken2 was able to classify or not. The violin plot below shows, for each sample
+(connected dots), how many reads were classified and how many were not:\
+
+```{r classification_summary_violin, echo = TRUE, fig.retina = 1, fig.width = 3, fig.height = 2.5, fig.align = 'center'}
 plotClassificationSummary_violin(
+  merged_reports, return_plot = TRUE,
+  outdir = "test/outputs/", prefix = "SebT"
+)
+```
+
+Alternatively, if we want to look at each sample more closely, we can use a bar plot to visualise the proportions of
+classified/unclassified reads:\
+
+```{r classification_summary_barplot, echo = TRUE, fig.retina = 1, fig.width = 6, fig.height = 2.5, fig.align = 'center'}
+
+plotClassificationSummary_barplot(
+  merged_reports, include_sample_names = FALSE, orientation = "horizontal",
+  return_plot = TRUE, outdir = "test/outputs/", prefix = "SebT"
+)
+```
+
+Finally, instead of looking at absolute numbers of classified/unclassified reads, we can also look at the proportion of
+reads classified relative to the sample sizes:\
+
+```{r classification_proportion, echo = TRUE, fig.retina = 1, fig.width = 2, fig.height = 2.25, fig.align = 'center'}
+
+plotClassificationProportion(
+  merged_reports, return_plot = TRUE,
+  outdir = "test/outputs/", prefix = "SebT"
+)
+```
+
+## Distribution of classified reads
+
+Next, for each rank, it is possible to visualise the distribution of classified reads:\
+
+```{r distribution_histogram, echo = TRUE, fig.retina = 1, fig.width = 7, fig.height = 4, fig.align = 'center'}
+plotDistribution_histogram(
   merged_reports, 
   return_plot = TRUE,
   outdir = "test/outputs/",
@@ -62,124 +181,74 @@ plotClassificationSummary_violin(
 )
 ```
 
-## Horizontal bar plot
-
-### Without sample names
-
-```{r plots2, echo = TRUE, fig.retina = 1, fig.width = 6, fig.height = 5, fig.align = 'center'}
-
-plotClassificationSummary_barplot(
+```{r distribution_violin, echo = TRUE, fig.retina = 1, fig.width = 6, fig.height = 2.5, fig.align = 'center'}
+plotDistribution_violin(
   merged_reports, 
-  include_sample_names = FALSE, 
-  orientation = "horizontal",
   return_plot = TRUE,
   outdir = "test/outputs/",
   prefix = "SebT"
 )
-
 ```
 
-### With sample names
+## Read classification per domain
 
-```{r plots3, echo = TRUE, fig.retina = 1, fig.width = 6, fig.height = 5, fig.align = 'center'}
+If we are interested in taxa from a particular domain (say, viruses), it can be useful to inspect the number of classified
+reads broken down by domain. The violin plot below shows this information to us:\
 
-plotClassificationSummary_barplot(
-  merged_reports, 
-  include_sample_names = TRUE, 
-  orientation = "horizontal",
-  return_plot = TRUE,
-  prefix = "SebT",
-  outdir = "test/outputs/"
-)
-
-```
-
-## Vertical bar plot
-
-### Without sample names
-
-```{r plots4, echo = TRUE, fig.retina = 1, fig.width = 5, fig.height = 5, fig.align = 'center'}
-
-plotClassificationSummary_barplot(
-  merged_reports, 
-  include_sample_names = FALSE, 
-  orientation = "vertical",
-  return_plot = TRUE,
-  outdir = "test/outputs/",
-  prefix = "SebT"
-)
-
-```
-
-### With sample names
-
-```{r plots5, echo = TRUE, fig.retina = 1, fig.width = 5, fig.height = 5, fig.align = 'center'}
-
-plotClassificationSummary_barplot(
-  merged_reports, 
-  include_sample_names = TRUE, 
-  orientation = "vertical", 
-  return_plot = TRUE,
-  outdir = "test/outputs/",
-  prefix = "SebT"
-)
-
-```
-
-## Without Eukaryotes
-
-```{r plots6, echo = TRUE, fig.retina = 1, fig.width = 4, fig.height = 5, fig.align = 'center'}
+```{r domain_reads_violin, echo = TRUE, fig.retina = 1, fig.width = 4, fig.height = 2.5, fig.align = 'center'}
 plotDomainReads_violin(
-  merged_reports, 
-  include_eukaryotes = FALSE, 
-  return_plot = TRUE,
-  outdir = "test/outputs/",
-  prefix = "SebT"
+  merged_reports, include_eukaryotes = FALSE, return_plot = TRUE,
+  outdir = "test/outputs/", prefix = "SebT"
 )
 ```
 
-```{r plots7, echo = TRUE, fig.retina = 1, fig.width = 4, fig.height = 5, fig.align = 'center'}
+Alternatively, we can also make a bar plot to look at each sample more closely:\
+
+```{r domain_reads_barplot, echo = TRUE, fig.retina = 1, fig.width = 7, fig.height = 2.25, fig.align = 'center'}
 plotDomainReads_barplot(
-  merged_reports, 
-  include_eukaryotes = FALSE, 
-  include_sample_names = FALSE, 
-  orientation = "vertical", 
-  return_plot = TRUE,
-  outdir = "test/outputs/",
-  prefix = "SebT"
+  merged_reports, include_eukaryotes = FALSE, include_sample_names = FALSE, 
+  orientation = "horizontal", return_plot = TRUE,
+  outdir = "test/outputs/", prefix = "SebT"
 )
 ```
 
+Note that in the plots above no eukaryotes were displayed - this happened because we set `r I("include_eukaryotes = FALSE")`.
+We can recreate the same plots now including taxa from the Eukaryota domain; however, you will see that the inclusion of
+eukaryotes will overwhelm the plots and the other domains will get harder to visualise.\
 
-## With Eukaryotes
-
-```{r plots8, echo = TRUE, fig.retina = 1, fig.width = 4, fig.height = 5, fig.align = 'center'}
+```{r domain_reads_violin_eukaryotes, echo = TRUE, fig.retina = 1, fig.width = 3.5, fig.height = 3, fig.align = 'center'}
 plotDomainReads_violin(
-  merged_reports, 
-  include_eukaryotes = TRUE, 
-  return_plot = TRUE,
-  outdir = "test/outputs/",
-  prefix = "SebT"
+  merged_reports, include_eukaryotes = TRUE, return_plot = TRUE,
+  outdir = "test/outputs/", prefix = "SebT"
 )
 ```
 
-```{r plots9, echo = TRUE, fig.retina = 1, fig.width = 4, fig.height = 5, fig.align = 'center'}
+Alternatively, we can also make a bar plot to look at each sample more closely:\
+
+```{r domain_reads_barplot_eukaryotes, echo = TRUE, fig.retina = 1, fig.width = 7, fig.height = 2.25, fig.align = 'center'}
 plotDomainReads_barplot(
-  merged_reports, 
-  include_eukaryotes = TRUE, 
-  return_plot = TRUE, 
-  include_sample_names = FALSE, 
-  orientation = "vertical",
-  outdir = "test/outputs/",
-  prefix = "SebT"
+  merged_reports, include_eukaryotes = TRUE, include_sample_names = FALSE, 
+  orientation = "horizontal", return_plot = TRUE,
+  outdir = "test/outputs/", prefix = "SebT"
 )
 ```
+
+# Statistical analysis
 
 ```{r plots10, echo = TRUE, fig.retina = 1, fig.width = 25, fig.height = 15, fig.align = 'center'}
 
 merged_reports <- subsetReports(merged_reports, include_human = FALSE)
 merged_reports <- assessMinimiserRatio(merged_reports)
 merged_reports <- assessStatistics(merged_reports, verbose = TRUE)
+```
+
+```{r}
+plotSignificanceSummary(
+  merged_reports, 
+  return_plot = TRUE,
+  outdir = "test/outputs/",
+  prefix = "SebT"
+)
 
 plotMinimisers_dotplot(
   merged_reports, 
