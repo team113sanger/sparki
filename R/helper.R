@@ -67,6 +67,11 @@ prepare_for_plotDistribution <- function(report) {
             !!as.name(COLNAME_STD_RANK) == "S" ~ "Species"
         ))
 
+    report[[COLNAME_STD_RANK]] = factor(
+        report[[COLNAME_STD_RANK]], 
+        levels = c("Domain", "Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
+    )
+
     return(report)
 }
 
