@@ -44,6 +44,14 @@ option_list <- list(
         help = "Path to metadata file [optional]."
     ),
     optparse::make_option(
+        c("-s", "--sample-col"),
+        dest = "sample_col",
+        action = "store",
+        default = NA,
+        type = "character",
+        help = "Sample column in metadata table [if metadata file was provided]."
+    ),
+    optparse::make_option(
         c("-c", "--columns"),
         dest = "columns",
         action = "store",
@@ -131,7 +139,7 @@ parse_options <- function(option_list, description = "") {
         prog = prog_name,
         description = description
     )
-    arguments <- optparse::parse_args(parser, args = raw_arguments)
+    arguments <- optparse::parse_args(parser)
     return(arguments)
 }
 
@@ -143,6 +151,7 @@ run_sparki_analysis <- function(arguments) {
         mpa_reports_path = arguments$mpa_reports,
         reference_path = arguments$refdb, 
         metadata_path = arguments$metadata,
+        metadata_sample_col = arguments$sample_col,
         metadata_columns = arguments$columns,
         outdir_path = arguments$outdir,
         prefix = arguments$prefix,
@@ -169,10 +178,4 @@ cli_run_sparki <- function() {
 # Run CLI Entrypoint #
 ######################
 
-args <- commandArgs(trailingOnly = TRUE)[1]
-func_name <- args[1]
-
-# Empty list is to satisfy the function signature, the actual args are passed 
-# via command line.
-do.call(func_name, list()) 
-
+cli_run_sparki()

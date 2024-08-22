@@ -184,7 +184,6 @@ load_STDreports <- function(std_reports_dir, verbose = TRUE) {
     if (length(std_files) == 0) {
         stop(paste0("No standard reports were found at ", std_reports_dir, ". Please review your input."))
     }
-
     # Create a dataframe (tibble) and process.
     std_reports <- readr::read_tsv(
         std_files,

@@ -12,6 +12,7 @@ prepare_data <- function(
     mpa_reports_path, 
     reference_path, 
     metadata_path, 
+    metadata_sample_col,
     metadata_columns,
     outdir_path,
     prefix,
@@ -50,6 +51,12 @@ prepare_data <- function(
             stop(paste0(
                 "A metadata table has been provided, but ",
                 "no columns have been specified. Please ",
+                "review your input!"
+            ))
+        } else if (is.na(metadata_sample_col)) {
+            stop(paste0(
+                "A metadata table has been provided, but ",
+                "no sample column has been specified. Please ",
                 "review your input!"
             ))
         } else {
@@ -108,10 +115,29 @@ prepare_data <- function(
     # Read metadata (if any).
     metadata <- NA
     if (!(is.na(metadata_path))) {
+
+        # Load metadata table.
         metadata <- loadMetadata(metadata_path)
-        check_columns(df = metadata, columns = metadata_columns)
-        mpa_reports <- addMetadata(mpa_reports, metadata, metadata_columns)
-        std_reports <- addMetadata(std_reports, metadata, metadata_columns)
+
+        # Check columns are present in metadata table.
+        check_columns(
+            df = metadata,
+            columns = c(metadata_sample_col, metadata_columns)
+        )
+
+        # Add metadata to MPA-style reports.
+        mpa_reports <- addMetadata(
+            mpa_reports, metadata, 
+            metadata_sample_col, metadata_columns
+        )
+
+        # Add metadata to standard reports.
+        std_reports <- addMetadata(
+            std_reports, metadata, 
+            metadata_sample_col, metadata_columns
+        )
+    } else {
+        warning("No metadata was added to the reports.")
     }
 
     return(list(
@@ -119,6 +145,7 @@ prepare_data <- function(
         mpa_reports, 
         ref_db, 
         metadata, 
+        metadata_sample_col,
         metadata_columns, 
         outdir_path, 
         prefix, 
@@ -141,6 +168,7 @@ process_kraken2 <- function(
     mpa_reports_path, 
     reference_path, 
     metadata_path, 
+    metadata_sample_col,
     metadata_columns, 
     outdir_path,
     prefix,
@@ -155,6 +183,7 @@ process_kraken2 <- function(
         mpa_reports_path = mpa_reports_path,
         reference_path = reference_path,
         metadata_path = metadata_path,
+        metadata_sample_col = metadata_sample_col,
         metadata_columns = metadata_columns,
         outdir_path = outdir_path,
         prefix = prefix,
@@ -166,10 +195,11 @@ process_kraken2 <- function(
     mpa_reports <- prepared_data[[2]]
     ref_db <- prepared_data[[3]]
     mdata <- prepared_data[[4]]
-    columns <- prepared_data[[5]]
-    outdir <- prepared_data[[6]]
-    prefix <- prepared_data[[7]]
-    domain <- prepared_data[[8]]
+    sample_col <- prepared_data[[5]]
+    columns <- prepared_data[[6]]
+    outdir <- prepared_data[[7]]
+    prefix <- prepared_data[[8]]
+    domain <- prepared_data[[9]]
 
     mpa_reports <- addRank(mpa_reports, verbose = verbose)
     mpa_reports <- addConciseTaxon(mpa_reports, verbose = verbose)
