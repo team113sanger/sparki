@@ -108,6 +108,9 @@ prepare_data <- function(
     
     # Read MPA-style reports.
     mpa_reports <- load_MPAreports(reports_paths[[2]], verbose = FALSE)
+
+    # Merge standard and MPA-style reports.
+    merged_reports <- mergeReports(std_reports, mpa_reports)
     
     # Read reference database data.
     ref_db <- loadReference(reference_path)
@@ -125,24 +128,18 @@ prepare_data <- function(
             columns = c(metadata_sample_col, metadata_columns)
         )
 
-        # Add metadata to MPA-style reports.
-        mpa_reports <- addMetadata(
-            mpa_reports, metadata, 
+        # Add metadata to merged reports.
+        merged_reports <- addMetadata(
+            merged_reports, metadata, 
             metadata_sample_col, metadata_columns
         )
 
-        # Add metadata to standard reports.
-        std_reports <- addMetadata(
-            std_reports, metadata, 
-            metadata_sample_col, metadata_columns
-        )
     } else {
         warning("No metadata was added to the reports.")
     }
 
     return(list(
-        std_reports, 
-        mpa_reports, 
+        merged_reports, 
         ref_db, 
         metadata, 
         metadata_sample_col,
@@ -191,34 +188,27 @@ process_kraken2 <- function(
         domain = domain
     )
 
-    std_reports <- prepared_data[[1]]
-    mpa_reports <- prepared_data[[2]]
-    ref_db <- prepared_data[[3]]
-    mdata <- prepared_data[[4]]
-    sample_col <- prepared_data[[5]]
-    columns <- prepared_data[[6]]
-    outdir <- prepared_data[[7]]
-    prefix <- prepared_data[[8]]
-    domain <- prepared_data[[9]]
+    merged_reports <- prepared_data[[1]]
+    ref_db <- prepared_data[[2]]
+    mdata <- prepared_data[[3]]
+    sample_col <- prepared_data[[4]]
+    columns <- prepared_data[[5]]
+    outdir <- prepared_data[[6]]
+    prefix <- prepared_data[[7]]
+    domain <- prepared_data[[8]]
 
-    mpa_reports <- addRank(mpa_reports, verbose = verbose)
-    mpa_reports <- addConciseTaxon(mpa_reports, verbose = verbose)
-    mpa_reports <- transfer_ncbiID(mpa_reports, std_reports)
-    std_reports <- transferDomains(std_reports, mpa_reports, verbose = verbose)
-    std_reports <- add_nReads(std_reports)
-    std_reports <- add_DBinfo(std_reports, ref_db)
-    mpa_reports <- transfer_nReads(mpa_reports, std_reports) 
-    mpa_reports <- add_DBinfo(mpa_reports, ref_db)
+    merged_reports <- addSampleSize(merged_reports)
+    merged_reports <- addMinimiserData(merged_reports, ref_db)
 
     plotClassificationSummary_violin(
-        std_reports, 
+        merged_reports, 
         return_plot = FALSE,
         outdir = outdir,
         prefix = prefix
     )
 
     plotClassificationSummary_barplot(
-        std_reports, 
+        merged_reports, 
         include_sample_names = include_sample_names, 
         orientation = "horizontal",
         return_plot = FALSE,
@@ -227,7 +217,7 @@ process_kraken2 <- function(
     )
 
     plotDomainReads_violin(
-        std_reports, 
+        merged_reports, 
         include_eukaryotes = include_eukaryotes, 
         return_plot = FALSE,
         outdir = outdir,
@@ -235,7 +225,7 @@ process_kraken2 <- function(
     )
 
     plotDomainReads_barplot(
-        std_reports, 
+        merged_reports, 
         include_eukaryotes = include_eukaryotes, 
         include_sample_names = include_sample_names, 
         orientation = "vertical", 
@@ -244,12 +234,12 @@ process_kraken2 <- function(
         prefix = prefix
     )
 
-    std_reports <- subset_STDreport(std_reports, include_human = FALSE)
-    std_reports <- assess_ratioMinimisers(std_reports)
-    std_reports <- assess_statSig(std_reports, ref_db)
+    merged_reports <- subsetReports(merged_reports, include_human = FALSE)
+    merged_reports <- assessMinimiserRatio(merged_reports)
+    merged_reports <- assessStatistics(merged_reports, verbose = TRUE)
 
     plotMinimisers_dotplot(
-        std_reports, 
+        merged_reports, 
         domain = domain, 
         return_plot = FALSE, 
         fig_width = 25, 
@@ -259,7 +249,7 @@ process_kraken2 <- function(
     )   
 
     write.csv(
-        std_reports,
+        merged_reports,
         paste0(outdir, prefix, "final_table_with_pvalues.csv")
     )
 }
