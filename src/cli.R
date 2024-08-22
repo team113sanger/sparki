@@ -44,7 +44,7 @@ option_list <- list(
         help = "Path to metadata file [optional]."
     ),
     optparse::make_option(
-        c("-s", "--sample-col"),
+        c("--sample-col"),
         dest = "sample_col",
         action = "store",
         default = NA,
