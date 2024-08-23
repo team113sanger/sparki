@@ -533,7 +533,7 @@ assessMinimiserRatio <- function(report) {
 #' @param report
 #' @param ref_db 
 #' @return An updated version of the input dataframe, with new columns containing statistical significance results.
-assessStatistics <- function(report, verbose = TRUE) {
+assessStatistics <- function(report, ref_db, verbose = TRUE) {
 
     if (is_mpa(report)) stop(paste0("This function does not support MPA-style reports."))
 
@@ -543,7 +543,8 @@ assessStatistics <- function(report, verbose = TRUE) {
     report[, COLNAME_STD_PVALUE] <- calculate_p_value(
         report[[COLNAME_STD_UNIQ_MINIMISERS]], 
         report[[COLNAME_STD_DB_MINIMISERS_CLADE]], 
-        report[[COLNAME_STD_SAMPLE_SIZE]]
+        report[[COLNAME_STD_SAMPLE_SIZE]],
+        ref_db
     )
 
     # Add number of taxa identified in a given rank for a given sample.

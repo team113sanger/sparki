@@ -2,7 +2,7 @@
 ## HELPER FUNCTIONS FOR STATISTICAL ANALYSES ##
 #######################################################################################################
 
-calculate_p_value <- function(sample_n_uniq_minimisers_taxon, db_n_minimisers_taxon, sample_size) {
+calculate_p_value <- function(sample_n_uniq_minimisers_taxon, db_n_minimisers_taxon, sample_size, ref_db) {
 
     # Get proportion of clade-level minimisers of a given taxon in the reference database (DB).
     # This is the same as the probability of getting this taxon from the database.

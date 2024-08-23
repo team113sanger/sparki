@@ -228,15 +228,20 @@ process_kraken2 <- function(
         merged_reports, 
         include_eukaryotes = include_eukaryotes, 
         include_sample_names = include_sample_names, 
-        orientation = "vertical", 
+        orientation = "horizontal", 
         return_plot = FALSE,
         outdir = outdir,
         prefix = prefix
     )
 
+    write.csv(
+        merged_reports,
+        paste0(outdir, prefix, "pre_filtering_and_statistics.csv")
+    )
+
     merged_reports <- subsetReports(merged_reports, include_human = FALSE)
     merged_reports <- assessMinimiserRatio(merged_reports)
-    merged_reports <- assessStatistics(merged_reports, verbose = TRUE)
+    merged_reports <- assessStatistics(merged_reports, ref_db, verbose = TRUE)
 
     plotMinimisers_dotplot(
         merged_reports, 
