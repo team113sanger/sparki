@@ -17,7 +17,8 @@ prepare_data <- function(
     outdir_path,
     prefix,
     verbose,
-    domain
+    domain,
+    remove
 ) {
 
     ######################
@@ -99,6 +100,19 @@ prepare_data <- function(
     # Check the integrity of the domain specified.
     check_domain(domain)
 
+    ####################################
+    # CHECKS FOR SAMPLES TO BE REMOVED #
+    ####################################
+
+    if (!is.na(remove)) {
+
+        # Check the integrity of the samples-to-remove file specified.
+        check_file(remove)
+
+    } else { 
+        warning("No list of samples to be removed has been provided.")
+    }
+
     #############
     # LOAD DATA #
     #############
@@ -109,8 +123,15 @@ prepare_data <- function(
     # Read MPA-style reports.
     mpa_reports <- load_MPAreports(reports_paths[[2]], verbose = FALSE)
 
+    samples_to_remove <- NA
+    if (!is.na(remove)) {
+
+        # Load samples-to-remove file.
+        samples_to_remove <- loadSamplesToRemove(remove)   
+    }
+
     # Merge standard and MPA-style reports.
-    merged_reports <- mergeReports(std_reports, mpa_reports)
+    merged_reports <- mergeReports(std_reports, mpa_reports, samples_to_remove)
     
     # Read reference database data.
     ref_db <- loadReference(reference_path)
@@ -172,7 +193,8 @@ process_kraken2 <- function(
     verbose,
     include_eukaryotes,
     include_sample_names,
-    domain
+    domain,
+    remove
 ) {
 
     prepared_data <- prepare_data(
@@ -185,7 +207,8 @@ process_kraken2 <- function(
         outdir_path = outdir_path,
         prefix = prefix,
         verbose = verbose,
-        domain = domain
+        domain = domain,
+        remove = remove
     )
 
     merged_reports <- prepared_data[[1]]

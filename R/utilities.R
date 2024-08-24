@@ -184,6 +184,7 @@ load_STDreports <- function(std_reports_dir, verbose = TRUE) {
     if (length(std_files) == 0) {
         stop(paste0("No standard reports were found at ", std_reports_dir, ". Please review your input."))
     }
+
     # Create a dataframe (tibble) and process.
     std_reports <- readr::read_tsv(
         std_files,
@@ -202,6 +203,12 @@ load_STDreports <- function(std_reports_dir, verbose = TRUE) {
     return(std_reports) 
 }
 
+loadSamplesToRemove <- function(filepath) {
+
+    samples_to_remove <- readr::read_tsv(filepath, col_names = "sample")
+    return(samples_to_remove[["sample"]])
+}
+
 #' MERGE STANDARD AND MPA-STYLE REPORTS
 #' 
 #' This function takes a standard and an MPA-style dataframe, loaded with load_STDreports() and
@@ -213,7 +220,7 @@ load_STDreports <- function(std_reports_dir, verbose = TRUE) {
 #' information from the dataframe (tibble) with MPA-style reports.
 #' @export
 #'
-mergeReports <- function(std_reports, mpa_reports) {
+mergeReports <- function(std_reports, mpa_reports, samples_to_remove) {
 
     mpa_reports <- mpa_reports |> 
         # Rename column for consistency with the standard report.
@@ -226,6 +233,13 @@ mergeReports <- function(std_reports, mpa_reports) {
         std_reports, mpa_reports,
         by = dplyr::join_by(!!COLNAME_STD_TAXON, !!COLNAME_STD_SAMPLE)
     )
+
+    if (!missing(samples_to_remove)) {
+        merged_reports <- merged_reports |>
+            dplyr::filter(!(!!as.name(COLNAME_STD_SAMPLE) %in% samples_to_remove))
+    } else {
+        warning("No samples were filtered out from the merged reports table.")
+    }
 
     return(merged_reports)
 }
