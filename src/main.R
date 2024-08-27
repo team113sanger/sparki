@@ -118,10 +118,10 @@ prepare_data <- function(
     #############
 
     # Read standard reports.
-    std_reports <- load_STDreports(reports_paths[[1]], verbose = FALSE)
+    std_reports <- load_STDreports(reports_paths[[1]], verbose = verbose)
     
     # Read MPA-style reports.
-    mpa_reports <- load_MPAreports(reports_paths[[2]], verbose = FALSE)
+    mpa_reports <- load_MPAreports(reports_paths[[2]], verbose = verbose)
 
     samples_to_remove <- NA
     if (!is.na(remove)) {
@@ -182,10 +182,11 @@ prepare_data <- function(
 #' @return Processed reports ready for downstream analysis.
 #' @export
 process_kraken2 <- function(
-    std_reports_path, 
-    mpa_reports_path, 
-    reference_path, 
-    metadata_path, 
+    std_reports_path,
+    mpa_reports_path,
+    organism,
+    reference_path,
+    metadata_path,
     metadata_sample_col,
     metadata_columns, 
     outdir_path,
@@ -262,9 +263,9 @@ process_kraken2 <- function(
         paste0(outdir, prefix, "pre_filtering_and_statistics.csv")
     )
 
-    merged_reports <- subsetReports(merged_reports, include_human = FALSE)
+    merged_reports <- subsetReports(merged_reports, species_to_remove = organism, verbose = verbose)
     merged_reports <- assessMinimiserRatio(merged_reports)
-    merged_reports <- assessStatistics(merged_reports, ref_db, verbose = TRUE)
+    merged_reports <- assessStatistics(merged_reports, ref_db, verbose = verbose)
 
     plotMinimisers_dotplot(
         merged_reports, 

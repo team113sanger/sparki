@@ -103,8 +103,8 @@ addMetadata <- function(report, metadata, metadata_sample_col, metadata_columns)
     return(report)
 }
 
-##################################################################
-## HELPER FUNCTIONS FOR READING, MERGING AND SUBSETTING REPORTS ##
+###################################################################
+## UTILITY FUNCTIONS FOR READING, MERGING AND SUBSETTING REPORTS ##
 #######################################################################################################
 
 #' LOAD MPA-STYLE REPORTS 
@@ -203,6 +203,16 @@ load_STDreports <- function(std_reports_dir, verbose = TRUE) {
     return(std_reports) 
 }
 
+#' LOAD LIST OF SAMPLES TO BE EXCLUDED FROM SPARKI ANALYSIS
+#' 
+#' This function takes the path to a tab-delimited file, in which each line should
+#' be a sample ID, and returns a list with these IDs. Note that the sample IDs need
+#' to match those that are present in the merged reports dataframe.
+#' 
+#' @param filepath Path to a tab-delimited file in which each line is a sample ID.
+#' @return A list containing the samples IDs from the input file.
+#' @export
+#'
 loadSamplesToRemove <- function(filepath) {
 
     samples_to_remove <- readr::read_tsv(filepath, col_names = "sample")
@@ -244,17 +254,58 @@ mergeReports <- function(std_reports, mpa_reports, samples_to_remove) {
     return(merged_reports)
 }
 
-subsetReports <- function(report, include_human = FALSE) {
+get_name_at_rank <- function(report, species, rank) {
 
-    # Select relevant rows.
-    report <- report |> dplyr::filter(!!as.name(COLNAME_STD_RANK) %in% c("F", "G", "S"))
-    
-    # Filter out human results.    
-    if (include_human == FALSE) {
-        report <- report |> 
-            dplyr::filter(!(!!as.name(COLNAME_STD_TAXON) %in% c("Hominidae", "Homo", "Homo sapiens")))
+    # Get the species position (row number) in the report (first appearance only). 
+    species_position <- which(report[, COLNAME_STD_TAXON] == species)[1]
+
+    # Find the corresponding rank position (row number) in the report (first appearance only).
+    i <- 1
+    while (i > 0) {
+
+        # If the desired rank has been found, break the loop.
+        if (report[, COLNAME_STD_RANK, drop = TRUE][(species_position - i)] == rank) {
+            rank_position <- (species_position - i)
+            break
+        } else {
+            i <- i + 1
+        }
     }
 
+    subset_report <- report |> dplyr::slice(rank_position)
+    
+    return(subset_report[[COLNAME_STD_TAXON]])
+}
+
+subsetReports <- function(report, species_to_remove, verbose) {
+
+    if (!(species_to_remove %in% report[[COLNAME_STD_TAXON]])) {
+        stop(paste0(
+            "The organism ", species_to_remove, " is not present ",
+            "in the dataframe. Please review your input!"
+        ))
+    }
+
+    # Determine the genus and family of an user-defined species.
+    genus_to_remove <- get_name_at_rank(report, species_to_remove, "G")
+    family_to_remove <- get_name_at_rank(report, species_to_remove, "F")
+
+    # Create vector with species, genus and family to be filtered out.
+    taxa_to_remove <- c(species_to_remove, genus_to_remove, family_to_remove)
+
+    if (verbose == TRUE) {
+        warning(paste0(
+            "Filtering out ", species_to_remove, ", ", genus_to_remove, ", and ",
+            family_to_remove, "..."
+        ))
+    }
+
+    report <- report |> 
+        # Select rows corresponding to species, genus and family.
+        dplyr::filter(!!as.name(COLNAME_STD_RANK) %in% c("F", "G", "S")) |>
+        # Filter out the user-defined organism.
+        dplyr::filter(!(!!as.name(COLNAME_STD_TAXON) %in% taxa_to_remove))
+    
     return(report)
 }
 

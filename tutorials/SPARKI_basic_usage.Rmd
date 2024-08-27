@@ -203,7 +203,7 @@ plotDomainReads_violin(
 ```
 
 Alternatively, we can also make a bar plot to look at each sample more closely:\
-
+  
 ```{r domain_reads_barplot, echo = TRUE, fig.retina = 1, fig.width = 7, fig.height = 2.25, fig.align = 'center'}
 plotDomainReads_barplot(
   merged_reports, include_eukaryotes = FALSE, include_sample_names = FALSE, 
@@ -235,14 +235,14 @@ plotDomainReads_barplot(
 
 # Statistical analysis
 
-```{r plots10, echo = TRUE, fig.retina = 1, fig.width = 25, fig.height = 15, fig.align = 'center'}
+```{r statistical_assessment, echo = TRUE, fig.retina = 1, fig.width = 25, fig.height = 15, fig.align = 'center'}
 
-merged_reports <- subsetReports(merged_reports, include_human = FALSE)
+merged_reports <- subsetReports(merged_reports, species_to_remove = "Homo sapiens", verbose = TRUE)
 merged_reports <- assessMinimiserRatio(merged_reports)
-merged_reports <- assessStatistics(merged_reports, verbose = TRUE)
+merged_reports <- assessStatistics(merged_reports, ref_db, verbose = TRUE)
 ```
 
-```{r}
+```{r final_plots}
 plotSignificanceSummary(
   merged_reports, 
   return_plot = TRUE,
