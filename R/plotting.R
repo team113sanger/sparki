@@ -17,16 +17,19 @@ plotClassificationSummary_violin <- function(report, return_plot, outdir, prefix
     if (missing(outdir)) outdir <- NA
 
     # Prepare data for plotting.
-    class_unclass_df <- getClassificationSummary(report)
+    summary <- getClassificationSummary(report)
 
     # Create violin plot.
     plot <- ggplot2::ggplot(
-            class_unclass_df, 
-            ggplot2::aes(x = type, y = log10(n_reads))
-        ) +
+        summary, 
+        ggplot2::aes(
+            x = get(COLNAME_CLASSIF_SUMMARY_READ_TYPE), 
+            y = get(COLNAME_CLASSIF_SUMMARY_LOG_N_FRAG)
+        )
+    ) +
         ggplot2::geom_violin(scale = "width", fill = "white", color = "black") +
-        ggplot2::geom_line(ggplot2::aes(group = sample), alpha = 0.25) +
-        ggplot2::geom_point(ggplot2::aes(color = type), alpha = 0.5) +
+        ggplot2::geom_line(ggplot2::aes(group = get(COLNAME_CLASSIF_SUMMARY_SAMPLE)), alpha = 0.25) +
+        ggplot2::geom_point(ggplot2::aes(color = get(COLNAME_CLASSIF_SUMMARY_READ_TYPE)), alpha = 0.5) +
         ggplot2::theme_classic() +
         ggplot2::theme(
             # x-axis
@@ -40,9 +43,7 @@ plotClassificationSummary_violin <- function(report, return_plot, outdir, prefix
         ) +
         ggplot2::xlab("\nRead classification") +
         ggplot2::ylab(expression("log"[10]~"(# reads)")) +
-        ggplot2::scale_color_manual(
-            values = c("indianred2", "royalblue")
-        )
+        ggplot2::scale_color_manual(values = c("indianred2", "royalblue"))
 
     # Decide what to do with plot based on user-defined options.
     handlePlot(
@@ -77,13 +78,17 @@ plotClassificationSummary_barplot <- function(
     if (missing(outdir)) outdir <- NA
 
     # Prepare data for plotting.
-    class_unclass_df <- getClassificationSummary(report)
+    summary <- getClassificationSummary(report)
 
     # Create bar plot.
     plot <- ggplot2::ggplot(
-            class_unclass_df, 
-            ggplot2::aes(x = n_reads, y = sample, fill = type)
-        ) +
+        summary, 
+        ggplot2::aes(
+            x = get(COLNAME_CLASSIF_SUMMARY_N_FRAG), 
+            y = get(COLNAME_CLASSIF_SUMMARY_SAMPLE), 
+            fill = get(COLNAME_CLASSIF_SUMMARY_READ_TYPE)
+        )
+    ) +
         ggplot2::theme_void() +
         ggplot2::theme(
             # x-axis
@@ -123,6 +128,115 @@ plotClassificationSummary_barplot <- function(
     )
 }
 
+plotClassificationProportion <- function(report, return_plot, outdir, prefix = "") {
+
+    # Stop if report provided is in MPA-style format.
+    if (is_mpa(report)) stop(paste0("This function is not applicable to MPA-style reports."))
+
+    # Assign NA to outdir in case it has not been provided by the user.
+    if (missing(outdir)) outdir <- NA
+
+    # Prepare data for plotting.
+    summary <- getClassificationProportion(report)
+
+    # Create violin plot.
+    plot <- ggplot2::ggplot(
+        summary, 
+        ggplot2::aes(x = "", y = get(COLNAME_PROP_CLASSIFIED))
+    ) +
+        ggplot2::geom_violin(scale = "width", fill = "palegreen1", color = "black") +
+        ggplot2::geom_jitter(color = "black") +
+        ggplot2::theme_classic() +
+        ggplot2::theme(
+            # x-axis
+            axis.text.x = ggplot2::element_blank(),
+            axis.title.x = ggplot2::element_blank(),
+            axis.ticks.x = ggplot2::element_blank(),
+            axis.line.x = ggplot2::element_blank(),
+            # y-axis
+            axis.text.y = ggplot2::element_text(size = 12),
+            axis.title.y = ggplot2::element_text(size = 14, angle = 90),
+            # legend
+            legend.position = "none"
+        ) +
+        ggplot2::ylab("Proportion of\nclassified reads")
+
+    # Decide what to do with plot based on user-defined options.
+    handlePlot(
+        plot = plot, prefix = prefix, return_plot = return_plot, 
+        filename = "nReads_classifiedProportion_violinPlot.pdf", 
+        outdir = outdir, fig_width = 3, fig_height = 4
+    )
+}
+
+plotDistribution_histogram <- function(report, return_plot, outdir, prefix = "") {
+
+    if (is_mpa(report)) stop(paste0("This function does not support MPA-style reports."))
+
+    report <- prepare_for_plotDistribution(report)
+
+    plot <- ggplot2::ggplot(
+        report, ggplot2::aes(x = get(COLNAME_STD_N_FRAG_CLADE), fill = get(COLNAME_STD_RANK))
+    ) +
+            ggplot2::geom_histogram() +
+            ggplot2::facet_wrap(~get(COLNAME_STD_RANK), nrow = 2, scale = "free") +
+            ggplot2::theme_classic() +
+            ggplot2::theme(
+                # x-axis
+                axis.text.x = ggplot2::element_text(size = 12, angle = 45, vjust = 1, hjust = 1),
+                axis.title.x = ggplot2::element_text(size = 14),
+                # y-axis
+                axis.text.y = ggplot2::element_text(size = 12),
+                axis.title.y = ggplot2::element_text(size = 14),
+                # legend
+                legend.position = "none"
+            ) +
+            ggplot2::xlab("\n# Clade-level fragments") +
+            ggplot2::ylab("Frequency\n")
+
+    # Decide what to do with plot based on user-defined options.
+    handlePlot(
+        plot = plot, prefix = prefix, return_plot = return_plot, filename = "distribution_histogram.pdf",
+        outdir = outdir, fig_width = 8, fig_height = 5
+    )    
+}
+
+plotDistribution_violin <- function(report, return_plot, outdir, prefix = "") {
+
+    if (is_mpa(report)) stop(paste0("This function does not support MPA-style reports."))
+
+    report <- prepare_for_plotDistribution(report)
+
+    plot <- ggplot2::ggplot(
+        report, 
+        ggplot2::aes(
+            x = get(COLNAME_STD_RANK),
+            y = get(COLNAME_STD_N_FRAG_CLADE),
+            fill = get(COLNAME_STD_RANK)
+        )
+    ) +
+            ggplot2::geom_violin(scale = "width", color = "black") +
+            ggplot2::theme_classic() +
+            ggplot2::theme(
+                # x-axis
+                axis.text.x = ggplot2::element_text(size = 12, angle = 45, vjust = 1, hjust = 1),
+                axis.title.x = ggplot2::element_text(size = 14),
+                # y-axis
+                axis.text.y = ggplot2::element_text(size = 12),
+                axis.title.y = ggplot2::element_text(size = 14),
+                # legend
+                legend.position = "none"
+            ) +
+            ggplot2::xlab("Rank") +
+            ggplot2::ylab("# Clade-level\nfragments\n")
+
+    # Decide what to do with plot based on user-defined options.
+    handlePlot(
+        plot = plot, prefix = prefix, return_plot = return_plot, filename = "distribution_violin.pdf",
+        outdir = outdir, fig_width = 8, fig_height = 5
+    )    
+}
+
 
 #' PLOT NUMBERS OF CLASSIFIED READS PER DOMAIN (VIOLIN PLOT)
 #' 
@@ -141,30 +255,36 @@ plotDomainReads_violin <- function(
     prefix = "", fig_width, fig_height
 ) {
 
-    if (include_eukaryotes == TRUE) {
-        x_lab <- "\nProportion of classified reads\n(all domains)"
-        filename <- "nReadsDomains_violin_with_eukaryotes.pdf"
-        plot_width <- 5
-        plot_height <- 5
-    } else if (include_eukaryotes == FALSE) {
-        x_lab <- "\nProportion of classified reads\n(non-eukaryotes only)"
-        filename <- "nReadsDomains_violin_without_eukaryotes.pdf"
-        plot_width <- 5
-        plot_height <- 3.5
-    } else {
+    if (!(include_eukaryotes %in% c(TRUE, FALSE))) {
         stop(paste0(
             "The value of include_eukaryotes should be either TRUE or FALSE, but ",
             include_eukaryotes, " was provided. Please review your input."
         ))
     }
 
+    x_lab <- ifelse(
+        include_eukaryotes == TRUE,
+        "\nProportion of classified reads\n(all domains)",
+        "\nProportion of classified reads\n(non-eukaryotes only)"
+    )
+    filename <- ifelse(
+        include_eukaryotes == TRUE, "nReadsDomains_violin_with_eukaryotes.pdf",
+        "nReadsDomains_violin_without_eukaryotes.pdf"
+    )
+    plot_height <- ifelse(include_eukaryotes == TRUE, 5, 3.5)
+
+    # Prepare data for plotting.
     report <- prepare_for_plotDomainReads(report, include_eukaryotes)
 
     # Create violin plot.
     plot <- ggplot2::ggplot(
-            report, 
-            ggplot2::aes(x = colname_taxon, y = log10(colname_n_frag_clade), fill = colname_taxon)
-        ) +
+        report, 
+        ggplot2::aes(
+            x = get(COLNAME_DOMAIN_READS_TAXON), 
+            y = get(COLNAME_DOMAIN_READS_LOG_N_FRAG), 
+            fill = get(COLNAME_DOMAIN_READS_TAXON)
+        )
+    ) +
         ggplot2::geom_violin(scale = "width") +
         ggplot2::geom_jitter(size = 0.5) +
         ggplot2::theme_bw() +
@@ -175,19 +295,19 @@ plotDomainReads_violin <- function(
             axis.ticks.x = ggplot2::element_blank(),
             strip.text.x = ggplot2::element_text(size = 15),
             # y-axis
-            axis.text.y = ggplot2::element_text(size = 15),
-            axis.title.y = ggplot2::element_text(size = 16),
+            axis.text.y = ggplot2::element_text(size = 10),
+            axis.title.y = ggplot2::element_text(size = 12),
             # legend
             legend.position = "none"
         ) +
         ggplot2::ylab(expression("log"[10]~"(# classified reads)")) +
         ggplot2::scale_fill_manual(values = c("gold1", "royalblue", "snow2", "indianred2")) +
-        ggplot2::facet_wrap(~colname_taxon, scales = "free")
+        ggplot2::facet_wrap(~get(COLNAME_DOMAIN_READS_TAXON), scales = "free")
 
     # Decide what to do with plot based on user-defined options.
     handlePlot(
         plot = plot, prefix = prefix, return_plot = return_plot, filename = filename,
-        outdir = outdir, fig_width = plot_width, fig_height = plot_height
+        outdir = outdir, fig_width = 5, fig_height = plot_height
     )
 }
 
@@ -213,8 +333,6 @@ plotDomainReads_barplot <- function(
     # Assign NA to outdir in case it has not been provided by the user.
     if (missing(outdir)) outdir <- NA
 
-    report <- prepare_for_plotDomainReads(report, include_eukaryotes)
-
     if (include_eukaryotes) {
         x_lab <- "\nProportion of classified reads\n(all domains)"
         filename <- "nReadsDomains_barplot_with_eukaryotes"
@@ -225,21 +343,28 @@ plotDomainReads_barplot <- function(
         colours <- c("gold1", "royalblue", "indianred2")
     }
 
+    report <- prepare_for_plotDomainReads(report, include_eukaryotes)
+
     plot <- ggplot2::ggplot(
-            report, ggplot2::aes(x = colname_n_frag_clade, y = sample, fill = colname_taxon)
-        ) +
+        report, 
+        ggplot2::aes(
+            x = get(COLNAME_DOMAIN_READS_N_FRAG), 
+            y = get(COLNAME_DOMAIN_READS_SAMPLE), 
+            fill = get(COLNAME_DOMAIN_READS_TAXON)
+        )
+    ) +
         ggplot2::geom_bar(position = "fill", stat = "identity") +
         ggplot2::theme_void() +
         ggplot2::theme(
             # x-axis
-            axis.text.x = ggplot2::element_text(size = 15),
-            axis.title.x = ggplot2::element_text(size = 16),
+            axis.text.x = ggplot2::element_text(size = 10),
+            axis.title.x = ggplot2::element_text(size = 10),
             # y-axis
-            axis.text.y = ggplot2::element_text(size = 15),
-            axis.title.y = ggplot2::element_text(size = 16, angle = 90),
+            axis.text.y = ggplot2::element_text(size = 10),
+            axis.title.y = ggplot2::element_text(size = 10, angle = 90),
             # legend
-            legend.text = ggplot2::element_text(size = 15),
-            legend.title = ggplot2::element_text(size = 16),
+            legend.text = ggplot2::element_text(size = 10),
+            legend.title = ggplot2::element_text(size = 12),
             legend.justification = "top"
         ) +
         ggplot2::xlab(x_lab) +
@@ -263,6 +388,49 @@ plotDomainReads_barplot <- function(
     )
 }
 
+plotSignificanceSummary <- function(report, return_plot, outdir, prefix = "") {
+
+    summary <- getSignificanceSummary(report)
+
+    plot <- ggplot2::ggplot(
+        summary, 
+        ggplot2::aes(
+            x = get(COLNAME_SIGNIF_SUMMARY_SAMPLE), 
+            y = get(COLNAME_SIGNIF_SUMMARY_N_TAXA), 
+            fill = get(COLNAME_SIGNIF_SUMMARY_SIGNIF)
+        ) 
+    ) +
+        ggplot2::geom_bar(position = "fill", stat = "identity") +
+        ggplot2::facet_wrap(
+            ~get(COLNAME_SIGNIF_SUMMARY_RANK),
+            ncol = 1
+        ) +
+        ggplot2::theme_classic() +
+        ggplot2::theme(
+            # x-axis
+            axis.text.x = ggplot2::element_blank(),
+            axis.title.x = ggplot2::element_text(size = 16),
+            axis.ticks.x = ggplot2::element_blank(),
+            # y-axis
+            axis.text.y = ggplot2::element_text(size = 15),
+            axis.title.y = ggplot2::element_text(size = 16),
+            # legend
+            legend.text = ggplot2::element_text(size = 15),
+            legend.title = ggplot2::element_text(size = 16),
+            legend.justification = "top"
+        ) +
+        ggplot2::xlab("\nSample\n") +
+        ggplot2::ylab("Proportion of taxa\n") +
+        ggplot2::scale_fill_manual(name = "Significance", values = c("snow3", "indianred1"))
+
+    # Decide what to do with plot based on user-defined options.
+    handlePlot(
+        plot = plot, prefix = prefix, return_plot = return_plot, 
+        filename = "SignificanceSummary.pdf", outdir = outdir, fig_width = 10, 
+        fig_height = 5
+    )
+}
+
 #' PLOT PROPORTION OF MINIMISERS AND SIGNIFICANCE PER SAMPLE
 #' 
 #' This function takes a Kraken2 report, either in standard or MPA-style format, and creates
@@ -278,31 +446,27 @@ plotDomainReads_barplot <- function(
 #' @return 
 #' 
 plotMinimisers_dotplot <- function(
-    std_reports, domain, fig_width, fig_height, return_plot, outdir, prefix = ""
+    report, domain, fig_width, fig_height, return_plot, outdir, prefix = ""
 ) {
 
     # Assign NA to outdir in case it has not been provided by the user.
     if (missing(outdir)) outdir <- NA
 
-    df <- prepare_for_plotMinimisers(
-        std_reports = std_reports,
-        domain = domain
-    )
-    df$sample <- df[, COLNAME_STD_SAMPLE]
-    df$taxon <- df[, COLNAME_STD_TAXON]
-    df$rank <- df[, COLNAME_STD_RANK]
-    df$ratio_clade <- df[, COLNAME_STD_RATIO_CLADE]
-    df$padj <- df[, COLNAME_STD_PADJ]
-    df$significance <- df[, COLNAME_STD_SIGNIF]
-    df$n_frag_clade <- df[, COLNAME_STD_N_FRAG_CLADE]
+    df <- prepare_for_plotMinimisers(report, domain)
 
     plot <- ggplot2::ggplot(
         df,
-        ggplot2::aes(x = sample, y = taxon, fill = ratio_clade, color = significance, size = log10(n_frag_clade))
+        ggplot2::aes(
+            x = get(COLNAME_STD_SAMPLE), 
+            y = get(COLNAME_STD_TAXON), 
+            fill = get(COLNAME_STD_RATIO_CLADE), 
+            color = get(COLNAME_STD_SIGNIF), 
+            size = get(COLNAME_STD_LOG_N_FRAG_CLADE)
+        )
     ) +
         ggplot2::geom_point(shape = 21, stroke = 1.25) +
         ggplot2::facet_grid(
-            rows = ggplot2::vars(rank), 
+            rows = ggplot2::vars(get(COLNAME_STD_RANK)), 
             scales = "free_y",
             space = "free_y"
         ) +

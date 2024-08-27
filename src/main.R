@@ -12,23 +12,36 @@ prepare_data <- function(
     mpa_reports_path, 
     reference_path, 
     metadata_path, 
+    metadata_sample_col,
     metadata_columns,
     outdir_path,
     prefix,
-    verbose
+    verbose,
+    domain,
+    remove
 ) {
+
+    ######################
+    # CHECKS FOR REPORTS #
+    ######################
 
     # Check the integrity of the directories provided & read reports.
     reports_paths <- list(
         "std" = std_reports_path, 
         "mpa" = mpa_reports_path
     )
+
     for (report_format in names(reports_paths)) {
-        reports_paths[[path]] <- check_report_directory(
-            dirpath = reports_paths[[path]], 
+
+        reports_paths[[report_format]] <- check_report_directory(
+            dirpath = reports_paths[[report_format]], 
             report_format = report_format
         )
     }
+
+    #######################
+    # CHECKS FOR METADATA #
+    #######################
 
     # Check the integrity of the metadata file (if provided).
     if (is.na(metadata_path)) {
@@ -41,6 +54,12 @@ prepare_data <- function(
                 "no columns have been specified. Please ",
                 "review your input!"
             ))
+        } else if (is.na(metadata_sample_col)) {
+            stop(paste0(
+                "A metadata table has been provided, but ",
+                "no sample column has been specified. Please ",
+                "review your input!"
+            ))
         } else {
             metadata_columns <- parse_delimited_list(
                 del_list = metadata_columns, 
@@ -48,8 +67,17 @@ prepare_data <- function(
             )
         }
     }
+
+    ########################
+    # CHECKS FOR REFERENCE #
+    ########################
+
     # Check the integrity of the reference file.
     check_file(reference_path)
+
+    #####################
+    # CHECKS FOR PREFIX #
+    #####################
 
     # Check prefix (if provided).
     if(is.na(prefix)) {
@@ -58,11 +86,52 @@ prepare_data <- function(
         prefix <- check_prefix(prefix)
     }
 
+    ###############################
+    # CHECKS FOR OUTPUT DIRECTORY #
+    ###############################
+
+    # Check the integrity of the output directory.
+    outdir_path <- check_directory(outdir_path)
+
+    #####################
+    # CHECKS FOR DOMAIN #
+    #####################
+
+    # Check the integrity of the domain specified.
+    check_domain(domain)
+
+    ####################################
+    # CHECKS FOR SAMPLES TO BE REMOVED #
+    ####################################
+
+    if (!is.na(remove)) {
+
+        # Check the integrity of the samples-to-remove file specified.
+        check_file(remove)
+
+    } else { 
+        warning("No list of samples to be removed has been provided.")
+    }
+
+    #############
+    # LOAD DATA #
+    #############
+
     # Read standard reports.
-    std_reports <- load_STDreports(reports_paths[[1]], verbose = FALSE)
+    std_reports <- load_STDreports(reports_paths[[1]], verbose = verbose)
     
     # Read MPA-style reports.
-    mpa_reports <- load_MPAreports(reports_paths[[2]], verbose = FALSE)
+    mpa_reports <- load_MPAreports(reports_paths[[2]], verbose = verbose)
+
+    samples_to_remove <- NA
+    if (!is.na(remove)) {
+
+        # Load samples-to-remove file.
+        samples_to_remove <- loadSamplesToRemove(remove)   
+    }
+
+    # Merge standard and MPA-style reports.
+    merged_reports <- mergeReports(std_reports, mpa_reports, samples_to_remove)
     
     # Read reference database data.
     ref_db <- loadReference(reference_path)
@@ -70,13 +139,36 @@ prepare_data <- function(
     # Read metadata (if any).
     metadata <- NA
     if (!(is.na(metadata_path))) {
+
+        # Load metadata table.
         metadata <- loadMetadata(metadata_path)
-        check_columns(df = metadata, columns = columns)
-        mpa_reports <- addMetadata(mpa_reports, metadata, columns)
-        std_reports <- addMetadata(std_reports, metadata, columns)
+
+        # Check columns are present in metadata table.
+        check_columns(
+            df = metadata,
+            columns = c(metadata_sample_col, metadata_columns)
+        )
+
+        # Add metadata to merged reports.
+        merged_reports <- addMetadata(
+            merged_reports, metadata, 
+            metadata_sample_col, metadata_columns
+        )
+
+    } else {
+        warning("No metadata was added to the reports.")
     }
 
-    return(list(std_reports, mpa_reports, ref_db, metadata, metadata_columns))
+    return(list(
+        merged_reports, 
+        ref_db, 
+        metadata, 
+        metadata_sample_col,
+        metadata_columns, 
+        outdir_path, 
+        prefix, 
+        domain
+    ))
 
 }
 
@@ -90,14 +182,20 @@ prepare_data <- function(
 #' @return Processed reports ready for downstream analysis.
 #' @export
 process_kraken2 <- function(
-    std_reports_path, 
-    mpa_reports_path, 
-    reference_path, 
-    metadata_path, 
+    std_reports_path,
+    mpa_reports_path,
+    organism,
+    reference_path,
+    metadata_path,
+    metadata_sample_col,
     metadata_columns, 
     outdir_path,
     prefix,
-    verbose
+    verbose,
+    include_eukaryotes,
+    include_sample_names,
+    domain,
+    remove
 ) {
 
     prepared_data <- prepare_data(
@@ -105,38 +203,82 @@ process_kraken2 <- function(
         mpa_reports_path = mpa_reports_path,
         reference_path = reference_path,
         metadata_path = metadata_path,
+        metadata_sample_col = metadata_sample_col,
         metadata_columns = metadata_columns,
         outdir_path = outdir_path,
         prefix = prefix,
-        verbose = verbose
+        verbose = verbose,
+        domain = domain,
+        remove = remove
     )
 
-    std_reports <- prepared_data[[1]]
-    mpa_reports <- prepared_data[[2]]
-    ref_db <- prepared_data[[3]]
-    mdata <- prepared_data[[4]]
+    merged_reports <- prepared_data[[1]]
+    ref_db <- prepared_data[[2]]
+    mdata <- prepared_data[[3]]
+    sample_col <- prepared_data[[4]]
     columns <- prepared_data[[5]]
+    outdir <- prepared_data[[6]]
+    prefix <- prepared_data[[7]]
+    domain <- prepared_data[[8]]
 
-    mpa_reports <- addRank(mpa_reports, verbose = verbose)
-    mpa_reports <- addConciseTaxon(mpa_reports, verbose = verbose)
-    mpa_reports <- transfer_ncbiID(mpa_reports, std_reports)
-    std_reports <- transferDomains(std_reports, mpa_reports, verbose = verbose)
-    std_reports <- add_nReads(std_reports)
-    std_reports <- add_DBinfo(std_reports, ref_db)
-    mpa_reports <- transfer_nReads(mpa_reports, std_reports) 
-    mpa_reports <- add_DBinfo(mpa_reports, ref_db)
-    std_reports <- subset_STDreport(std_reports, include_human = FALSE)
-    std_reports <- assess_ratioMinimisers(std_reports)
-    std_reports <- assess_statSig(std_reports, ref_db)
+    merged_reports <- addSampleSize(merged_reports)
+    merged_reports <- addMinimiserData(merged_reports, ref_db)
+
+    plotClassificationSummary_violin(
+        merged_reports, 
+        return_plot = FALSE,
+        outdir = outdir,
+        prefix = prefix
+    )
 
     plotClassificationSummary_barplot(
-        std_reports, 
-        include_sample_names = FALSE, 
+        merged_reports, 
+        include_sample_names = include_sample_names, 
         orientation = "horizontal",
-        return_plot = TRUE,
-        outdir = "test/outputs/",
-        prefix = "SebT"
+        return_plot = FALSE,
+        outdir = outdir,
+        prefix = prefix
     )
 
+    plotDomainReads_violin(
+        merged_reports, 
+        include_eukaryotes = include_eukaryotes, 
+        return_plot = FALSE,
+        outdir = outdir,
+        prefix = prefix
+    )
 
+    plotDomainReads_barplot(
+        merged_reports, 
+        include_eukaryotes = include_eukaryotes, 
+        include_sample_names = include_sample_names, 
+        orientation = "horizontal", 
+        return_plot = FALSE,
+        outdir = outdir,
+        prefix = prefix
+    )
+
+    write.csv(
+        merged_reports,
+        paste0(outdir, prefix, "pre_filtering_and_statistics.csv")
+    )
+
+    merged_reports <- subsetReports(merged_reports, species_to_remove = organism, verbose = verbose)
+    merged_reports <- assessMinimiserRatio(merged_reports)
+    merged_reports <- assessStatistics(merged_reports, ref_db, verbose = verbose)
+
+    plotMinimisers_dotplot(
+        merged_reports, 
+        domain = domain, 
+        return_plot = FALSE, 
+        fig_width = 25, 
+        fig_height = 15, 
+        outdir = outdir,
+        prefix = prefix
+    )   
+
+    write.csv(
+        merged_reports,
+        paste0(outdir, prefix, "final_table_with_pvalues.csv")
+    )
 }

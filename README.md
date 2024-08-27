@@ -14,6 +14,23 @@ cd sparki
 rmarkdown::render(
     "/lustre/scratch126/casm/team113da/users/jb62/projects/sparki/tutorials/SPARKI_basic_usage.Rmd",
     output_dir = "/lustre/scratch126/casm/team113da/users/jb62/projects/sparki/tutorials",
-    output_file = "SPARKI_basic_usage.html"
+    output_file = "SPARKI_basic_usage.pdf"
 )
+```
+
+# CLI usage
+```
+PROJECTDIR="/lustre/scratch126/casm/team113da/users/jb62/projects/sparki"
+${PROJECTDIR}/src/cli.R \
+    --std-reports ${PROJECTDIR}/test/reports \
+    --mpa-reports ${PROJECTDIR}/test/mpa \
+    --organism "Homo sapiens" \
+    --reference ${PROJECTDIR}/test/inspect.txt \
+    --metadata ${PROJECTDIR}/test/metadata.csv \
+    --sample-col Tumour_RNA s\
+    --columns Diagnosis_short,Site_group \
+    --prefix SebT \
+    --outdir ${PROJECTDIR}/test/outputs/ \
+    --verbose \
+    --domain Viruses
 ```

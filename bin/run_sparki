@@ -1,0 +1,25 @@
+#!/bin/bash
+set -e
+
+# CONSTANTS
+
+# Relative path to code directory from this file
+R_CODE_DIR="$(dirname $0)/.."
+CLI_WRAPPER_FILE="${R_CODE_DIR}/cli_wrapper.sh"
+CLI_FUNCTION_NAME="cli_run_sparki"
+PROG_NAME=$(basename $0)
+FUNCS_FILE=$(dirname "$0")/_sourceable_bash_funcs.sh
+
+
+# FUNCTIONS
+test -f "$FUNCS_FILE" || (echo "ERROR: Could not find the script file at $FUNCS_FILE" && exit 1)
+source $FUNCS_FILE  # Import some helper functions
+
+# RUNTIME
+
+# Execute the CLI_WRAPPER_FILE script with bash, passing all arguments,
+# environment variables from the current shell
+_assert_file_exists $CLI_WRAPPER_FILE
+export CLI_FUNCTION_NAME=$CLI_FUNCTION_NAME
+export PROG_NAME=$PROG_NAME
+bash $CLI_WRAPPER_FILE $@

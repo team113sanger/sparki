@@ -1,372 +1,347 @@
-#####################################################
-## UTILITY FUNCTIONS FOR ADDING COLUMNS TO REPORTS ##
+#######################################################
+## UTILITY FUNCTION FOR LOADING A REFERENCE DATABASE ##
 #######################################################################################################
 
-addRank <- function(report, verbose = TRUE) {
-
-    if (is_mpa(report)) {
-
-        if (verbose) {
-            cat("Adding", COLNAME_MPA_RANK, "column to the MPA-style report\n")
-            pb <- txtProgressBar(min = 0, max = nrow(report), style = 3)
-        }
-
-        report[, COLNAME_MPA_RANK] <- sapply(seq_len(nrow(report)), function(x) {
-
-            if (verbose) setTxtProgressBar(pb, x)
-
-            # Get scientific name (in this case it will have a prefix indicating the taxonomic rank).
-            rank <- tail(unlist(stringr::str_split(report[, COLNAME_MPA_TAXON][x], "\\|")), n = 1)
-
-            # Identify which taxonomic rank the scientific name belongs to.
-            if(grepl("s__", rank)) return("S")
-            if(grepl("g__", rank)) return("G")
-            if(grepl("f__", rank)) return("F")
-            if(grepl("o__", rank)) return("O")
-            if(grepl("c__", rank)) return("C")
-            if(grepl("p__", rank)) return("P")
-            if(grepl("k__", rank)) return("K")
-            if(grepl("d__", rank)) return("D")
-        })
-        cat("\n")
-
-    } else {
-        stop(paste0(
-            "This function is not applicable to a standard report (i.e. not MPA-style). ",
-            "The standard report format already has the column ", COLNAME_STD_RANK, ", which ", 
-            "indicates the taxonomic rank of each line."
-        ))   
-    }
-
-    return(report)
-}
-
-addConciseTaxon <- function(report, verbose = TRUE) {
-
-    # If report is in MPA format...
-    if (is_mpa(report)) {
-
-        ranks <- c("D", "K", "P", "C", "O", "F", "G", "S")
-        ranks <- get_association(ranks)
-
-        # Iterate over ranks... 
-        for (rank in ranks) {
-
-            if (verbose) {
-                cat("Adding column with taxon names for rank:", names(ranks)[ranks == rank], "\n")
-                pb <- txtProgressBar(min = 0, max = nrow(report), style = 3)
-            }
-
-            # Get name for column that will be added to the MPA-style report.
-            colname <- names(ranks)[ranks == rank]
-
-            # Create column with concise taxon name at a given rank.
-            # Examples:
-            #
-            # "d__Eukaryota" -> "Eukaryota" (under "domain")
-            #
-            # "(...)f__Papillomaviridae|g__Alphapapillomavirus" -> "Papillomaviridae" (under "family") and 
-            # "Alphapapillomavirus" (under "genus")
-            #
-            # "(...)g__Homo|s__Homo sapiens" -> "Homo" (under "genus") and "Homo sapiens" (under "species")
-            report[, colname] <- sapply(seq_len(nrow(report)), function(x) {
-
-                if (verbose) setTxtProgressBar(pb, x)
-
-                if (report[, COLNAME_MPA_RANK][x] == rank) {
-
-                    return(extract_taxon(report[, COLNAME_MPA_TAXON][x], rank = rank, last_in_hierarchy = TRUE))
-
-                } else {
-
-                    return(extract_taxon(report[, COLNAME_MPA_TAXON][x], rank = rank, last_in_hierarchy = FALSE))
-
-                }
-            })
-
-            cat("\n")
-
-        }
-
-    } else {
-        stop(paste0(
-            "This function is not applicable to a standard report (i.e. not MPA-style). The standard report ",
-            "format already has the column ", COLNAME_STD_TAXON, ", which has concise taxon names instead of ",
-            "taxon hierarchies."
-        ))   
-    }
-
-    return(report)
-}
-
-#' ASSESS THE TOTAL NUMBER OF READS ANALYSED FOR EACH SAMPLE
+#' LOAD INFORMATION FROM KRAKEN2'S REFERENCE DATABASE
 #' 
-#' @param merged_reports
-#' @return An updated version of the input dataframe, with a new column containing sample sizes.
-add_nReads <- function(report) {
+#' This function takes a path to an inspect.txt file inside a Kraken2 reference database
+#' and reads the table. The first 7 lines are skipped, as they correspond to header lines.
+#' Column names are added before the reference database dataframe is returned.
+#' 
+#' @param reference_path Path to an inspect.txt file inside a Kraken2 reference database.
+#' @return 
+#' 
+loadReference <- function(reference_path) {
 
-    # If report is in MPA format...
-    if (is_mpa(report)) {
-        stop(paste0(
-            "This function is not applicable to MPA-style reports. The purpose of this function ",
-            "is to assess the total number of reads (classified + unclassified) assessed in each ",
-            "sample, but the MPA-style reports do not contain information on unclassified reads. ",
-            "If you would like to have the total number of reads in your MPA-style report, please do:\n\n",
-            "std_reports <- add_nReads(std_reports)\n", "mpa_reports <- transfer_nReads(mpa_reports, ",
-            "std_reports)\n\n"
-        ))
+    # Read Kraken2 reference file (inspect.txt).
+    ref <- read.table(
+        reference_path,
+        row.names = NULL, 
+        header = FALSE,
+        sep = "\t",
+        skip = 7, # Skip header lines.
+        quote = "",
+        stringsAsFactors = FALSE
+    )
+    # Add column names.
+    colnames(ref) <- c(
+        COLNAME_REF_DB_PCT_FRAG_CLADE, 
+        COLNAME_REF_DB_MINIMISERS_CLADE,
+        COLNAME_REF_DB_MINIMISERS_TAXON,
+        COLNAME_REF_DB_RANK, 
+        COLNAME_REF_DB_NCBI_ID, 
+        COLNAME_REF_DB_TAXON
+    )
+
+    ref[, COLNAME_REF_DB_TAXON] <- gsub("^[[:space:]]\\s*(.*?)", "", ref[, COLNAME_REF_DB_TAXON], perl = TRUE)
+
+    return(ref)
+}
+
+#############################################
+## UTILITY FUNCTIONS FOR HANDLING METADATA ##
+#######################################################################################################
+
+#' LOAD METADATA TABLE
+#' 
+#' This function takes a path to a metadata file and reads the table.
+#' and reads the table. The first 7 lines are skipped, as they correspond to header lines.
+#' Column names are added before the reference database dataframe is returned.
+#' 
+#' @param mdata_path Path to a metadata table.
+#' @return 
+#' 
+loadMetadata <- function(mdata_path) {
+
+    # Read metadata file.
+    mdata <- readr::read_delim(mdata_path)
+
+    return(mdata)
+}
+
+#' ADD COLUMNS FROM ONE DATAFRAME TO ANOTHER
+#' 
+#' This function takes as input a dataframe (df1) and adds metadata to it from another dataframe (df2). Both 
+#' dataframes must have the same sample IDs present, as these IDs will be used as an "anchor" between the tables. 
+#' Sample IDs can be specified as either row names or a standard column in the dataframes. The columns from df2
+#' that should be added to df1 are specified by the user.
+#' 
+#' @param df1 Dataframe 1.
+#' @param df1_sample_col Name of column in df1 that contains sample IDs; alternatively, this can be "rownames".
+#' @param df2 Dataframe 2.
+#' @param df2_sample_col Name of column in df2 that contains sample IDs; alternatively, this can be "rownames".
+#' @param categories Categories of interest from df2 that should be added to df1.
+#' @return An updated version of df1.
+#' @export
+addMetadata <- function(report, metadata, metadata_sample_col, metadata_columns) {
+
+    # Check report format.
+    report_colname_sample <- ifelse(is_mpa(report), COLNAME_MPA_SAMPLE, COLNAME_STD_SAMPLE)
+
+    # Process metadata dataframe (tibble).
+    metadata <- metadata |> 
+        # Select metadata columns that will be added to the report.
+        dplyr::select(metadata_sample_col, metadata_columns) |>
+        # Rename column with sample IDs to keep its name consistent
+        # with the report.
+        dplyr::rename(!!report_colname_sample := metadata_sample_col)
+    
+    # Replace spaces (if any) with underscores.
+    colnames(metadata) <- gsub(" ", "_", colnames(metadata))
+    metadata_columns <- gsub(" ", "_", metadata_columns)
+
+    # Add metadata columns to the report.
+    report <- dplyr::left_join(
+        report, metadata,
+        by = dplyr::join_by(!!report_colname_sample)
+    ) |>
+        # Get names of columns that contain results (and not sample names / metadata) and
+        # reorder the columns so that the metadata stays between the sample IDs and the
+        # Kraken2 results.
+        dplyr::relocate(metadata_columns, .after = !!report_colname_sample)
+
+    return(report)
+}
+
+###################################################################
+## UTILITY FUNCTIONS FOR READING, MERGING AND SUBSETTING REPORTS ##
+#######################################################################################################
+
+#' LOAD MPA-STYLE REPORTS 
+#' 
+#' This function takes a path to a directory containing MPA-style reports, reading and processing
+#' all reports into a single dataframe.
+#' 
+#' @param mpa_reports_dir Path to a directory containing MPA-style reports.
+#' @param verbose Whether to output log messages.
+#' @return A dataframe (tibble) with the content of all MPA-style reports from the specified directory.
+#' @export
+#'
+load_MPAreports <- function(mpa_reports_dir, verbose = TRUE) {
+
+    # Get paths to MPA-style reports in a specified directory.
+    mpa_files <- fs::dir_ls(mpa_reports_dir, glob = "*.mpa$")
+
+    # Check if directory really has any MPA-style reports...
+    if (length(mpa_files) == 0) {
+        stop(paste0("No MPA-style reports were found at ", mpa_reports_dir, ". Please review your input."))
+    } 
+
+    # Create vector with taxonomic rank names.
+    taxonomy <- c("domain", "kingdom", "phylum", "class", "order", "family", "genus", "species")
+
+    # Create a dataframe (tibble).
+    mpa_reports <- readr::read_tsv(
+        mpa_files, 
+        col_names = c(COLNAME_MPA_TAXON_HIERARCHY, COLNAME_MPA_N_FRAG_CLADE), 
+        id = get("COLNAME_MPA_SAMPLE")
+    ) 
+
+    # Add rank column.
+    mpa_reports[, COLNAME_MPA_RANK] <- lapply(mpa_reports[, COLNAME_MPA_TAXON_HIERARCHY], addRank)
+
+    # Further process the dataframe.
+    mpa_reports <- mpa_reports |>
+        # Split rows by "|" into primary taxa.
+        tidyr::separate(col = COLNAME_MPA_TAXON_HIERARCHY, into = taxonomy, sep = "\\|") |>
+        # Cleanup the names in the taxonomy columns.
+        dplyr::mutate(dplyr::across(taxonomy, ~ stringr::str_remove(.x, pattern = "[a-z]__"))) |>
+        # Simplify sample IDs.
+        dplyr::mutate(!!COLNAME_MPA_SAMPLE := stringr::str_remove(basename(sample), ".kraken.mpa")) |>
+        # Collect the rightmost non-NA item in each row.
+        dplyr::mutate(
+            !!COLNAME_MPA_TAXON_LEAF := dplyr::coalesce(species, genus, family, order, class, phylum, kingdom, domain),
+            .before = "domain"
+        ) |>
+        # Replace underscores with spaces in taxon names.
+        dplyr::mutate(
+            !!COLNAME_MPA_TAXON_LEAF := stringr::str_replace_all(taxon_leaf, pattern = "_", replacement = " ")
+        ) |>
+        # Put rank column right after the taxon leaf column.
+        dplyr::relocate(!!COLNAME_MPA_RANK, !!COLNAME_MPA_N_FRAG_CLADE, .after = !!COLNAME_MPA_TAXON_LEAF)
+
+    if (verbose) cat("MPA-style reports loaded successfully.\n")
+    
+    return(mpa_reports) 
+}
+
+#' LOAD STANDARD REPORTS 
+#' 
+#' This function takes a path to a directory containing standard reports, reading and processing
+#' all reports into a single dataframe.
+#' 
+#' @param mpa_reports_dir Path to a directory containing standard reports.
+#' @param verbose Whether to output log messages.
+#' @return A dataframe (tibble) with the content of all standard reports from the specified directory.
+#' @export
+#'
+load_STDreports <- function(std_reports_dir, verbose = TRUE) {
+
+    # Get paths to standard reports in a specified directory.
+    std_files <- fs::dir_ls(std_reports_dir, glob = "*.kraken$")
+
+    # Check if directory really has any standard reports...
+    if (length(std_files) == 0) {
+        stop(paste0("No standard reports were found at ", std_reports_dir, ". Please review your input."))
+    }
+
+    # Create a dataframe (tibble) and process.
+    std_reports <- readr::read_tsv(
+        std_files,
+        col_names = c(COLNAME_STD_PCT_FRAG_CLADE, COLNAME_STD_N_FRAG_CLADE, COLNAME_STD_N_FRAG_TAXON, 
+            COLNAME_STD_MINIMISERS, COLNAME_STD_UNIQ_MINIMISERS, COLNAME_STD_RANK, COLNAME_STD_NCBI_ID, 
+            COLNAME_STD_TAXON),
+        id = get("COLNAME_STD_SAMPLE")
+    ) |>
+        # Remove the subranks.
+        dplyr::filter(!grepl(!!as.name(COLNAME_STD_RANK), pattern = "[0-9]")) |>
+        # Simplify sample IDs.
+        dplyr::mutate(!!COLNAME_STD_SAMPLE := stringr::str_remove(basename(sample), ".kraken"))
+
+    if (verbose) cat("Standard reports loaded successfully.\n")
+
+    return(std_reports) 
+}
+
+#' LOAD LIST OF SAMPLES TO BE EXCLUDED FROM SPARKI ANALYSIS
+#' 
+#' This function takes the path to a tab-delimited file, in which each line should
+#' be a sample ID, and returns a list with these IDs. Note that the sample IDs need
+#' to match those that are present in the merged reports dataframe.
+#' 
+#' @param filepath Path to a tab-delimited file in which each line is a sample ID.
+#' @return A list containing the samples IDs from the input file.
+#' @export
+#'
+loadSamplesToRemove <- function(filepath) {
+
+    samples_to_remove <- readr::read_tsv(filepath, col_names = "sample")
+    return(samples_to_remove[["sample"]])
+}
+
+#' MERGE STANDARD AND MPA-STYLE REPORTS
+#' 
+#' This function takes a standard and an MPA-style dataframe, loaded with load_STDreports() and
+#' load_MPAreports() respectively, and merges the latter into the former.
+#' 
+#' @param std_reports A dataframe (tibble) with standard reports, loaded with load_STDreports().
+#' @param mpa_reports A dataframe (tibble) with MPA-style reports, loaded with load_MPAreports().
+#' @return An updated version of the dataframe (tibble) with standard reports, now containing the
+#' information from the dataframe (tibble) with MPA-style reports.
+#' @export
+#'
+mergeReports <- function(std_reports, mpa_reports, samples_to_remove) {
+
+    mpa_reports <- mpa_reports |> 
+        # Rename column for consistency with the standard report.
+        dplyr::rename(!!COLNAME_STD_TAXON := !!COLNAME_MPA_TAXON_LEAF) |>
+        # Drop columns that are already present in the standard report.
+        dplyr::select(!c(!!COLNAME_MPA_N_FRAG_CLADE, !!COLNAME_MPA_RANK))
+        
+    # The primary keys that will be used for joining are "taxon leaf"/"name" and "sample_id"
+    merged_reports <- dplyr::left_join( 
+        std_reports, mpa_reports,
+        by = dplyr::join_by(!!COLNAME_STD_TAXON, !!COLNAME_STD_SAMPLE)
+    )
+
+    if (!missing(samples_to_remove)) {
+        merged_reports <- merged_reports |>
+            dplyr::filter(!(!!as.name(COLNAME_STD_SAMPLE) %in% samples_to_remove))
     } else {
+        warning("No samples were filtered out from the merged reports table.")
+    }
 
-        report[, COLNAME_STD_TOTAL_READS] <- NA
+    return(merged_reports)
+}
 
-        # Get numbers of classified/unclassified reads for each sample.
-        subset <- report[report[, COLNAME_STD_TAXON] %in% c("unclassified", "root"), ]
+get_name_at_rank <- function(report, species, rank) {
 
-        for (sample in unique(subset[, COLNAME_STD_SAMPLE])) {
+    # Get the species position (row number) in the report (first appearance only). 
+    species_position <- which(report[, COLNAME_STD_TAXON] == species)[1]
 
-            subset_sample <- subset[subset[, COLNAME_STD_SAMPLE] == sample, ]
-            n_unclassified_reads <- as.numeric(
-                subset_sample[, COLNAME_STD_N_FRAG_CLADE][subset_sample[, COLNAME_STD_TAXON] == "unclassified"]
-            )
-            n_classified_reads <- as.numeric(
-                subset_sample[, COLNAME_STD_N_FRAG_CLADE][subset_sample[, COLNAME_STD_TAXON] == "root"]
-            )
+    # Find the corresponding rank position (row number) in the report (first appearance only).
+    i <- 1
+    while (i > 0) {
 
-            report[, COLNAME_STD_TOTAL_READS][report[, COLNAME_STD_SAMPLE] == sample] <- (n_unclassified_reads + n_classified_reads)
+        # If the desired rank has been found, break the loop.
+        if (report[, COLNAME_STD_RANK, drop = TRUE][(species_position - i)] == rank) {
+            rank_position <- (species_position - i)
+            break
+        } else {
+            i <- i + 1
         }
     }
 
-    return(report)
-}
-
-add_DBinfo <- function(report, ref_db) {
-
-    if (is_mpa(report)) {
-
-        colname_db_minimisers_taxon <- COLNAME_MPA_DB_MINIMISERS_TAXON
-        colname_db_minimisers_clade <- COLNAME_MPA_DB_MINIMISERS_CLADE
-        colname_ncbi_id <- COLNAME_MPA_NCBI_ID
-
-    } else {
-
-        colname_db_minimisers_taxon <- COLNAME_STD_DB_MINIMISERS_TAXON
-        colname_db_minimisers_clade <- COLNAME_STD_DB_MINIMISERS_CLADE
-        colname_ncbi_id <- COLNAME_STD_NCBI_ID
-
-    }
-
-    report[, colname_db_minimisers_taxon] <- ref_db[, COLNAME_REF_DB_MINIMISERS_TAXON][match(
-        report[, colname_ncbi_id], ref_db[, COLNAME_REF_DB_NCBI_ID]
-    )]
-    report[, colname_db_minimisers_clade] <- ref_db[, COLNAME_REF_DB_MINIMISERS_CLADE][match(
-        report[, colname_ncbi_id], ref_db[, COLNAME_REF_DB_NCBI_ID]
-    )]
-
-    return(report)
-}
-
-
-#################################################################################
-## UTILITY FUNCTIONS FOR TRANSFERRING COLUMNS BETWEEN DIFFERENT REPORT FORMATS ##
-#######################################################################################################
-
-transfer_nReads <- function(report_mpa, report_std) {
-
-    if (is_mpa(report_std)) {
-        stop(paste0(
-            "The report you provided as 'report_std' is not actually in standard format. ",
-            "Please review your input!"
-        ))
-    } else if (!(is_mpa(report_mpa))) {
-        stop(paste0(
-            "The report you provided as 'report_mpa' is not actually in MPA format. ",
-            "Please review your input!"
-        ))
-    }
-
-    report_mpa[, COLNAME_MPA_TOTAL_READS] <- report_std[, COLNAME_STD_TOTAL_READS][match(
-        report_mpa[, COLNAME_MPA_SAMPLE], report_std[, COLNAME_STD_SAMPLE]
-    )]
-    report_mpa[, COLNAME_MPA_TOTAL_READS] <- as.numeric(report_mpa[, COLNAME_MPA_TOTAL_READS])
-
-    return(report_mpa)
-}
-
-
-transfer_ncbiID <- function(report_mpa, report_std) {
-
-    if (is_mpa(report_std)) {
-        stop(paste0(
-            "The report you provided as 'report_std' is not actually in standard format. ",
-            "Please review your input!"
-        ))
-    } else if (!(is_mpa(report_mpa))) {
-        stop(paste0(
-            "The report you provided as 'report_mpa' is not actually in MPA format. ",
-            "Please review your input!"
-        ))
-    }
-
-    ranks <- unique(report_std[, COLNAME_STD_RANK])
-    ranks <- ranks[ranks %in% report_mpa[, COLNAME_MPA_RANK]]
-    ranks <- get_association(ranks)
-
-    report_mpa$temp_column <- seq_len(nrow(report_mpa))
-
-    final_report <- data.frame(matrix(nrow = 0, ncol = (ncol(report_mpa) + 1)))
-
-    for (rank in ranks) {
-
-        subset <- report_mpa[report_mpa[, COLNAME_MPA_RANK] == rank, ]
-
-        subset[, COLNAME_MPA_NCBI_ID] <- report_std[, COLNAME_STD_NCBI_ID][match(
-            subset[, names(ranks)[ranks == rank]], report_std[, COLNAME_STD_TAXON]
-        )]
-
-        final_report <- rbind(final_report, subset)
-
-    }
-
-    final_report <- final_report[order(final_report$temp_column, decreasing = FALSE), ]
-    final_report$temp_column <- NULL
-
-    return(final_report)
-}
-
-transferDomains <- function(report_std, report_mpa, verbose = TRUE, inference = TRUE) {
-
-    if (is_mpa(report_std)) {
-        stop(paste0(
-            "The report you provided as 'report_std' is not actually in standard format. ",
-            "Please review your input!"
-        ))
-    } else if (!(is_mpa(report_mpa))) {
-        stop(paste0(
-            "The report you provided as 'report_mpa' is not actually in MPA format. ",
-            "Please review your input!"
-        ))
-    }
-
-    if (verbose) {
-        cat("Adding domain info from the MPA-style report to the standard report\n")
-    }
-
-    report_std <- retrieve_rankDomains(report_std, report_mpa, verbose)
-    #report_std <- retrieve_subrankDomains(report_std, report_mpa, verbose, inference)
+    subset_report <- report |> dplyr::slice(rank_position)
     
-    return(report_std)
+    return(subset_report[[COLNAME_STD_TAXON]])
 }
 
+subsetReports <- function(report, species, verbose) {
+
+    if (!(species %in% report[[COLNAME_STD_TAXON]])) {
+        stop(paste0(
+            "The organism ", species, " is not present ",
+            "in the dataframe. Please review your input!"
+        ))
+    }
+
+    # Determine the genus and family of an user-defined species.
+    genus <- get_name_at_rank(report, species, "G")
+    family <- get_name_at_rank(report, species, "F")
+
+    # Create vector with species, genus and family to be filtered out.
+    taxa_to_remove <- c(species, genus, family)
+
+    if (verbose == TRUE) {
+        warning(paste0(
+            "Filtering out ", species, ", ", genus, ", and ", family, "..."
+        ))
+    }
+
+    report <- report |> 
+        # Select rows corresponding to species, genus and family.
+        dplyr::filter(!!as.name(COLNAME_STD_RANK) %in% c("F", "G", "S")) |>
+        # Filter out the user-defined organism.
+        dplyr::filter(!(!!as.name(COLNAME_STD_TAXON) %in% taxa_to_remove))
+    
+    return(report)
+}
 
 #########################################################
 ## UTILITY FUNCTIONS FOR CREATING AUXILIARY DATAFRAMES ##
 #######################################################################################################
 
-get_nDomainReads <- function(report) {
+# Number of reads under each domain for each sample.
+get_nDomainReads <- function(report, include_eukaryotes) {
 
-    n_domainReads <- data.frame(matrix(nrow = 0, ncol = 4))
+    colname_sample <- ifelse(is_mpa(report), COLNAME_MPA_SAMPLE, COLNAME_STD_SAMPLE)
+    colname_taxon <- ifelse(is_mpa(report), COLNAME_MPA_TAXON_LEAF, COLNAME_STD_TAXON)
+    colname_n_frag_clade <- ifelse(is_mpa(report), COLNAME_MPA_N_FRAG_CLADE, COLNAME_STD_N_FRAG_CLADE)
 
-    # Iterate over samples in report...
-    for (sample in unique(report$sample)) {
+    domains <- "Viruses|Bacteria|Archaea"
+    if (include_eukaryotes == TRUE) domains <- paste0("Eukaryota|", domains)
 
-        # Subset report to keep only a given sample.
-        report_sample <- report[report$sample == sample,]
+    domain_reads <- report |>
+        # Select relevant columns.
+        dplyr::select(!!colname_sample, !!colname_taxon, !!colname_n_frag_clade) |>
+        # Select rows that contain the relevant taxa.
+        dplyr::filter(grepl(!!as.name(colname_taxon), pattern = domains)) |>
+        # Create grouping for sample + taxon.
+        dplyr::group_by(!!as.name(colname_sample), !!as.name(colname_taxon)) |>
+        # Sum classified reads for each sample + taxon group.
+        dplyr::summarise(
+            !!COLNAME_DOMAIN_READS_N_FRAG := sum(!!as.name(colname_n_frag_clade)),
+            .groups = "keep"
+        ) |>
+        # Rename columns.
+        dplyr::rename(
+            !!COLNAME_DOMAIN_READS_TAXON := !!colname_taxon,
+            !!COLNAME_DOMAIN_READS_SAMPLE := !!colname_sample
+        )
 
-        # Identify if report follows a standard or MPA format; there are some slight 
-        # differences in how domains are written depending on the format!
-        if (is_mpa(report)) {
-
-            # In an MPA-style report, the domain will have a prefix ("d__"). Additionally,
-            # since the MPA format shows the hierarchy of each taxon, we also need to select
-            # specifically the lines that have only the domain-level information.
-            all_domains <- "d__Eukaryota$|d__Viruses$|d__Archaea$|d__Bacteria$"
-            subset_domains <- "d__Viruses$|d__Archaea$|d__Bacteria$"
-        
-        } else {
-
-            # In a standard report, each taxon is shown independently from their hierarchy,
-            # therefore it is easier to select the lines that contain domain-level information.
-            all_domains <- "Eukaryota|Viruses|Archaea|Bacteria"
-            subset_domains <- "Viruses|Archaea|Bacteria"
-
-        }
-
-        # Here we create a named vector to establish an association between the domain vectors
-        # we created above and what is their scope (all domains or only non-eukaryote domains).
-        scopes <- c(all_domains, subset_domains)
-        names(scopes) <- c("all", "non-eukaryote")
-
-        # Sum all sample-level reads classified under all domains ("all") 
-        # or under non-eukaryote domains ("non-eukaryote").
-        for (scope in scopes) {
-
-            n_domainReads <- rbind(
-                n_domainReads, 
-                c(sample, names(scopes)[scopes == scope], sum_domainReads(report = report_sample, domains = scope))
-            )
-        }
-    }
-
-    colnames(n_domainReads) <- c(
-        COLNAME_DOMAIN_READS_SAMPLE, 
-        COLNAME_DOMAIN_READS_SCOPE, 
-        COLNAME_DOMAIN_READS_N_READS
-    )
-    
-    n_domainReads[, COLNAME_DOMAIN_READS_N_READS] <- as.numeric(n_domainReads[, COLNAME_DOMAIN_READS_N_READS])
-
-    return(n_domainReads)
+    return(domain_reads)
 }
-
-get_nTaxa <- function(report, ranks) {
-
-    if (!("domain" %in% colnames(report))) {
-        stop(paste0(
-            "The column 'domain' was not found in the report provided. If your report has MPA format, ",
-            "please make sure you run addConciseTaxon(report, ranks = c('D')) before running get_nTaxa(). ",
-            "Alternatively, if your report has standard format, please make sure you run addDomain() before ",
-            "running get_nTaxa()."
-        ))
-    }
-
-    if (is_mpa(report)) {
-        colname_sample <- COLNAME_MPA_SAMPLE
-        colname_taxon <- COLNAME_MPA_TAXON
-        colname_rank <- COLNAME_MPA_RANK
-    } else {
-        colname_sample <- COLNAME_STD_SAMPLE
-        colname_taxon <- COLNAME_STD_TAXON
-        colname_rank <- COLNAME_STD_RANK
-    }
-
-    n_taxa_in_samples <- data.frame(matrix(nrow = 0, ncol = 4))
-
-    # Iterate over samples...
-    for (sample in unique(report[, colname_sample])) {
-
-        # Subset report to keep only a given sample.
-        report_sample <- report[report[, colname_sample] == sample,]
-
-        # Iterate over domains...
-        for (domain in unique(report$domain)) {
-
-            # Iterate over ranks...
-            for (rank in ranks) {
-
-                n_taxa <- length(unique(
-                    report_sample[, colname_taxon][report[, colname_rank] == rank & report$domain == domain]
-                ))
-                n_taxa_in_samples <- rbind(n_taxa_in_samples, c(sample, domain, rank, n_taxa))
-
-            }
-        }
-    }
-
-    colnames(n_taxa_in_samples) <- c("sample", "domain", "rank", "value")
-
-    return(n_taxa_in_samples)
-}
-
 
 getClassificationSummary <- function(report) {
 
@@ -376,43 +351,37 @@ getClassificationSummary <- function(report) {
             "is to assess the number of classified and unclassified reads for each sample, but the ",
             "MPA-style reports do not contain information on unclassified reads."
         ))
-    } else {
-        colname_n_frag_clade <- COLNAME_STD_N_FRAG_CLADE
-        colname_taxon <- COLNAME_STD_TAXON
-        colname_sample <- COLNAME_STD_SAMPLE
     }
 
-    class_unclass_df <- data.frame(matrix(nrow = 0, ncol = 3))
-
-    classifications <- c("unclassified", "root")
-    names(classifications) <- c("Unclassified", "Classified")
-
-    for (sample in unique(report[, colname_sample])) {
-        for (classification in classifications) {
-
-            value <- as.numeric(
-                report[, colname_n_frag_clade][report[, colname_taxon] == classification & report[, colname_sample] == sample]
-            )
-            class_unclass_df <- rbind(
-                class_unclass_df, 
-                c(sample, names(classifications)[classifications == classification], value)
-            )
-        }
-    }
-
-    colnames(class_unclass_df) <- c(
-        COLNAME_CLASSIF_SUMMARY_SAMPLE, 
-        COLNAME_CLASSIF_SUMMARY_READ_TYPE, 
-        COLNAME_CLASSIF_SUMMARY_N_READS
-    )
-
-    class_unclass_df[, COLNAME_CLASSIF_SUMMARY_N_READS] <- as.numeric(class_unclass_df[, COLNAME_CLASSIF_SUMMARY_N_READS])
-
-    return(class_unclass_df)
+    summary <- report |> 
+        # Select columns of interest.
+        dplyr::select(!!COLNAME_STD_SAMPLE, !!COLNAME_STD_TAXON, !!COLNAME_STD_N_FRAG_CLADE) |>
+        # Select rows of interest.
+        dplyr::filter(!!as.name(COLNAME_STD_TAXON) %in% c("unclassified", "root")) |>
+        # Rename column.
+        dplyr::rename(
+            !!COLNAME_CLASSIF_SUMMARY_SAMPLE := !!COLNAME_STD_SAMPLE,
+            !!COLNAME_CLASSIF_SUMMARY_READ_TYPE := !!COLNAME_STD_TAXON,
+            !!COLNAME_CLASSIF_SUMMARY_N_FRAG := !!COLNAME_STD_N_FRAG_CLADE
+        ) |>
+        # Rename elements in column.
+        dplyr::mutate(!!COLNAME_CLASSIF_SUMMARY_READ_TYPE := dplyr::case_when(
+            !!as.name(COLNAME_CLASSIF_SUMMARY_READ_TYPE) == "unclassified" ~ "Unclassified",
+            !!as.name(COLNAME_CLASSIF_SUMMARY_READ_TYPE) == "root" ~ "Classified"
+        )) |>
+        # Create column with log-transformed number of clade-level fragments.
+        dplyr::mutate(
+            !!COLNAME_CLASSIF_SUMMARY_LOG_N_FRAG := log10(!!as.name(COLNAME_CLASSIF_SUMMARY_N_FRAG))
+        ) |>
+        # Reorder columns.
+        dplyr::relocate(
+            !!COLNAME_CLASSIF_SUMMARY_LOG_N_FRAG, .after = !!COLNAME_CLASSIF_SUMMARY_N_FRAG
+        )
+        
+    return(summary)
 }
 
-
-getProportion <- function(report, taxon) {
+getClassificationProportion <- function(report, taxon) {
 
     if (is_mpa(report)) {
         stop(paste0(
@@ -420,155 +389,251 @@ getProportion <- function(report, taxon) {
             "is to assess the proportion of classified reads relative to the total number of reads ",
             "assessed, but the MPA-style reports do not contain information on unclassified reads."
         ))
-    } else {
-        colname_n_frag_clade <- COLNAME_STD_N_FRAG_CLADE
-        colname_taxon <- COLNAME_STD_TAXON
-        colname_sample <- COLNAME_STD_SAMPLE
     }
 
-    class_unclass_df <- getClassificationSummary(report)
+    proportion <- report |>
+        # Select relevant columns.
+        dplyr::select(
+            !!COLNAME_STD_SAMPLE,
+            !!COLNAME_STD_SAMPLE_SIZE,
+            !!COLNAME_STD_TAXON,
+            !!COLNAME_STD_N_FRAG_CLADE
+        ) |>
+        # Select relevant rows.
+        dplyr::filter(!!as.name(COLNAME_STD_TAXON) == "root") |>
+        # Create column with proportion of classified reads.
+        dplyr::mutate(
+            !!COLNAME_PROP_CLASSIFIED := (!!as.name(COLNAME_STD_N_FRAG_CLADE) / !!as.name(COLNAME_STD_SAMPLE_SIZE))
+        ) |>
+        # Remove columns.
+        dplyr::select(!c(!!COLNAME_STD_SAMPLE_SIZE, !!COLNAME_STD_TAXON, !!COLNAME_STD_N_FRAG_CLADE)) |>
+        # Rename columns.
+        dplyr::rename(!!COLNAME_PROP_SAMPLE := !!COLNAME_STD_SAMPLE)
 
-    for (sample in unique(class_unclass_df[, COLNAME_CLASSIF_SUMMARY_SAMPLE])) {
-        subset <- class_unclass_df[, class_unclass_df[, COLNAME_CLASSIF_SUMMARY_SAMPLE] == sample, ]
-        
-        classified_reads <- subset[, COLNAME_CLASSIF_SUMMARY_N_READS][subset[, COLNAME_CLASSIF_SUMMARY_READ_TYPE] == "Classified"]
-        unclassified_reads <- subset[, COLNAME_CLASSIF_SUMMARY_N_READS][subset[, COLNAME_CLASSIF_SUMMARY_READ_TYPE] == "Unclassified"]
-
-        total_reads <- classified_reads + unclassified_reads
-
-    }
-
-
-
-    return(class_unclass_df)
+    return(proportion)
 }
 
+getSignificanceSummary <- function(report) {
+
+    if (is_mpa(report)) stop(paste0("This function does not support MPA-style reports."))
+
+    summary <- report |>
+        # Select relevant columns.
+        dplyr::select(
+            !!COLNAME_STD_SAMPLE,
+            !!COLNAME_STD_RANK,
+            !!COLNAME_STD_TAXON,
+            !!COLNAME_STD_SIGNIF
+        ) |>
+        # Create grouping based on sample ID, rank and statistical significance.
+        dplyr::group_by(
+            !!as.name(COLNAME_STD_SAMPLE),
+            !!as.name(COLNAME_STD_RANK),
+            !!as.name(COLNAME_STD_SIGNIF)
+        ) |>
+        # Count number of taxa per group.
+        dplyr::summarise(
+            !!COLNAME_SIGNIF_SUMMARY_N_TAXA := length(!!as.name(COLNAME_STD_TAXON)),
+            .groups = "keep"
+        ) |>
+        # Rename columns.
+        dplyr::rename(
+            !!COLNAME_SIGNIF_SUMMARY_SAMPLE := !!COLNAME_STD_SAMPLE,
+            !!COLNAME_SIGNIF_SUMMARY_RANK := !!COLNAME_STD_RANK,
+            !!COLNAME_SIGNIF_SUMMARY_SIGNIF := !!COLNAME_STD_SIGNIF
+        ) |>
+        # Replace values in column.
+        dplyr::mutate(!!COLNAME_SIGNIF_SUMMARY_RANK := dplyr::case_when(
+            !!as.name(COLNAME_SIGNIF_SUMMARY_RANK) == "F" ~ "Family",
+            !!as.name(COLNAME_SIGNIF_SUMMARY_RANK) == "G" ~ "Genus",
+            !!as.name(COLNAME_SIGNIF_SUMMARY_RANK) == "S" ~ "Species"
+        ))
+
+    return(summary)
+
+}
+
+#####################################################
+## UTILITY FUNCTIONS FOR ADDING COLUMNS TO REPORTS ##
+#######################################################################################################
+
+addRank <- function(taxon) {
+
+    # Define rank prefixes and corresponding letters.
+    rank_prefixes <- c("d__", "k__", "p__", "c__", "o__", "f__", "g__", "s__")
+    rank_letters <- c("D", "K", "P", "C", "O", "F", "G", "S")
+
+    # Create a single regex pattern.
+    pattern <- paste0("(", paste(rank_prefixes, collapse = "|"), ")")
+
+    # Extract all rank prefixes from each taxon string.
+    all_matches <- stringr::str_extract_all(taxon, pattern)
+
+    # Find the last (most specific) rank for each taxon.
+    last_ranks <- sapply(all_matches, function(x) tail(x, 1))
+
+    # Map rank prefixes to letters.
+    rank <- rank_letters[match(last_ranks, rank_prefixes)]
+
+    return(rank)
+}
+
+#' CALCULATE SAMPLE SIZES
+#' 
+#' @param report A report.
+#' @return An updated version of the input dataframe, with a new column containing sample sizes.
+addSampleSize <- function(report) {
+
+    # If report is in MPA format...
+    if (is_mpa(report)) {
+        stop(paste0(
+            "This function is not applicable to MPA-style reports. The purpose of this function ",
+            "is to assess the total number of reads (classified + unclassified) assessed in each ",
+            "sample (i.e., sample size), but the MPA-style reports do not contain information on ",
+            "unclassified reads. If you would like to have the total number of reads in your MPA-style ",
+            "report, please do:\n\nstd_reports <- add_nReads(std_reports)\n", "mpa_reports <- ",
+            "transfer_nReads(mpa_reports, std_reports)\n\n"
+        ))
+    }
+
+    subset <- report |> 
+        # Select columns of interest.
+        dplyr::select(!!COLNAME_STD_SAMPLE, !!COLNAME_STD_TAXON, !!COLNAME_STD_N_FRAG_CLADE) |>
+        # Select rows of interest.
+        dplyr::filter(!!as.name(COLNAME_STD_TAXON) %in% c("unclassified", "root")) |>
+        # Reformat dataframe into a more convenient shape.
+        tidyr::pivot_wider(
+            names_from = !!COLNAME_STD_TAXON, 
+            values_from = !!COLNAME_STD_N_FRAG_CLADE
+        ) |>
+        # Rename columns.
+        dplyr::rename(
+            Unclassified = unclassified,
+            Classified = root
+        ) |>
+        # Create column with sample sizes (i.e. sum of unclasified and classified reads).
+        dplyr::mutate(!!COLNAME_STD_SAMPLE_SIZE := rowSums(dplyr::across((where(is.numeric))))) |>
+        # Select final columns.
+        dplyr::select(!!COLNAME_STD_SAMPLE, !!COLNAME_STD_SAMPLE_SIZE)
+
+    # Add sample sizes to report.
+    report <- dplyr::left_join(report, subset, by = dplyr::join_by(!!COLNAME_STD_SAMPLE)) |>
+        # Reorder columns.
+        dplyr::relocate(!!COLNAME_STD_SAMPLE_SIZE, .after = !!COLNAME_STD_SAMPLE)
+
+    return(report)
+}
+
+addMinimiserData <- function(report, ref_db) {
+
+    if (is_mpa(report)) stop(paste0("This function does not support MPA-style reports."))
+
+    # Select relevant columns.
+    ref_db <- ref_db |> 
+        dplyr::select(
+            !!COLNAME_REF_DB_NCBI_ID,
+            !!COLNAME_REF_DB_MINIMISERS_TAXON,
+            !!COLNAME_REF_DB_MINIMISERS_CLADE
+        )
+
+    report <- report |>
+        # Add DB info to the report.
+        dplyr::left_join(ref_db, by = dplyr::join_by(!!COLNAME_STD_NCBI_ID)) |>
+        # Rename columns.
+        dplyr::rename(
+            !!COLNAME_STD_DB_MINIMISERS_CLADE := !!COLNAME_REF_DB_MINIMISERS_CLADE,
+            !!COLNAME_STD_DB_MINIMISERS_TAXON := !!COLNAME_REF_DB_MINIMISERS_TAXON
+        )
+
+    return(report)
+}
+
+add_nTaxaInRank <- function(report) {
+
+    n_taxa_in_rank <- report |>
+        # Create column with sample+rank combinations.
+        dplyr::mutate(
+            temp = paste(!!as.name(COLNAME_STD_SAMPLE), !!as.name(COLNAME_STD_RANK), sep = "_")
+        ) |>
+        # Count sample+rank occurrences (this will tell how many taxa are present in each rank
+        # for each sample).
+        dplyr::count(temp)
+
+    report <- report |> 
+        # Create temporary column with sample+rank combinations.
+        dplyr::mutate(
+            temp = paste(!!as.name(COLNAME_STD_SAMPLE), !!as.name(COLNAME_STD_RANK), sep = "_")
+        ) |>
+        # Merge dataframes.
+        dplyr::left_join(n_taxa_in_rank, by = dplyr::join_by(temp)) |>
+        # Remove the temporary column.
+        dplyr::select(!temp) |>
+        # Rename column.
+        dplyr::rename(!!COLNAME_STD_N_TAXA_RANK := n)
+
+    report[[COLNAME_STD_N_TAXA_RANK]] <- as.numeric(report[[COLNAME_STD_N_TAXA_RANK]])
+
+    return(report)
+}
 
 #############################################################################
 ## UTILITY FUNCTIONS FOR ASSESSING THE STATISTICAL SIGNIFICANCE OF RESULTS ##
 #######################################################################################################
 
-assess_ratioMinimisers <- function(report) {
+assessMinimiserRatio <- function(report) {
 
     if (is_mpa(report)) {
-        
-        stop(paste0(
-            "This function does not support MPA-style reports. Please provide a standard report."
-        ))
-
-    } else {
-
-        colname_uniq_minimisers <- COLNAME_STD_UNIQ_MINIMISERS
-        colname_db_minimisers_clade <- COLNAME_STD_DB_MINIMISERS_CLADE
-        colname_db_minimisers_taxon <- COLNAME_STD_DB_MINIMISERS_TAXON
-        colname_ratio_clade <- COLNAME_STD_RATIO_CLADE
-        colname_ratio_taxon <- COLNAME_STD_RATIO_TAXON
+        stop(paste0("This function does not support MPA-style reports. Please provide a standard report."))
+    } 
     
-        report[, colname_ratio_taxon] <- (report[, colname_uniq_minimisers] / report[, colname_db_minimisers_taxon])
-        report[, colname_ratio_clade] <- (report[, colname_uniq_minimisers] / report[, colname_db_minimisers_clade])
-    }
+    report[, COLNAME_STD_RATIO_TAXON] <- (report[, COLNAME_STD_UNIQ_MINIMISERS] / report[, COLNAME_STD_DB_MINIMISERS_TAXON])
+    report[, COLNAME_STD_RATIO_CLADE] <- (report[, COLNAME_STD_UNIQ_MINIMISERS] / report[, COLNAME_STD_DB_MINIMISERS_CLADE])
 
     return(report)
 }
-
 
 #' ASSESS THE STATISTICAL SIGNIFICANCE OF RESULTS
 #' 
 #' @param report
 #' @param ref_db 
 #' @return An updated version of the input dataframe, with new columns containing statistical significance results.
-assess_statSig <- function(report, ref_db, verbose = TRUE) {
+assessStatistics <- function(report, ref_db, verbose = TRUE) {
 
-    if (is_mpa(report)) {
+    if (is_mpa(report)) stop(paste0("This function does not support MPA-style reports."))
 
-        stop(paste0(
-            "This function does not support MPA-style reports. Please provide a standard report."
-        ))
+    if (verbose) cat("Calculating p-values...\n")
 
-    } else {
+    # Calculate p-values.
+    report[, COLNAME_STD_PVALUE] <- calculate_p_value(
+        report[[COLNAME_STD_UNIQ_MINIMISERS]], 
+        report[[COLNAME_STD_DB_MINIMISERS_CLADE]], 
+        report[[COLNAME_STD_SAMPLE_SIZE]],
+        ref_db
+    )
 
-        p_clade_in_db <- numeric(nrow(report))
-        pval <- numeric(nrow(report))
+    # Add number of taxa identified in a given rank for a given sample.
+    report <- add_nTaxaInRank(report)
 
-        if (verbose) {
-            cat("Assessing the statistical significance of results at the family, genus and species levels\n")
-            pb <- txtProgressBar(min = 0, max = nrow(report), style = 3)
-        }
+    if (verbose) cat("Adjusting p-values...\n")
 
-        for (i in seq_len(nrow(report))) {
+    # Perform p-value correction.
+    report[, COLNAME_STD_PADJ] <- sapply(seq_len(nrow(report)), function(x) {
 
-            if (verbose) setTxtProgressBar(pb, i)
-
-            # Get proportion of clade-level minimisers of a given taxon in the reference database (DB).
-            p_clade_in_db_ <- (report[, COLNAME_STD_DB_MINIMISERS_CLADE][i] / sum(ref_db[, COLNAME_REF_DB_MINIMISERS_CLADE]))
-
-            # Mean is the total number of reads analysed from the sample (sample size) times the probability of success which 
-            # is equal to the proportion of clade-level minimisers of the taxon out of the total available in the reference DB.
-            mean_ <- (report[, COLNAME_STD_TOTAL_READS][i] * p_clade_in_db_)
-
-            # Standard deviation = sqrt(n*P*(1-p))
-            sdev <- sqrt(report[, COLNAME_STD_TOTAL_READS][i] * p_clade_in_db_ * (1 - p_clade_in_db_)) 
-
-            # Get p-values.
-            pval_ <- pnorm(
-                q = report[, COLNAME_STD_UNIQ_MINIMISERS][i], 
-                mean = mean_, 
-                sd = sdev, 
-                lower.tail = FALSE
-            )
-            
-            # Saving probability of success.
-            p_clade_in_db[i] <- p_clade_in_db_
-
-            # Saving p-value.
-            pval[i] <- pval_
-        }
-
-        report[, COLNAME_STD_P_CLADE_IN_DB] <- p_clade_in_db
-        report[, COLNAME_STD_PVALUE] <- pval
-
-        # Create vector to store adjusted p-values.
-        padj <- rep(0, times = nrow(report))
-
-        if (verbose) {
-            cat("\nCorrecting p-values\n")
-            pb <- txtProgressBar(min = 0, max = nrow(report), style = 3)
-        }
-
-        # Iterate over dataframe rows...
-        for (i in seq_len(nrow(report))){
-
-            if (verbose) setTxtProgressBar(pb, i)
-            
-            # Identify how many families, genuses or species were identified in a given sample.
-            n_taxa_rank <- NA
-
-            if (report[, COLNAME_STD_RANK][i] %in% c("F", "G", "S")) {
-                n_taxa_rank <- get_nTaxaInRank(
-                    report = report, 
-                    rank = report[, COLNAME_STD_RANK][i], 
-                    sample = report[, COLNAME_STD_SAMPLE][i]
-                )
-            } else {
-                stop(paste0("Invalid rank value in row: ", i))
-            }
-
-            # Perform p-value correction.
-            padj[i] <- p.adjust(report[, COLNAME_STD_PVALUE][i], method = "BH", n = n_taxa_rank)
-        }
-
-        # Add adjusted p-values to dataframe.
-        report[, COLNAME_STD_PADJ] <- padj
-
-        # Add column stating whether results are significant or not based on the adjusted p-value.
-        report[, COLNAME_STD_SIGNIF] <- ifelse(
-            report[, COLNAME_STD_PADJ] <= 0.05,
-            "Significant",
-            "Non-significant"
+        p.adjust(
+            report[[COLNAME_STD_PVALUE]][x], 
+            method = "BH",
+            n = report[["n_taxa_in_rank"]][x]
         )
+    })
 
-        cat("\n")
+    # Add column stating whether results are significant or not based on the adjusted p-value.
+    report[, COLNAME_STD_SIGNIF] <- ifelse(
+        report[, COLNAME_STD_PADJ] <= 0.05,
+        "Significant",
+        "Non-significant"
+    )
 
-        return(report)
-    }
+    if (verbose) cat("Successfully completed.\n")
+
+    return(report)
 }
