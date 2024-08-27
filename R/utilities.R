@@ -277,26 +277,25 @@ get_name_at_rank <- function(report, species, rank) {
     return(subset_report[[COLNAME_STD_TAXON]])
 }
 
-subsetReports <- function(report, species_to_remove, verbose) {
+subsetReports <- function(report, species, verbose) {
 
-    if (!(species_to_remove %in% report[[COLNAME_STD_TAXON]])) {
+    if (!(species %in% report[[COLNAME_STD_TAXON]])) {
         stop(paste0(
-            "The organism ", species_to_remove, " is not present ",
+            "The organism ", species, " is not present ",
             "in the dataframe. Please review your input!"
         ))
     }
 
     # Determine the genus and family of an user-defined species.
-    genus_to_remove <- get_name_at_rank(report, species_to_remove, "G")
-    family_to_remove <- get_name_at_rank(report, species_to_remove, "F")
+    genus <- get_name_at_rank(report, species, "G")
+    family <- get_name_at_rank(report, species, "F")
 
     # Create vector with species, genus and family to be filtered out.
-    taxa_to_remove <- c(species_to_remove, genus_to_remove, family_to_remove)
+    taxa_to_remove <- c(species, genus, family)
 
     if (verbose == TRUE) {
         warning(paste0(
-            "Filtering out ", species_to_remove, ", ", genus_to_remove, ", and ",
-            family_to_remove, "..."
+            "Filtering out ", species, ", ", genus, ", and ", family, "..."
         ))
     }
 
