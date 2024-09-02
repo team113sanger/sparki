@@ -498,7 +498,7 @@ plotMinimisers_dotplot <- function(
     handlePlot(
         plot = plot, prefix = prefix, 
         return_plot = return_plot, 
-        filename = "MINIMISERS.pdf", 
+        filename = paste0(domain, "_MINIMISERS.pdf"), 
         outdir = outdir, 
         fig_width = fig_width, 
         fig_height = fig_height

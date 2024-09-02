@@ -97,8 +97,10 @@ prepare_data <- function(
     # CHECKS FOR DOMAIN #
     #####################
 
+    domain <- parse_delimited_list(domain, ",")
+
     # Check the integrity of the domain specified.
-    check_domain(domain)
+    for (d in domain) check_domain(d)
 
     ####################################
     # CHECKS FOR SAMPLES TO BE REMOVED #
@@ -240,6 +242,27 @@ process_kraken2 <- function(
         prefix = prefix
     )
 
+    plotClassificationProportion(
+        merged_reports,
+        return_plot = FALSE,
+        outdir = outdir,
+        prefix = prefix
+    )
+
+    plotDistribution_histogram(
+        merged_reports,
+        return_plot = FALSE,
+        outdir = outdir,
+        prefix = prefix
+    )
+
+    plotDistribution_violin(
+        merged_reports,
+        return_plot = FALSE,
+        outdir = outdir,
+        prefix = prefix
+    )
+
     plotDomainReads_violin(
         merged_reports, 
         include_eukaryotes = include_eukaryotes, 
@@ -263,19 +286,29 @@ process_kraken2 <- function(
         paste0(outdir, prefix, "pre_filtering_and_statistics.csv")
     )
 
-    merged_reports <- subsetReports(merged_reports, species_to_remove = organism, verbose = verbose)
+    merged_reports <- subsetReports(merged_reports, species = organism, verbose = verbose)
     merged_reports <- assessMinimiserRatio(merged_reports)
     merged_reports <- assessStatistics(merged_reports, ref_db, verbose = verbose)
 
-    plotMinimisers_dotplot(
-        merged_reports, 
-        domain = domain, 
-        return_plot = FALSE, 
-        fig_width = 25, 
-        fig_height = 15, 
+    plotSignificanceSummary(
+        merged_reports,
+        return_plot = FALSE,
         outdir = outdir,
         prefix = prefix
-    )   
+    )
+
+    for (d in domain) {
+
+        plotMinimisers_dotplot(
+            merged_reports, 
+            domain = d, 
+            return_plot = FALSE, 
+            fig_width = 25, 
+            fig_height = 15, 
+            outdir = outdir,
+            prefix = prefix
+        )   
+    }
 
     write.csv(
         merged_reports,
