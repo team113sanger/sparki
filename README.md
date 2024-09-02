@@ -21,16 +21,16 @@ rmarkdown::render(
 # CLI usage
 ```
 PROJECTDIR="/lustre/scratch126/casm/team113da/users/jb62/projects/sparki"
-${PROJECTDIR}/src/cli.R \
+/software/team113/dermatlas/R/R-4.2.2/bin/Rscript ${PROJECTDIR}/src/cli.R \
     --std-reports ${PROJECTDIR}/test/reports \
     --mpa-reports ${PROJECTDIR}/test/mpa \
     --organism "Homo sapiens" \
     --reference ${PROJECTDIR}/test/inspect.txt \
     --metadata ${PROJECTDIR}/test/metadata.csv \
-    --sample-col Tumour_RNA s\
+    --sample-col Tumour_RNA \
     --columns Diagnosis_short,Site_group \
     --prefix SebT \
     --outdir ${PROJECTDIR}/test/outputs/ \
     --verbose \
-    --domain Viruses
+    --domain Viruses,Bacteria
 ```

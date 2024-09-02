@@ -487,16 +487,6 @@
       ],
       "Hash": "15e9634c0fcd294799e9b2e929ed1b86"
     },
-    "getopt": {
-      "Package": "getopt",
-      "Version": "1.20.4",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "stats"
-      ],
-      "Hash": "ed33b16c6d24f7ced1d68877ac2509ee"
-    },
     "ggplot2": {
       "Package": "ggplot2",
       "Version": "3.5.1",
@@ -923,18 +913,6 @@
         "R"
       ],
       "Hash": "df58958f293b166e4ab885ebcad90e02"
-    },
-    "optparse": {
-      "Package": "optparse",
-      "Version": "1.7.5",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "getopt",
-        "methods"
-      ],
-      "Hash": "ce5f8381cd2c38d1fc14c83d8b21efd0"
     },
     "pbkrtest": {
       "Package": "pbkrtest",
