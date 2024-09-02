@@ -140,6 +140,9 @@ load_MPAreports <- function(mpa_reports_dir, verbose = TRUE) {
     # Add rank column.
     mpa_reports[, COLNAME_MPA_RANK] <- lapply(mpa_reports[, COLNAME_MPA_TAXON_HIERARCHY], addRank)
 
+    # Double check each line to ensure all lines have complete cases (i.e. all ranks between domain and species).
+    mpa_reports <- check_mpa_lines(mpa_reports)
+
     # Further process the dataframe.
     mpa_reports <- mpa_reports |>
         # Split rows by "|" into primary taxa.
@@ -148,6 +151,8 @@ load_MPAreports <- function(mpa_reports_dir, verbose = TRUE) {
         dplyr::mutate(dplyr::across(taxonomy, ~ stringr::str_remove(.x, pattern = "[a-z]__"))) |>
         # Simplify sample IDs.
         dplyr::mutate(!!COLNAME_MPA_SAMPLE := stringr::str_remove(basename(sample), ".kraken.mpa")) |>
+        # Convert character "NA"s to proper NA values.
+        dplyr::mutate(dplyr::across(where(is.character), ~dplyr::na_if(., "NA"))) |>
         # Collect the rightmost non-NA item in each row.
         dplyr::mutate(
             !!COLNAME_MPA_TAXON_LEAF := dplyr::coalesce(species, genus, family, order, class, phylum, kingdom, domain),
@@ -236,7 +241,7 @@ mergeReports <- function(std_reports, mpa_reports, samples_to_remove) {
         # Rename column for consistency with the standard report.
         dplyr::rename(!!COLNAME_STD_TAXON := !!COLNAME_MPA_TAXON_LEAF) |>
         # Drop columns that are already present in the standard report.
-        dplyr::select(!c(!!COLNAME_MPA_N_FRAG_CLADE, !!COLNAME_MPA_RANK))
+        dplyr::select(!c(!!COLNAME_MPA_N_FRAG_CLADE, !!COLNAME_MPA_RANK)) 
         
     # The primary keys that will be used for joining are "taxon leaf"/"name" and "sample_id"
     merged_reports <- dplyr::left_join( 
