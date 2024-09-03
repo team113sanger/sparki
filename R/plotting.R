@@ -454,6 +454,21 @@ plotMinimisers_dotplot <- function(
 
     df <- prepare_for_plotMinimisers(report, domain)
 
+    ggplot_colours <- dplyr::case_when(
+        "Significant" %in% df[[COLNAME_STD_SIGNIF]] && "Non-significant" %in% df[[COLNAME_STD_SIGNIF]] ~ c("snow3", "black"),
+        "Significant" %in% df[[COLNAME_STD_SIGNIF]] && !("Non-significant" %in% df[[COLNAME_STD_SIGNIF]]) ~ "black",
+        !("Significant" %in% df[[COLNAME_STD_SIGNIF]]) && "Non-significant" %in% df[[COLNAME_STD_SIGNIF]] ~ "snow3"
+    )
+
+    ggplot_labels <- dplyr::case_when(
+        "Significant" %in% df[[COLNAME_STD_SIGNIF]] && "Non-significant" %in% df[[COLNAME_STD_SIGNIF]] ~ c("Non-significant", expression("Adjusted p-value"<="0.05")),
+        "Significant" %in% df[[COLNAME_STD_SIGNIF]] && !("Non-significant" %in% df[[COLNAME_STD_SIGNIF]]) ~ expression("Adjusted p-value"<="0.05"),
+        !("Significant" %in% df[[COLNAME_STD_SIGNIF]]) && "Non-significant" %in% df[[COLNAME_STD_SIGNIF]] ~ "Non-significant"
+    )
+
+    n_all_samples <- report[[COLNAME_STD_SAMPLE]] |> unique() |> length()
+    n_subset_samples <- df[[COLNAME_STD_SAMPLE]] |> unique() |> length()
+
     plot <- ggplot2::ggplot(
         df,
         ggplot2::aes(
@@ -487,13 +502,17 @@ plotMinimisers_dotplot <- function(
             limits = c(0,1)
         ) +
         ggplot2::scale_color_manual(
-            values = c("snow3", "black"),
+            values = ggplot_colours,
             name = "Significance",
-            labels = c("Non-significant", expression("Adjusted p-value"<="0.05"))
+            labels = ggplot_labels
         ) +
         ggplot2::scale_size_continuous(name = expression("log"[10]~"(clade-level reads)")) +
         ggplot2::xlab("Sample") +
-        ggplot2::ylab("Taxon") 
+        ggplot2::ylab("Taxon") +
+        ggplot2::ggtitle(
+            paste0("Showing ", n_subset_samples, " (out of ",
+            n_all_samples,") with results for domain: ", domain)
+        )
 
     handlePlot(
         plot = plot, prefix = prefix, 
