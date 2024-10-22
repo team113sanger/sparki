@@ -454,17 +454,16 @@ plotMinimisers_dotplot <- function(
 
     df <- prepare_for_plotMinimisers(report, domain)
 
-    ggplot_colours <- dplyr::case_when(
-        "Significant" %in% df[[COLNAME_STD_SIGNIF]] && "Non-significant" %in% df[[COLNAME_STD_SIGNIF]] ~ c("snow3", "black"),
-        "Significant" %in% df[[COLNAME_STD_SIGNIF]] && !("Non-significant" %in% df[[COLNAME_STD_SIGNIF]]) ~ "black",
-        !("Significant" %in% df[[COLNAME_STD_SIGNIF]]) && "Non-significant" %in% df[[COLNAME_STD_SIGNIF]] ~ "snow3"
-    )
-
-    ggplot_labels <- dplyr::case_when(
-        "Significant" %in% df[[COLNAME_STD_SIGNIF]] && "Non-significant" %in% df[[COLNAME_STD_SIGNIF]] ~ c("Non-significant", expression("Adjusted p-value"<="0.05")),
-        "Significant" %in% df[[COLNAME_STD_SIGNIF]] && !("Non-significant" %in% df[[COLNAME_STD_SIGNIF]]) ~ expression("Adjusted p-value"<="0.05"),
-        !("Significant" %in% df[[COLNAME_STD_SIGNIF]]) && "Non-significant" %in% df[[COLNAME_STD_SIGNIF]] ~ "Non-significant"
-    )
+    if ("Significant" %in% df[[COLNAME_STD_SIGNIF]] && "Non-significant" %in% df[[COLNAME_STD_SIGNIF]]) {
+        ggplot_colours <- c("snow3", "black")
+        ggplot_labels <- c("Non-significant", expression("Adjusted p-value"<="0.05"))
+    } else if ("Significant" %in% df[[COLNAME_STD_SIGNIF]] && !("Non-significant" %in% df[[COLNAME_STD_SIGNIF]])) {
+        ggplot_colours <- "black"
+        ggplot_labels <- expression("Adjusted p-value"<="0.05")
+    } else if (!("Significant" %in% df[[COLNAME_STD_SIGNIF]]) && "Non-significant" %in% df[[COLNAME_STD_SIGNIF]]) {
+        ggplot_colours <- "snow3"
+        ggplot_labels <- "Non-significant"
+    }
 
     n_all_samples <- report[[COLNAME_STD_SAMPLE]] |> unique() |> length()
     n_subset_samples <- df[[COLNAME_STD_SAMPLE]] |> unique() |> length()
@@ -523,4 +522,28 @@ plotMinimisers_dotplot <- function(
         fig_height = fig_height
     )
 
+}
+
+plotTaxon_minimisers <- function(report, taxon, domain) {
+
+    df <- prepare_for_plotMinimisers(report, domain)
+    df <- df |> dplyr::filter(!!as.name(COLNAME_STD_TAXON) == taxon)
+
+    ggplot2::ggplot(df, ggplot2::aes(x = "", y = get(COLNAME_STD_RATIO_CLADE))) +
+        ggplot2::geom_violin(scale = "width", color = "black", fill = "palegreen1") +
+        ggplot2::geom_jitter(ggplot2::aes(size = get(COLNAME_STD_LOG_N_FRAG_CLADE)), color = "black") +
+        ggplot2::theme_classic() +
+        ggplot2::theme(
+            # x-axis
+            axis.text.x = ggplot2::element_blank(),
+            axis.title.x = ggplot2::element_blank(),
+            axis.ticks.x = ggplot2::element_blank(),
+            axis.line.x = ggplot2::element_blank(),
+            # y-axis
+            axis.text.y = ggplot2::element_text(size = 12),
+            axis.title.y = ggplot2::element_text(size = 14, angle = 90),
+            # legend
+            legend.position = "none"
+        ) +
+        ggplot2::ylab("Proportion of\nclade-level minimisers")
 }
