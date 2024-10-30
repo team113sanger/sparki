@@ -12,7 +12,7 @@
 #' @return A dataframe containing the information from the 'inspect.txt' file. 
 #' @export
 #' 
-loadReference <- function(reference_path) {
+loadReference <- function(reference_path, n_header_lines = 7) {
 
     # Read Kraken2 reference file (inspect.txt).
     ref <- read.table(
@@ -20,7 +20,7 @@ loadReference <- function(reference_path) {
         row.names = NULL, 
         header = FALSE,
         sep = "\t",
-        skip = 7, # Skip header lines.
+        skip = n_header_lines, # Skip header lines.
         quote = "",
         stringsAsFactors = FALSE
     )
