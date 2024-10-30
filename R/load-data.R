@@ -110,6 +110,37 @@ addMetadata <- function(report, metadata, metadata_sample_col, metadata_columns)
 ## UTILITY FUNCTIONS FOR READING, MERGING AND SUBSETTING REPORTS ##
 #######################################################################################################
 
+check_mpa_lines <- function(mpa_reports) {
+
+    expected_ranks <- c("d__", "k__", "p__", "c__", "o__", "f__", "g__", "s__")
+
+    updated_hierarchies <- mpa_reports |>
+        # Create temporary column to store the original hierarchy column.
+        dplyr::mutate(temp = !!as.name(COLNAME_MPA_TAXON_HIERARCHY)) |>
+        # Split hierarchies across 
+        tidyr::separate_rows(!!COLNAME_MPA_TAXON_HIERARCHY, sep = "\\|") |>
+        dplyr::mutate(
+            rank_ = substr(!!as.name(COLNAME_MPA_TAXON_HIERARCHY), 1, 3),
+            taxon_ = substr(!!as.name(COLNAME_MPA_TAXON_HIERARCHY), 4, nchar(!!as.name(COLNAME_MPA_TAXON_HIERARCHY)))
+        ) |>
+        dplyr::select(!!as.name(COLNAME_MPA_SAMPLE), temp, rank_, taxon_) |>
+        dplyr::group_by(!!as.name(COLNAME_MPA_SAMPLE), temp) |>
+        tidyr::complete(rank_ = expected_ranks, fill = list(taxon_ = NA)) |>
+        dplyr::arrange(factor(rank_, levels = expected_ranks), .by_group = TRUE) |> 
+        dplyr::mutate(rank_taxon = paste0(rank_, taxon_)) |>
+        dplyr::summarise(updated_hierarchy = paste(rank_taxon, collapse = "|"), .groups = "keep") |>
+        dplyr::rename(!!COLNAME_MPA_TAXON_HIERARCHY := temp)
+
+    mpa_reports <- dplyr::left_join( 
+        mpa_reports, updated_hierarchies,
+        by = dplyr::join_by(!!COLNAME_MPA_SAMPLE, !!COLNAME_MPA_TAXON_HIERARCHY)
+    ) |>
+        dplyr::select(!!COLNAME_MPA_SAMPLE, updated_hierarchy, !!COLNAME_MPA_N_FRAG_CLADE, !!COLNAME_MPA_RANK) |>
+        dplyr::rename(!!COLNAME_MPA_TAXON_HIERARCHY := updated_hierarchy)
+
+    return(mpa_reports)
+}
+
 #' LOAD MPA-STYLE REPORTS 
 #' 
 #' This function takes a path to a directory containing MPA-style reports, reading and processing
