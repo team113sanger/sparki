@@ -1,15 +1,16 @@
-#######################################################
-## UTILITY FUNCTION FOR LOADING A REFERENCE DATABASE ##
+###############################################
+## FUNCTION FOR LOADING A REFERENCE DATABASE ##
 #######################################################################################################
 
 #' LOAD INFORMATION FROM KRAKEN2'S REFERENCE DATABASE
 #' 
-#' This function takes a path to an inspect.txt file inside a Kraken2 reference database
+#' This function takes the path to an 'inspect.txt' file inside a Kraken2 reference database
 #' and reads the table. The first 7 lines are skipped, as they correspond to header lines.
 #' Column names are added before the reference database dataframe is returned.
 #' 
-#' @param reference_path Path to an inspect.txt file inside a Kraken2 reference database.
-#' @return 
+#' @param reference_path Path to an 'inspect.txt' file inside a Kraken2 reference database.
+#' @return A dataframe containing the information from the 'inspect.txt' file. 
+#' @export
 #' 
 loadReference <- function(reference_path) {
 
@@ -50,6 +51,7 @@ loadReference <- function(reference_path) {
 #' 
 #' @param mdata_path Path to a metadata table.
 #' @return 
+#' @export
 #' 
 loadMetadata <- function(mdata_path) {
 
@@ -73,6 +75,7 @@ loadMetadata <- function(mdata_path) {
 #' @param categories Categories of interest from df2 that should be added to df1.
 #' @return An updated version of df1.
 #' @export
+#' 
 addMetadata <- function(report, metadata, metadata_sample_col, metadata_columns) {
 
     # Check report format.
@@ -220,7 +223,7 @@ load_STDreports <- function(std_reports_dir, verbose = TRUE) {
 #'
 loadSamplesToRemove <- function(filepath) {
 
-    samples_to_remove <- readr::read_tsv(filepath, col_names = "sample")
+    samples_to_remove <- readr::read_delim(filepath, col_names = "sample")
     return(samples_to_remove[["sample"]])
 }
 
@@ -487,6 +490,8 @@ addRank <- function(taxon) {
 #' 
 #' @param report A report.
 #' @return An updated version of the input dataframe, with a new column containing sample sizes.
+#' @export
+#' 
 addSampleSize <- function(report) {
 
     # If report is in MPA format...
