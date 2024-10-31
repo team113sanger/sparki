@@ -1,7 +1,3 @@
-###############################################
-## FUNCTION FOR LOADING A REFERENCE DATABASE ##
-#######################################################################################################
-
 #' LOAD INFORMATION FROM KRAKEN2'S REFERENCE DATABASE
 #' 
 #' This function takes the path to an 'inspect.txt' file inside a Kraken2 reference database
