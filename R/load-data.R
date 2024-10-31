@@ -35,32 +35,27 @@ loadReference <- function(reference_path, n_header_lines = 7) {
     return(ref)
 }
 
-#############################################
-## UTILITY FUNCTIONS FOR HANDLING METADATA ##
-#######################################################################################################
-
 #' LOAD METADATA TABLE
 #' 
-#' This function takes a path to a metadata file and reads the table.
-#' and reads the table. The first 7 lines are skipped, as they correspond to header lines.
-#' Column names are added before the reference database dataframe is returned.
+#' This function takes the path to a metadata file and reads the metadata table using readr::read_delim().
 #' 
-#' @param mdata_path Path to a metadata table.
-#' @return 
+#' @param metadata Path to a metadata table.
+#' @return A dataframe containing the metadata.
 #' @export
 #' 
-loadMetadata <- function(mdata_path) {
+#' @examples
+#' loadMetadata("metadata.csv")
+#' loadMetadata(metadata = "metadata.csv")
+#' 
+loadMetadata <- function(metadata) {
 
     # Read metadata file.
-    mdata <- readr::read_delim(mdata_path)
+    mdata <- readr::read_delim(metadata)
 
     return(mdata)
 }
 
 
-###################################################################
-## UTILITY FUNCTIONS FOR READING, MERGING AND SUBSETTING REPORTS ##
-#######################################################################################################
 
 check_mpa_lines <- function(mpa_reports) {
 
