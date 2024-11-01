@@ -1,9 +1,15 @@
 my_library <- "/lustre/scratch126/casm/team113da/users/jb62/projects/sparki/"
 source(paste0(my_library, "src/main.R"))
 source(paste0(my_library, "src/exceptions.R"))
-source(paste0(my_library, "R/helper.R"))
-source(paste0(my_library, "R/utilities.R"))
-source(paste0(my_library, "R/plotting.R"))
+source(paste0(my_library, "R/load-data.R"))
+source(paste0(my_library, "R/plot-classification-summary.R"))
+source(paste0(my_library, "R/plot-domain-reads.R"))
+source(paste0(my_library, "R/plot-minimisers.R"))
+source(paste0(my_library, "R/plot-significance.R"))
+source(paste0(my_library, "R/reports-add-info.R"))
+source(paste0(my_library, "R/reports-assess-statistics.R"))
+source(paste0(my_library, "R/reports-merge.R"))
+source(paste0(my_library, "R/reports-subset.R"))
 source(paste0(my_library, "R/constants.R"))
 
 ###################
