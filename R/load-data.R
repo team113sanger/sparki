@@ -32,6 +32,8 @@ loadReference <- function(reference_path, n_header_lines = 7) {
 
     ref[, COLNAME_REF_DB_TAXON] <- gsub("^[[:space:]]\\s*(.*?)", "", ref[, COLNAME_REF_DB_TAXON], perl = TRUE)
 
+    cat("Ref DB loaded successfully.\n")
+
     return(ref)
 }
 
@@ -51,6 +53,8 @@ loadMetadata <- function(metadata) {
 
     # Read metadata file.
     mdata <- readr::read_delim(metadata)
+
+    cat("Metadata loaded successfully.\n")
 
     return(mdata)
 }
@@ -202,5 +206,8 @@ load_STDreports <- function(std_reports_dir, verbose = TRUE) {
 loadSamplesToRemove <- function(filepath) {
 
     samples_to_remove <- readr::read_delim(filepath, col_names = "sample")
+
+    cat("Samples-to-remove loaded successfully.\n")
+
     return(samples_to_remove[["sample"]])
 }
