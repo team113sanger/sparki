@@ -22,15 +22,15 @@ cd sparki
 
 #### *Optional*
 - `--metadata`: path to a metadata file containing sample-level information.
-- `--sample-col`: if `--metadata` is provided, users should also specify the name the column that contains sample IDs.
+- `--sample-col`: if `--metadata` is provided, users should also specify the name of the column that contains sample IDs.
 - `--columns`: if `--metadata` is provided, users should also specify the names of the columns from the metadata table that should be used; the column names must be comma-separated.
-- `--prefix`: prefix to be added to SPARKI's output files.
+- `--prefix`: prefix to be added to SPARKI's output files (note: you do not need to include an underscore at the end of your prefix!).
 - `--samples-to-remove`: if the directories provided to `--std-reports` and `--mpa-reports` contain samples that should not be included in the final outputs, a list with those samples can be provided in a text file.
 - `--verbose`: flag indicating that the user would like log messages to be printed out.
 - `--include-eukaryotes`: flag indicating that the user would like eukaryotes to be included in all plots (note that using this flag may cause some plots to be too full; also note that some plots will have eukaryotes included regardless of this flag).
 - `--include-sample-names`: flag indicating that the user would like sample names to be included in all plots (note that using this flag may cause some plots to be too full; also note that some plots will have sample names included regardless of this flag).
 
-### Usage example
+### CLI usage example
 
 ```
 PROJECTDIR="/lustre/scratch126/casm/team113da/users/jb62/projects/sparki"
