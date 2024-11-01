@@ -10,6 +10,7 @@ source(paste0(my_library, "R/reports-add-info.R"))
 source(paste0(my_library, "R/reports-assess-statistics.R"))
 source(paste0(my_library, "R/reports-merge.R"))
 source(paste0(my_library, "R/reports-subset.R"))
+source(paste0(my_library, "R/utils.R"))
 source(paste0(my_library, "R/constants.R"))
 
 ###################
