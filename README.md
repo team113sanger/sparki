@@ -30,6 +30,26 @@ cd sparki
 - `--include-eukaryotes`: flag indicating that the user would like eukaryotes to be included in all plots (note that using this flag may cause some plots to be too full; also note that some plots will have eukaryotes included regardless of this flag).
 - `--include-sample-names`: flag indicating that the user would like sample names to be included in all plots (note that using this flag may cause some plots to be too full; also note that some plots will have sample names included regardless of this flag).
 
+### Usage example
+
+```
+PROJECTDIR="/lustre/scratch126/casm/team113da/users/jb62/projects/sparki"
+
+/software/team113/dermatlas/R/R-4.2.2/bin/Rscript ${PROJECTDIR}/src/cli.R \
+    --std-reports ${PROJECTDIR}/test/reports \
+    --mpa-reports ${PROJECTDIR}/test/mpa \
+    --organism "Homo sapiens" \
+    --reference ${PROJECTDIR}/test/inspect.txt \
+    --metadata ${PROJECTDIR}/test/metadata.csv \
+    --sample-col Tumour_RNA \
+    --columns Diagnosis_short,Site_group \
+    --prefix SebT \
+    --outdir ${PROJECTDIR}/test/outputs/ \
+    --verbose \
+    --domain Viruses,Bacteria
+```
+
+
 ## Using SPARKI inside R
 
 Please check out [this tutorial](https://gitlab.internal.sanger.ac.uk/team113_projects/jb62-projects/sparki/-/blob/develop/tutorials/SPARKI_basic_usage.pdf?ref_type=heads).
