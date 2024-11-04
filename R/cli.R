@@ -1,9 +1,17 @@
 my_library <- "/lustre/scratch126/casm/team113da/users/jb62/projects/sparki/"
 source(paste0(my_library, "src/main.R"))
 source(paste0(my_library, "src/exceptions.R"))
-source(paste0(my_library, "R/helper.R"))
-source(paste0(my_library, "R/utilities.R"))
-source(paste0(my_library, "R/plotting.R"))
+source(paste0(my_library, "R/load-data.R"))
+source(paste0(my_library, "R/plot-classification-summary.R"))
+source(paste0(my_library, "R/plot-domain-reads.R"))
+source(paste0(my_library, "R/plot-minimisers.R"))
+source(paste0(my_library, "R/plot-read-distribution.R"))
+source(paste0(my_library, "R/plot-significance.R"))
+source(paste0(my_library, "R/reports-add-info.R"))
+source(paste0(my_library, "R/reports-assess-statistics.R"))
+source(paste0(my_library, "R/reports-merge.R"))
+source(paste0(my_library, "R/reports-subset.R"))
+source(paste0(my_library, "R/utils.R"))
 source(paste0(my_library, "R/constants.R"))
 
 ###################
@@ -34,7 +42,7 @@ option_list <- list(
         default = "Homo sapiens",
         type = "character",
         help = "Species of the organism being analysed."
-    )
+    ),
     optparse::make_option(
         c("-r", "--reference"),
         dest = "refdb",
@@ -113,7 +121,7 @@ option_list <- list(
         action = "store",
         default = NA,
         type = "character",
-        help = "Domain of interest (e.g. Viruses)."
+        help = "Comma-separated list with domains of interest (e.g. Viruses,Bacteria)."
     ),
     optparse::make_option(
         c("-s", "--samples-to-remove"),
@@ -125,44 +133,15 @@ option_list <- list(
     )
 )
 
-####################
-# Helper functions #
-####################
-
-read_prog_name_env_var <- function() {
-    # Read the environment variable that contains the name of the program.
-    prog_name <- Sys.getenv("PROG_NAME")
-    if (is.null(prog_name)) {
-        stop("Environment variable PROG_NAME not set.")
-    }
-    return(prog_name)
-}
-
-# Parse input arguments.
-parse_options <- function(option_list, description = "") {
-    # We need to fetch the program name from the environment variables.
-    prog_name <- read_prog_name_env_var()
-
-    # CLI arguments need some pre-processing before they can be parsed.
-    raw_arguments <- commandArgs(trailingOnly = TRUE) # From the CLI
-    raw_arguments <- raw_arguments[-1] # We only want to handle the arguments that come after 
-                                       # the function name which is the first element.
-
-    # Parse the arguments.
-    parser <- optparse::OptionParser(
-        option_list = option_list,
-        add_help_option = TRUE,
-        prog = prog_name,
-        description = description
-    )
-    arguments <- optparse::parse_args(parser)
-    return(arguments)
-}
+# Parse the arguments.
+parser <- optparse::OptionParser(
+    option_list = option_list,
+    add_help_option = TRUE
+)
+arguments <- optparse::parse_args(parser)
 
 # Compute PCA.
-run_sparki_analysis <- function(arguments) {
-
-    process_kraken2(
+process_kraken2(
         std_reports_path = arguments$std_reports, 
         mpa_reports_path = arguments$mpa_reports,
         organism = arguments$organism,
@@ -178,22 +157,4 @@ run_sparki_analysis <- function(arguments) {
         domain = arguments$domain,
         remove = arguments$remove
     )
-}
 
-###################
-# CLI entrypoints #
-###################
-
-cli_run_sparki <- function() {
-
-    description <- "Run SPARKI on a given set of Kraken2 results."
-
-    parsed_arguments <- parse_options(option_list, description)
-    run_sparki_analysis(parsed_arguments)
-}
-
-######################
-# Run CLI Entrypoint #
-######################
-
-cli_run_sparki()

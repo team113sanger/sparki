@@ -1,148 +1,3 @@
-###############################################
-## HELPER FUNCTIONS FOR STATISTICAL ANALYSES ##
-#######################################################################################################
-
-calculate_p_value <- function(sample_n_uniq_minimisers_taxon, db_n_minimisers_taxon, sample_size, ref_db) {
-
-    # Get proportion of clade-level minimisers of a given taxon in the reference database (DB).
-    # This is the same as the probability of getting this taxon from the database.
-    p_clade_in_db <- (db_n_minimisers_taxon / sum(ref_db[, COLNAME_REF_DB_MINIMISERS_CLADE]))
-    p_clade_in_db <- as.numeric(p_clade_in_db)
-
-    # Mean is the total number of reads analysed from the sample (sample size) times the probability of success which 
-    # is equal to the proportion of clade-level minimisers of the taxon out of the total available in the reference DB.
-    mean <- (sample_size * p_clade_in_db)
-    mean <- as.numeric(mean)
-
-    # Standard deviation = sqrt(n*P*(1-p))
-    sdev <- sqrt(sample_size * p_clade_in_db * (1 - p_clade_in_db)) 
-    sdev <- as.numeric(sdev)
-
-    # Calculate p-values.
-    pval <- pnorm(
-        q = as.numeric(sample_n_uniq_minimisers_taxon), 
-        mean = mean, 
-        sd = sdev, 
-        lower.tail = FALSE
-    )
-
-    pval <- as.numeric(pval)
-            
-    return(pval)
-}
-
-################################################################################
-## HELPER FUNCTIONS FOR DISTINGUISHING BETWEEN MPA-STYLE AND STANDARD REPORTS ##
-#######################################################################################################
-
-is_mpa <- function(report) {
-
-    ifelse(
-        COLNAME_MPA_TAXON_LEAF %in% colnames(report),
-        return(TRUE),
-        return(FALSE)
-    )
-}
-
-######################################################
-## HELPER FUNCTIONS FOR PREPARING DATA FOR PLOTTING ##
-#######################################################################################################
-
-prepare_for_plotDistribution <- function(report) {
-
-    if (is_mpa(report)) stop(paste0("This function does not support MPA-style reports."))
-
-    report <- report |>
-        # Filter out rows.
-        dplyr::filter(!(!!as.name(COLNAME_STD_TAXON) %in% c("root", "unclassified"))) |>
-        # Rename elements in column.
-        dplyr::mutate(!!COLNAME_STD_RANK := dplyr::case_when(
-            !!as.name(COLNAME_STD_RANK) == "D" ~ "Domain",
-            !!as.name(COLNAME_STD_RANK) == "K" ~ "Kingdom",
-            !!as.name(COLNAME_STD_RANK) == "P" ~ "Phylum",
-            !!as.name(COLNAME_STD_RANK) == "C" ~ "Class",
-            !!as.name(COLNAME_STD_RANK) == "O" ~ "Order",
-            !!as.name(COLNAME_STD_RANK) == "F" ~ "Family",
-            !!as.name(COLNAME_STD_RANK) == "G" ~ "Genus",
-            !!as.name(COLNAME_STD_RANK) == "S" ~ "Species"
-        ))
-
-    report[[COLNAME_STD_RANK]] = factor(
-        report[[COLNAME_STD_RANK]], 
-        levels = c("Domain", "Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
-    )
-
-    return(report)
-}
-
-prepare_for_plotDomainReads <- function(report, include_eukaryotes) {
-
-    if (is_mpa(report)) stop(paste0("This function does not support MPA-style reports."))
-
-    domains <- "Viruses|Archaea|Bacteria"
-    if (include_eukaryotes == TRUE) domains <- paste0("Eukaryota|", domains)
-
-    report <- report |> 
-        # Select relevant columns.
-        dplyr::select(
-            !!COLNAME_STD_SAMPLE,
-            !!COLNAME_STD_TAXON,
-            !!COLNAME_STD_N_FRAG_CLADE) |>
-        # Select relevant rows.
-        dplyr::filter(grepl(!!as.name(COLNAME_STD_TAXON), pattern = domains)) |>
-        # Rename columns.
-        dplyr::rename(
-            !!COLNAME_DOMAIN_READS_SAMPLE := !!COLNAME_STD_SAMPLE,
-            !!COLNAME_DOMAIN_READS_TAXON := !!COLNAME_STD_TAXON,
-            !!COLNAME_DOMAIN_READS_N_FRAG := !!COLNAME_STD_N_FRAG_CLADE
-        ) |>
-        # Create column with log-transformed number of clade-level fragments.
-        dplyr::mutate(
-            !!COLNAME_DOMAIN_READS_LOG_N_FRAG := log10(!!as.name(COLNAME_DOMAIN_READS_N_FRAG))
-        )
-
-    return(report)
-}
-
-prepare_for_plotMinimisers <- function(report, domain_of_interest) {
-
-    if (is_mpa(report)) stop(paste0("This function does not support MPA-style reports."))
-
-    subset <- report |>
-        # Select relevant rows.
-        dplyr::filter(domain == domain_of_interest) |>
-        # Select relevant columns.
-        dplyr::select(
-            !!COLNAME_STD_SAMPLE,
-            !!COLNAME_STD_TAXON,
-            !!COLNAME_STD_RANK,
-            domain,
-            !!COLNAME_STD_N_FRAG_CLADE,
-            !!COLNAME_STD_RATIO_CLADE,
-            !!COLNAME_STD_PADJ,
-            !!COLNAME_STD_SIGNIF
-        ) |>
-        # Create column with log-transformed number of clade-level fragments.
-        dplyr::mutate(
-            !!COLNAME_STD_LOG_N_FRAG_CLADE := log10(!!as.name(COLNAME_STD_N_FRAG_CLADE))
-        ) |>
-        # Reorder columns.
-        dplyr::relocate(
-            !!COLNAME_STD_LOG_N_FRAG_CLADE, .after = !!COLNAME_STD_N_FRAG_CLADE
-        ) |>
-        # Replace values in column.
-        dplyr::mutate(!!COLNAME_STD_RANK := dplyr::case_when(
-            !!as.name(COLNAME_STD_RANK) == "F" ~ "Family",
-            !!as.name(COLNAME_STD_RANK)  == "G" ~ "Genus",
-            !!as.name(COLNAME_STD_RANK) == "S" ~ "Species"
-        ))
-
-    return(subset)
-}
-
-###################################
-## HELPER FUNCTIONS FOR PLOTTING ##
-#######################################################################################################
 
 # Private function.
 exportPlot <- function(plot, filename, outdir, fig_width, fig_height) {
@@ -385,3 +240,55 @@ parse_delimited_list <- function(del_list, delimiter) {
 
     return(elements)
 }
+
+
+
+################################################################################
+## HELPER FUNCTIONS FOR DISTINGUISHING BETWEEN MPA-STYLE AND STANDARD REPORTS ##
+#######################################################################################################
+
+is_mpa <- function(report) {
+
+    ifelse(
+        COLNAME_MPA_TAXON_LEAF %in% colnames(report),
+        return(TRUE),
+        return(FALSE)
+    )
+}
+
+
+#########################################################
+## UTILITY FUNCTIONS FOR CREATING AUXILIARY DATAFRAMES ##
+#######################################################################################################
+
+# Number of reads under each domain for each sample.
+get_nDomainReads <- function(report, include_eukaryotes) {
+
+    colname_sample <- ifelse(is_mpa(report), COLNAME_MPA_SAMPLE, COLNAME_STD_SAMPLE)
+    colname_taxon <- ifelse(is_mpa(report), COLNAME_MPA_TAXON_LEAF, COLNAME_STD_TAXON)
+    colname_n_frag_clade <- ifelse(is_mpa(report), COLNAME_MPA_N_FRAG_CLADE, COLNAME_STD_N_FRAG_CLADE)
+
+    domains <- "Viruses|Bacteria|Archaea"
+    if (include_eukaryotes == TRUE) domains <- paste0("Eukaryota|", domains)
+
+    domain_reads <- report |>
+        # Select relevant columns.
+        dplyr::select(!!colname_sample, !!colname_taxon, !!colname_n_frag_clade) |>
+        # Select rows that contain the relevant taxa.
+        dplyr::filter(grepl(!!as.name(colname_taxon), pattern = domains)) |>
+        # Create grouping for sample + taxon.
+        dplyr::group_by(!!as.name(colname_sample), !!as.name(colname_taxon)) |>
+        # Sum classified reads for each sample + taxon group.
+        dplyr::summarise(
+            !!COLNAME_DOMAIN_READS_N_FRAG := sum(!!as.name(colname_n_frag_clade)),
+            .groups = "keep"
+        ) |>
+        # Rename columns.
+        dplyr::rename(
+            !!COLNAME_DOMAIN_READS_TAXON := !!colname_taxon,
+            !!COLNAME_DOMAIN_READS_SAMPLE := !!colname_sample
+        )
+
+    return(domain_reads)
+}
+

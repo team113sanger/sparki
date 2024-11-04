@@ -1,12 +1,28 @@
 Package: SPARKI
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: A tool for the interpretation of pathogen identification results
+Version: 0.0.3
 Authors@R: 
-    person("Jacqueline", "Boccacino", , "jb62@sanger.ac.uk", role = c("aut", "cre"),
+    person("Jacqueline", "Boccacino", , "jb62@sanger.ac.uk", role = "aut",
+           comment = c(ORCID = "0000-0001-6813-5217"))
+    person("Martin", "del Castillo Velasco-Herrera", , "mdc1@sanger.ac.uk", role = "aut",
+           comment = c(ORCID = "0000-0001-5956-0211"))
+    person("Jamie", "Billington", , "jb63@sanger.ac.uk", role = "aut",
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+    person("Ian", "Vermes", , "iv3@sanger.ac.uk", role = "aut",
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: SPARKI (Statistical Process Aimed at Robust Kraken 2 Interpretation, <sparki>) was developed as both an R package and a command line tool to help researchers interpret the outputs of Kraken 2 (Wood et al. 2019). It is available both as a standalone software and as part of an end-to-end pathogen identification pipeline (sparki-nf, <sparki-nf>). The main sample-level results yielded by SPARKI are, for each taxon, (i) the proportion of minimisers found in the sample (the higher the proportion of minimisers, the more of the organism’s genome is likely present in the sample) and (ii) the statistical significance of the result.
 License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
     license
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.0.0
+Imports:
+    dplyr,
+    fs,
+    ggplot2,
+    ggpubr,
+    readr,
+    tidyr
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
