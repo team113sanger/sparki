@@ -11,11 +11,12 @@ Authors@R:
     person("Ian", "Vermes", , "iv3@sanger.ac.uk", role = "aut",
            comment = c(ORCID = "YOUR-ORCID-ID"))
 Description: SPARKI (Statistical Process Aimed at Robust Kraken 2 Interpretation, <sparki>) was developed as both an R package and a command line tool to help researchers interpret the outputs of Kraken 2 (Wood et al. 2019). It is available both as a standalone software and as part of an end-to-end pathogen identification pipeline (sparki-nf, <sparki-nf>). The main sample-level results yielded by SPARKI are, for each taxon, (i) the proportion of minimisers found in the sample (the higher the proportion of minimisers, the more of the organism’s genome is likely present in the sample) and (ii) the statistical significance of the result.
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+License: AGPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.0.0
+Depends:
+    R (>= 4.2.0)
 Imports:
     dplyr,
     fs,
@@ -24,5 +25,8 @@ Imports:
     readr,
     tidyr
 Suggests:
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    usethis (>= 2.0.0),
+    devtools (>= 2.4.0),
+    roxygen2 (>= 7.0.0),
 Config/testthat/edition: 3
