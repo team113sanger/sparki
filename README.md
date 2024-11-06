@@ -35,7 +35,7 @@ cd sparki
 ```
 PROJECTDIR="/lustre/scratch126/casm/team113da/users/jb62/projects/sparki"
 
-/software/team113/dermatlas/R/R-4.2.2/bin/Rscript ${PROJECTDIR}/src/cli.R \
+/software/team113/dermatlas/R/R-4.2.2/bin/Rscript ${PROJECTDIR}/R/cli.R \
     --std-reports ${PROJECTDIR}/test/reports \
     --mpa-reports ${PROJECTDIR}/test/mpa \
     --organism "Homo sapiens" \

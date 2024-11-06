@@ -1,6 +1,6 @@
 my_library <- "/lustre/scratch126/casm/team113da/users/jb62/projects/sparki/"
-source(paste0(my_library, "src/main.R"))
-source(paste0(my_library, "src/exceptions.R"))
+source(paste0(my_library, "R/main.R"))
+source(paste0(my_library, "R/exceptions.R"))
 source(paste0(my_library, "R/load-data.R"))
 source(paste0(my_library, "R/plot-classification-summary.R"))
 source(paste0(my_library, "R/plot-domain-reads.R"))
