@@ -30,4 +30,5 @@ Suggests:
     usethis (>= 2.0.0),
     devtools (>= 2.4.0),
     roxygen2 (>= 7.0.0),
+    styler (>= 1.9.0),
 Config/testthat/edition: 3
