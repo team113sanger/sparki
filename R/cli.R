@@ -136,13 +136,17 @@ cli <- function() {
     )
   )
 
+  # Collect the command line arguments
+  from_cli_args <- commandArgs(trailingOnly = TRUE)
+
   # Create the parser
   parser <- optparse::OptionParser(
     option_list = option_list,
     add_help_option = TRUE
   )
-  # Parse the arguments
-  arguments <- optparse::parse_args(parser)
+
+  # Parse the CLI arguments into R objects
+  arguments <- optparse::parse_args(parser, args = from_cli_args)
 
   # Compute PCA analysis
   process_kraken2(
