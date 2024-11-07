@@ -2,6 +2,7 @@
 
 export(addMetadata)
 export(addSampleSize)
+export(cli)
 export(determine_pdf_height)
 export(determine_pdf_width)
 export(loadMetadata)
