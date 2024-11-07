@@ -49,7 +49,7 @@ test_that("load_STDreports() returns a dataframe with the appropriate dimensions
   expected_number_of_columns <- 9
 
   # Load the MPA-style reports and obtain the actual numbers of rows and columns.
-  out <- SPARKI::load_MPAreports(mpa_reports_dir)
+  out <- SPARKI::load_STDreports(mpa_reports_dir)
   actual_number_of_rows <- nrow(out)
   actual_number_of_columns <- ncol(out)
 
