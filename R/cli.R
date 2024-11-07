@@ -148,7 +148,9 @@ cli <- function() {
   # Create the parser
   parser <- optparse::OptionParser(
     option_list = option_list,
-    add_help_option = TRUE
+    add_help_option = TRUE,
+    description = CLI_DESCRIPTION,
+    prog = CLI_PROGRAM_NAME
   )
 
   # Parse the CLI arguments into R objects
@@ -157,7 +159,7 @@ cli <- function() {
   # Check for version flag first
   if (arguments$version) {
     version <- utils::packageVersion("SPARKI")
-    cat(sprintf("SPARKI version %s\n", version))
+    cat(sprintf("%s version %s\n", CLI_PROGRAM_NAME, version))
     return(invisible())
   }
 
