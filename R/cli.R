@@ -133,6 +133,12 @@ cli <- function() {
       default = NA,
       type = "character",
       help = "Samples to remove from SPARKI analysis."
+    ),
+    optparse::make_option(
+      c("--version"),
+      action = "store_true",
+      default = FALSE,
+      help = "Print version information and exit"
     )
   )
 
@@ -147,6 +153,13 @@ cli <- function() {
 
   # Parse the CLI arguments into R objects
   arguments <- optparse::parse_args(parser, args = from_cli_args)
+
+  # Check for version flag first
+  if (arguments$version) {
+    version <- utils::packageVersion("SPARKI")
+    cat(sprintf("SPARKI version %s\n", version))
+    return(invisible())
+  }
 
   # Compute PCA analysis
   process_kraken2(
