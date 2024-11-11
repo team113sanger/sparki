@@ -19,6 +19,11 @@ ENV \
 
 # Set next environment variables that interpolate the top level environment
 # variables
+#
+# To build isolated R environments for packaging projects we want R deps to be
+# installed outside of the project directory (this also helps with bind
+# mounting). This principally effects the RENV_PATHS_LIBRARY_ROOT. For more
+# information see https://rstudio.github.io/renv/articles/packages.html#library-paths
 ENV \
     USER_BASHRC="${USER_DIRECTORY:?}/.bashrc" \
     USER_BIN_DIRECTORY="${USER_DIRECTORY:?}/.local/bin" \
@@ -26,7 +31,7 @@ ENV \
     PROJECT_DIRECTORY="${OPT_DIRECTORY:?}/repo" \
     RENV_DIRECTORY="${OPT_DIRECTORY:?}/renv" \
     RENV_PATHS_ROOT="${OPT_DIRECTORY:?}/renv" \
-    RENV_PATHS_LIBRARY="${OPT_DIRECTORY:?}/renv/library" \
+    RENV_PATHS_LIBRARY_ROOT="${OPT_DIRECTORY:?}/renv/library" \
     R_LIBS_FOR_SINGULAIRTY="${OPT_DIRECTORY:?}/renv/library/symbolic" \
     RENV_PATHS_CACHE="${OPT_DIRECTORY:?}/renv-cache" \
     LOGGING_DIRECTORY="${DATA_DIRECTORY:?}/logs"
@@ -44,7 +49,7 @@ RUN \
     && useradd -u ${USER_ID} -g ${GROUP_ID} "${USER_NAME}" --shell /bin/bash --create-home --home-dir "${USER_DIRECTORY}" \
     && if ! getent group docker > /dev/null; then groupadd docker; fi \
     && usermod -a -G docker,staff admin \
-    && mkdir -p "${PROJECT_DIRECTORY:?}" "${DATA_DIRECTORY:?}" "${OPT_DIRECTORY:?}" "${RENV_DIRECTORY:?}" "${RENV_PATHS_LIBRARY:?}" "${RENV_PATHS_CACHE:?}" \
+    && mkdir -p "${PROJECT_DIRECTORY:?}" "${DATA_DIRECTORY:?}" "${OPT_DIRECTORY:?}" "${RENV_DIRECTORY:?}" "${RENV_PATHS_LIBRARY_ROOT:?}" "${RENV_PATHS_CACHE:?}" \
     && chown -R "${USER_NAME:?}:${USER_NAME:?}" "${PROJECT_DIRECTORY:?}" "${DATA_DIRECTORY:?}" "${USER_DIRECTORY:?}" "${OPT_DIRECTORY:?}" \
     && chmod -R 755 "${PROJECT_DIRECTORY:?}" "${DATA_DIRECTORY:?}" "${USER_DIRECTORY:?}" "${OPT_DIRECTORY:?}" 
 
