@@ -254,6 +254,11 @@ loadSamplesToRemove <- function(filepath, verbose) {
 
     samples_to_remove <- readr::read_table(filepath, col_names = "sample")
 
+    warning(paste0(
+        "Samples ", paste(samples_to_remove[["sample"]], collapse = ","),
+        " will be removed from SPARKI analysis."
+    ))
+
     if (verbose) cat("Samples-to-remove loaded successfully.\n")
 
     return(samples_to_remove[["sample"]])
