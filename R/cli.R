@@ -14,8 +14,6 @@ source(paste0(my_library, "R/reports-subset.R"))
 source(paste0(my_library, "R/utils.R"))
 source(paste0(my_library, "R/constants.R"))
 
-renv::load()
-
 ###################
 # Parse arguments #
 ###################
