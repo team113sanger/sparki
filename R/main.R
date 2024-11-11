@@ -123,7 +123,10 @@ prepare_data <- function(
     if (!is.na(remove)) {
 
         # Load samples-to-remove file.
-        samples_to_remove <- loadSamplesToRemove(remove)   
+        samples_to_remove <- loadSamplesToRemove(
+            filepath = remove,
+            verbose = verbose
+        )   
     }
 
     # Read standard reports.

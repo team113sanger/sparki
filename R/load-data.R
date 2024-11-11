@@ -250,11 +250,11 @@ load_STDreports <- function(std_reports_dir, samples_to_remove, verbose = TRUE) 
 #' @return A list containing the samples IDs from the input file.
 #' @export
 #'
-loadSamplesToRemove <- function(filepath) {
+loadSamplesToRemove <- function(filepath, verbose) {
 
-    samples_to_remove <- readr::read_delim(filepath, col_names = "sample")
+    samples_to_remove <- readr::read_table(filepath, col_names = "sample")
 
-    cat("Samples-to-remove loaded successfully.\n")
+    if (verbose) cat("Samples-to-remove loaded successfully.\n")
 
     return(samples_to_remove[["sample"]])
 }
