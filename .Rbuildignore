@@ -31,3 +31,5 @@
 ^\.gitignore$
 ^\.dockerignore$
 ^\.git$
+^renv$
+^renv\.lock$
