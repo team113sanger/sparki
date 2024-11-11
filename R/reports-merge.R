@@ -10,7 +10,7 @@
 #' information from the dataframe (tibble) with MPA-style reports.
 #' @export
 #'
-mergeReports <- function(std_reports, mpa_reports, samples_to_remove) {
+mergeReports <- function(std_reports, mpa_reports) {
 
     mpa_reports <- mpa_reports |> 
         # Rename column for consistency with the standard report.
@@ -23,13 +23,6 @@ mergeReports <- function(std_reports, mpa_reports, samples_to_remove) {
         std_reports, mpa_reports,
         by = dplyr::join_by(!!COLNAME_STD_TAXON, !!COLNAME_STD_SAMPLE)
     )
-
-    if (!missing(samples_to_remove)) {
-        merged_reports <- merged_reports |>
-            dplyr::filter(!(!!as.name(COLNAME_STD_SAMPLE) %in% samples_to_remove))
-    } else {
-        warning("No samples were filtered out from the merged reports table.")
-    }
 
     return(merged_reports)
 }

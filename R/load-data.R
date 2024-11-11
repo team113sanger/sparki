@@ -102,7 +102,7 @@ check_mpa_lines <- function(mpa_reports) {
 #' @return A dataframe (tibble) with the content of all MPA-style reports from the specified directory.
 #' @export
 #'
-load_MPAreports <- function(mpa_reports_dir, verbose = TRUE) {
+load_MPAreports <- function(mpa_reports_dir, samples_to_remove, verbose = TRUE) {
 
     # Get paths to MPA-style reports in a specified directory.
     mpa_files <- fs::dir_ls(mpa_reports_dir, glob = "*.mpa$")
@@ -111,6 +111,24 @@ load_MPAreports <- function(mpa_reports_dir, verbose = TRUE) {
     if (length(mpa_files) == 0) {
         stop(paste0("No MPA-style reports were found at ", mpa_reports_dir, ". Please review your input."))
     } 
+
+
+    # Check if standard report files are empty...
+    for (mpa_file in mpa_files) {
+
+        is_empty <- (file.size(mpa_file) == 0L)
+
+        # If the standard report file is empty...
+        if (is_empty) {
+            warning(paste0(
+                "The MPA-style report file ", mpa_file, " is empty, so this sample will not ",
+                "be included in the SPARKI analysis."
+            ))
+
+            # Remove given standard report path from the list of paths.
+            mpa_files <- mpa_files[(mpa_files != mpa_file)]
+        }
+    }
 
     # Create vector with taxonomic rank names.
     taxonomy <- c("domain", "kingdom", "phylum", "class", "order", "family", "genus", "species")
@@ -150,7 +168,13 @@ load_MPAreports <- function(mpa_reports_dir, verbose = TRUE) {
         # Put rank column right after the taxon leaf column.
         dplyr::relocate(!!COLNAME_MPA_RANK, !!COLNAME_MPA_N_FRAG_CLADE, .after = !!COLNAME_MPA_TAXON_LEAF)
 
-    if (verbose) cat("MPA-style reports loaded successfully.\n")
+    if (!missing(samples_to_remove)) {
+        mpa_reports <- mpa_reports |> dplyr::filter(!(!!as.name(COLNAME_MPA_SAMPLE) %in% samples_to_remove))
+    } else {
+        warning("No samples were filtered out from the collated MPA-style reports table.")
+    }
+
+    if (verbose) cat("MPA-style reports loaded successfully!\n")
     
     return(mpa_reports) 
 }
@@ -165,7 +189,7 @@ load_MPAreports <- function(mpa_reports_dir, verbose = TRUE) {
 #' @return A dataframe (tibble) with the content of all standard reports from the specified directory.
 #' @export
 #'
-load_STDreports <- function(std_reports_dir, verbose = TRUE) {
+load_STDreports <- function(std_reports_dir, samples_to_remove, verbose = TRUE) {
 
     # Get paths to standard reports in a specified directory.
     std_files <- fs::dir_ls(std_reports_dir, glob = "*.kraken$")
@@ -173,6 +197,23 @@ load_STDreports <- function(std_reports_dir, verbose = TRUE) {
     # Check if directory really has any standard reports...
     if (length(std_files) == 0) {
         stop(paste0("No standard reports were found at ", std_reports_dir, ". Please review your input."))
+    }
+
+    # Check if standard report files are empty...
+    for (std_file in std_files) {
+
+        is_empty <- (file.size(std_file) == 0L)
+
+        # If the standard report file is empty...
+        if (is_empty) {
+            warning(paste0(
+                "The standard report file ", std_file, " is empty, so this sample will not ",
+                "be included in the SPARKI analysis."
+            ))
+
+            # Remove given standard report path from the list of paths.
+            std_files <- std_files[(std_files != std_file)]
+        }
     }
 
     # Create a dataframe (tibble) and process.
@@ -188,7 +229,13 @@ load_STDreports <- function(std_reports_dir, verbose = TRUE) {
         # Simplify sample IDs.
         dplyr::mutate(!!COLNAME_STD_SAMPLE := stringr::str_remove(basename(sample), ".kraken"))
 
-    if (verbose) cat("Standard reports loaded successfully.\n")
+    if (!missing(samples_to_remove)) {
+        std_reports <- std_reports |> dplyr::filter(!(!!as.name(COLNAME_STD_SAMPLE) %in% samples_to_remove))
+    } else {
+        warning("No samples were filtered out from the collated standard reports table.")
+    }
+
+    if (verbose) cat("Standard reports loaded successfully!\n")
 
     return(std_reports) 
 }
