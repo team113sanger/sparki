@@ -44,6 +44,17 @@ plotSignificanceSummary <- function(report, return_plot, outdir, prefix = "") {
 
     summary <- getSignificanceSummary(report)
 
+    if ("Significant" %in% summary[[COLNAME_SIGNIF_SUMMARY_SIGNIF]] && "Non-significant" %in% summary[[COLNAME_SIGNIF_SUMMARY_SIGNIF]]) {
+        ggplot_colours <- c("snow3", "black")
+        ggplot_labels <- c("Non-significant", expression("Adjusted p-value"<="0.05"))
+    } else if ("Significant" %in% summary[[COLNAME_SIGNIF_SUMMARY_SIGNIF]] && !("Non-significant" %in% summary[[COLNAME_SIGNIF_SUMMARY_SIGNIF]])) {
+        ggplot_colours <- "black"
+        ggplot_labels <- expression("Adjusted p-value"<="0.05")
+    } else if (!("Significant" %in% summary[[COLNAME_SIGNIF_SUMMARY_SIGNIF]]) && "Non-significant" %in% summary[[COLNAME_SIGNIF_SUMMARY_SIGNIF]]) {
+        ggplot_colours <- "snow3"
+        ggplot_labels <- "Non-significant"
+    }
+
     plot <- ggplot2::ggplot(
         summary, 
         ggplot2::aes(
@@ -73,7 +84,11 @@ plotSignificanceSummary <- function(report, return_plot, outdir, prefix = "") {
         ) +
         ggplot2::xlab("\nSample\n") +
         ggplot2::ylab("Proportion of taxa\n") +
-        ggplot2::scale_fill_manual(name = "Significance", values = c("snow3", "indianred1"))
+        ggplot2::scale_fill_manual(
+            values = ggplot_colours,
+            name = "Significance",
+            labels = ggplot_labels
+        )
 
     # Decide what to do with plot based on user-defined options.
     handlePlot(
