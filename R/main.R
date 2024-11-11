@@ -119,12 +119,6 @@ prepare_data <- function(
     # LOAD DATA #
     #############
 
-    # Read standard reports.
-    std_reports <- load_STDreports(reports_paths[[1]], verbose = verbose)
-    
-    # Read MPA-style reports.
-    mpa_reports <- load_MPAreports(reports_paths[[2]], verbose = verbose)
-
     samples_to_remove <- NA
     if (!is.na(remove)) {
 
@@ -132,8 +126,22 @@ prepare_data <- function(
         samples_to_remove <- loadSamplesToRemove(remove)   
     }
 
+    # Read standard reports.
+    std_reports <- load_STDreports(
+        reports_paths[[1]],
+        samples_to_remove = samples_to_remove,
+        verbose = verbose
+    )
+    
+    # Read MPA-style reports.
+    mpa_reports <- load_MPAreports(
+        reports_paths[[2]],
+        samples_to_remove = samples_to_remove,
+        verbose = verbose
+    )
+
     # Merge standard and MPA-style reports.
-    merged_reports <- mergeReports(std_reports, mpa_reports, samples_to_remove)
+    merged_reports <- mergeReports(std_reports, mpa_reports)
     
     # Read reference database data.
     ref_db <- loadReference(reference_path)
