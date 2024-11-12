@@ -48,7 +48,6 @@ PROJECTDIR="/lustre/scratch126/casm/team113da/users/jb62/projects/sparki"
     --verbose \
     --domain Viruses,Bacteria \
     --samples-to-remove ${PROJECTDIR}/test/samples_remove.txt
-)'
 ```
 
 
