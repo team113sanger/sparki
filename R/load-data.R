@@ -160,14 +160,14 @@ load_MPAreports <- function(mpa_reports_dir, samples_to_remove, verbose = TRUE) 
         # Collect the rightmost non-NA item in each row.
         dplyr::mutate(
             !!COLNAME_MPA_TAXON_LEAF := dplyr::coalesce(
-                COLNAME_MPA_SPECIES,
-                COLNAME_MPA_GENUS,
-                COLNAME_MPA_FAMILY,
-                COLNAME_MPA_ORDER,
-                COLNAME_MPA_CLASS,
-                COLNAME_MPA_PHYLUM,
-                COLNAME_MPA_KINGDOM,
-                COLNAME_MPA_DOMAIN
+                !!as.name(COLNAME_MPA_SPECIES),
+                !!as.name(COLNAME_MPA_GENUS),
+                !!as.name(COLNAME_MPA_FAMILY),
+                !!as.name(COLNAME_MPA_ORDER),
+                !!as.name(COLNAME_MPA_CLASS),
+                !!as.name(COLNAME_MPA_PHYLUM),
+                !!as.name(COLNAME_MPA_KINGDOM),
+                !!as.name(COLNAME_MPA_DOMAIN)
             ),
             .before = "domain"
         ) |>
