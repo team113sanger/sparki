@@ -33,3 +33,6 @@
 ^\.git$
 ^renv$
 ^renv\.lock$
+^tests/testthat/_snaps$
+^gitlab-ci\.yml$
+^\.pre-commit-config\.yaml$

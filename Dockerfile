@@ -28,7 +28,8 @@ ENV \
     LC_ALL="en_US.UTF-8" \
     LANG="en_US.UTF-8" \
     PKGTYPE="binary" \
-    RENV_CONFIG_PAK_ENABLED="TRUE"
+    RENV_CONFIG_PAK_ENABLED="TRUE" \
+    PRE_COMMIT_VERSION="4.0.1"
 
 
 # Set next environment variables that interpolate the top level environment
@@ -48,7 +49,15 @@ ENV \
     RENV_PATHS_LIBRARY_ROOT="${OPT_DIRECTORY:?}/renv/library" \
     RENV_PATHS_LIBRARY="${OPT_DIRECTORY:?}/renv/library/sparki-libs" \
     RENV_PATHS_CACHE="${OPT_DIRECTORY:?}/renv-cache" \
+    PIPX_HOME="${OPT_DIRECTORY}/pipx" \
+    PIPX_BIN_DIR="${OPT_DIRECTORY}/pipx/bin" \
     LOGGING_DIRECTORY="${DATA_DIRECTORY:?}/logs"
+
+# Set the environment that interpolates the next level of environment variables
+#
+# Set the PATH to include the pipx bin directory
+ENV \
+    PATH=${PIPX_BIN_DIR:?}:${PATH}
 
 # Run the commands to:
 # - create directories defined in the environment variables
@@ -63,9 +72,9 @@ RUN \
     && useradd -u ${USER_ID} -g ${GROUP_ID} "${USER_NAME}" --shell /bin/bash --create-home --home-dir "${USER_DIRECTORY}" \
     && if ! getent group docker > /dev/null; then groupadd docker; fi \
     && usermod -a -G docker,staff admin \
-    && mkdir -p "${PROJECT_DIRECTORY:?}" "${DATA_DIRECTORY:?}" "${OPT_DIRECTORY:?}" "${RENV_DIRECTORY:?}" "${RENV_PATHS_LIBRARY:?}" "${RENV_PATHS_CACHE:?}" \
+    && mkdir -p "${PROJECT_DIRECTORY:?}" "${DATA_DIRECTORY:?}" "${OPT_DIRECTORY:?}" "${RENV_DIRECTORY:?}" "${RENV_PATHS_LIBRARY:?}" "${RENV_PATHS_CACHE:?}" "${PIPX_BIN_DIR:?}" "${PIPX_BIN_DIR:?}" \
     && chown -R "${USER_NAME:?}:${USER_NAME:?}" "${PROJECT_DIRECTORY:?}" "${DATA_DIRECTORY:?}" "${USER_DIRECTORY:?}" "${OPT_DIRECTORY:?}" \
-    && chmod -R 755 "${PROJECT_DIRECTORY:?}" "${DATA_DIRECTORY:?}" "${USER_DIRECTORY:?}" "${OPT_DIRECTORY:?}" 
+    && chmod -R 755 "${PROJECT_DIRECTORY:?}" "${DATA_DIRECTORY:?}" "${USER_DIRECTORY:?}" "${OPT_DIRECTORY:?}"
 
 ################################################
 # Install the system dependencies              #
@@ -76,6 +85,7 @@ RUN \
 # - vim (specifically vi) is needed by R usethis
 # - build-essential for compiling
 # - git for version control
+# - pipx to install python built tools, pre-commit (apt-get version of pre-commit is too old)
 # themselves -- this is done in a later stage.
 RUN \
     apt-get update -y \
@@ -87,7 +97,8 @@ RUN \
     vim \
     nano \
     git \
-    pre-commit \
+    pipx \
+    && pipx install "pre-commit==${PRE_COMMIT_VERSION:?}" \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -167,3 +178,6 @@ RUN mkdir -p "${USER_DIRECTORY}/.vscode-server/extensions" \
     && touch "${USER_DIRECTORY}/.commandhistory/.bash_history" \
     && chown -R "${USER_NAME}:${USER_NAME}" "${USER_DIRECTORY}/.commandhistory/" \
     && echo "$SNIPPET" >> "/home/$USER_NAME/.bashrc"
+
+# Install pre-commit hooks
+RUN pre-commit install --install-hooks
