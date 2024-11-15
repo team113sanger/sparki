@@ -84,3 +84,4 @@ rsconnect/
 test/*
 from-farm22/*
 tests/testthat/_snaps
+renv/*
