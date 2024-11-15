@@ -32,7 +32,7 @@ loadReference <- function(reference_path, n_header_lines = 7) {
 
     ref[, COLNAME_REF_DB_TAXON] <- gsub("^[[:space:]]\\s*(.*?)", "", ref[, COLNAME_REF_DB_TAXON], perl = TRUE)
 
-    cat("Ref DB loaded successfully.\n")
+    message("Ref DB loaded successfully.")
 
     return(ref)
 }
@@ -54,7 +54,7 @@ loadMetadata <- function(metadata) {
     # Read metadata file.
     mdata <- readr::read_delim(metadata)
 
-    cat("Metadata loaded successfully.\n")
+    message("Metadata loaded successfully.")
 
     return(mdata)
 }
@@ -137,7 +137,8 @@ load_MPAreports <- function(mpa_reports_dir, samples_to_remove, verbose = TRUE) 
     mpa_reports <- readr::read_tsv(
         mpa_files,
         col_names = c(COLNAME_MPA_TAXON_HIERARCHY, COLNAME_MPA_N_FRAG_CLADE),
-        id = get("COLNAME_MPA_SAMPLE")
+        id = get("COLNAME_MPA_SAMPLE"),
+        show_col_types = FALSE # Supressing messages about column types when the dataframe is created.
     )
 
     # Add rank column.
@@ -151,14 +152,23 @@ load_MPAreports <- function(mpa_reports_dir, samples_to_remove, verbose = TRUE) 
         # Split rows by "|" into primary taxa.
         tidyr::separate(col = COLNAME_MPA_TAXON_HIERARCHY, into = taxonomy, sep = "\\|") |>
         # Cleanup the names in the taxonomy columns.
-        dplyr::mutate(dplyr::across(taxonomy, ~ stringr::str_remove(.x, pattern = "[a-z]__"))) |>
+        dplyr::mutate(dplyr::across(dplyr::all_of(taxonomy), ~ stringr::str_remove(.x, pattern = "[a-z]__"))) |>
         # Simplify sample IDs.
         dplyr::mutate(!!COLNAME_MPA_SAMPLE := stringr::str_remove(basename(sample), ".kraken.mpa")) |>
         # Convert character "NA"s to proper NA values.
         dplyr::mutate(dplyr::across(where(is.character), ~dplyr::na_if(., "NA"))) |>
         # Collect the rightmost non-NA item in each row.
         dplyr::mutate(
-            !!COLNAME_MPA_TAXON_LEAF := dplyr::coalesce(species, genus, family, order, class, phylum, kingdom, domain),
+            !!COLNAME_MPA_TAXON_LEAF := dplyr::coalesce(
+                COLNAME_MPA_SPECIES,
+                COLNAME_MPA_GENUS,
+                COLNAME_MPA_FAMILY,
+                COLNAME_MPA_ORDER,
+                COLNAME_MPA_CLASS,
+                COLNAME_MPA_PHYLUM,
+                COLNAME_MPA_KINGDOM,
+                COLNAME_MPA_DOMAIN
+            ),
             .before = "domain"
         ) |>
         # Replace underscores with spaces in taxon names.
@@ -171,10 +181,10 @@ load_MPAreports <- function(mpa_reports_dir, samples_to_remove, verbose = TRUE) 
     if (!missing(samples_to_remove)) {
         mpa_reports <- mpa_reports |> dplyr::filter(!(!!as.name(COLNAME_MPA_SAMPLE) %in% samples_to_remove))
     } else {
-        warning("No samples were filtered out from the collated MPA-style reports table.")
+        message("No samples were filtered out from the collated MPA-style reports table.")
     }
 
-    if (verbose) cat("MPA-style reports loaded successfully!\n")
+    if (verbose) message("MPA-style reports loaded successfully!")
 
     return(mpa_reports)
 }
@@ -222,7 +232,8 @@ load_STDreports <- function(std_reports_dir, samples_to_remove, verbose = TRUE) 
         col_names = c(COLNAME_STD_PCT_FRAG_CLADE, COLNAME_STD_N_FRAG_CLADE, COLNAME_STD_N_FRAG_TAXON,
             COLNAME_STD_MINIMISERS, COLNAME_STD_UNIQ_MINIMISERS, COLNAME_STD_RANK, COLNAME_STD_NCBI_ID,
             COLNAME_STD_TAXON),
-        id = get("COLNAME_STD_SAMPLE")
+        id = get("COLNAME_STD_SAMPLE"),
+        show_col_types = FALSE # Supressing messages about column types when the dataframe is created.
     ) |>
         # Remove the subranks.
         dplyr::filter(!grepl(!!as.name(COLNAME_STD_RANK), pattern = "[0-9]")) |>
@@ -232,10 +243,10 @@ load_STDreports <- function(std_reports_dir, samples_to_remove, verbose = TRUE) 
     if (!missing(samples_to_remove)) {
         std_reports <- std_reports |> dplyr::filter(!(!!as.name(COLNAME_STD_SAMPLE) %in% samples_to_remove))
     } else {
-        warning("No samples were filtered out from the collated standard reports table.")
+        message("No samples were filtered out from the collated standard reports table.")
     }
 
-    if (verbose) cat("Standard reports loaded successfully!\n")
+    if (verbose) message("Standard reports loaded successfully!")
 
     return(std_reports)
 }
@@ -259,7 +270,7 @@ loadSamplesToRemove <- function(filepath, verbose) {
         " will be removed from SPARKI analysis."
     ))
 
-    if (verbose) cat("Samples-to-remove loaded successfully.\n")
+    if (verbose) message("Samples-to-remove loaded successfully.")
 
     return(samples_to_remove[["sample"]])
 }
