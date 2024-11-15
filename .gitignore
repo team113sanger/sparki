@@ -2,3 +2,4 @@ test/*
 from-farm22/*
 .RData
 .Rhistory
+    tests/testthat/_snaps
