@@ -6,7 +6,8 @@ ARG USER_ID=1000
 ARG GROUP_ID=1000
 
 # Set the top level environment variables
-# We want to prefer install R packages from binary rather than compiling them
+# PKGTYPE - prefer renv/instal.packages/usethis::use_package to prefer binary packages
+# RENV_CONFIG_PAK_ENABLED - enable pak as the middleware for package management
 ENV \
     DATA_DIRECTORY="/data" \
     OPT_DIRECTORY="/opt" \
@@ -14,7 +15,8 @@ ENV \
     USER_DIRECTORY="/home/admin" \
     LC_ALL="en_US.UTF-8" \
     LANG="en_US.UTF-8" \
-    PKGTYPE="binary"
+    PKGTYPE="binary" \
+    RENV_CONFIG_PAK_ENABLED="TRUE"
 
 
 # Set next environment variables that interpolate the top level environment
@@ -32,7 +34,7 @@ ENV \
     RENV_DIRECTORY="${OPT_DIRECTORY:?}/renv" \
     RENV_PATHS_ROOT="${OPT_DIRECTORY:?}/renv" \
     RENV_PATHS_LIBRARY_ROOT="${OPT_DIRECTORY:?}/renv/library" \
-    R_LIBS_FOR_SINGULAIRTY="${OPT_DIRECTORY:?}/renv/library/symbolic" \
+    RENV_PATHS_LIBRARY="${OPT_DIRECTORY:?}/renv/library/sparki-libs" \
     RENV_PATHS_CACHE="${OPT_DIRECTORY:?}/renv-cache" \
     LOGGING_DIRECTORY="${DATA_DIRECTORY:?}/logs"
 
@@ -49,7 +51,7 @@ RUN \
     && useradd -u ${USER_ID} -g ${GROUP_ID} "${USER_NAME}" --shell /bin/bash --create-home --home-dir "${USER_DIRECTORY}" \
     && if ! getent group docker > /dev/null; then groupadd docker; fi \
     && usermod -a -G docker,staff admin \
-    && mkdir -p "${PROJECT_DIRECTORY:?}" "${DATA_DIRECTORY:?}" "${OPT_DIRECTORY:?}" "${RENV_DIRECTORY:?}" "${RENV_PATHS_LIBRARY_ROOT:?}" "${RENV_PATHS_CACHE:?}" \
+    && mkdir -p "${PROJECT_DIRECTORY:?}" "${DATA_DIRECTORY:?}" "${OPT_DIRECTORY:?}" "${RENV_DIRECTORY:?}" "${RENV_PATHS_LIBRARY:?}" "${RENV_PATHS_CACHE:?}" \
     && chown -R "${USER_NAME:?}:${USER_NAME:?}" "${PROJECT_DIRECTORY:?}" "${DATA_DIRECTORY:?}" "${USER_DIRECTORY:?}" "${OPT_DIRECTORY:?}" \
     && chmod -R 755 "${PROJECT_DIRECTORY:?}" "${DATA_DIRECTORY:?}" "${USER_DIRECTORY:?}" "${OPT_DIRECTORY:?}" 
 
@@ -82,15 +84,21 @@ RUN \
 # Use Renv+pak via a wrapper script                #
 ####################################################
 
-RUN install2.r --error --skipinstalled --ncpus 4 \
-    devtools \
-    usethis \
-    renv \
-    && rm -rf /tmp/downloaded_packages /tmp/*.rds
+RUN R -e 'install.packages("renv")'
 
-######################################
-
+# Copy the renv.lock file (if it exists) and the DESCRIPTION file to the
+# container (as well as the renv/ directory)
 WORKDIR $PROJECT_DIRECTORY
+COPY --chown="${USER_NAME}:${USER_NAME}" ["DESCRIPTION", "NAMESPACE", "./"]
+
+# Install the R packages from the lock file or the DESCRIPTION file if the lock
+# file does not exist.
+RUN if [ -f renv.lock ]; then \
+    Rscript -e 'renv::init(bare = TRUE); renv::restore()' ; \
+    else \
+    Rscript -e 'renv::init(bare = TRUE); renv::install()' ; \
+    fi
+# Copy the rest of the project files to the container
 COPY --chown="${USER_NAME}:${USER_NAME}" . .
 
 # Reapply permissions after all installation and copying is done so the user can
