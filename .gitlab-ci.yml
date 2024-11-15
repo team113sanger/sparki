@@ -26,7 +26,7 @@ include:
     DOCKER_TARGET_STAGE: base_stage
     # We need to set this to 1 to enable BuildKit as the Dockerfile uses BuildKit features to speed up the build
     DOCKER_BUILDKIT: 1
-    PRE_FETCH_BASE_IMAGE: rocker/r-ver:4.2.2
+    PRE_FETCH_BASE_IMAGE: rocker/r-ver:4.4.0
     # Incase 'docker compose' build is ever used we want to ensure the image
     # does not have sudo. By default CICD jobs do not build with 'docker
     # compose' but use 'docker' - so this is just a safety measure.

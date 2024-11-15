@@ -10,7 +10,7 @@
 # IMPORTANT
 # If you change the base image, you will need to update the
 # PRE_FETCH_BASE_IMAGE variable in the .gitlab-ci.yml file also.
-FROM rocker/r-ver:4.2.2 AS base_stage
+FROM rocker/r-ver:4.4.0 AS base_stage
 
 USER root
 # Arguments for UID and GID matching
