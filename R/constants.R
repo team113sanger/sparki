@@ -2,6 +2,10 @@
 ## HELPER CONSTANTS ##
 #####################################################################
 
+### CLI helptext ###
+CLI_DESCRIPTION <- "SPARKI (Statistical Process Aimed at Robust Kraken2 Interpretation) is a framework to help collate, refine, visualise & interpret Kraken2 outputs."
+CLI_PROGRAM_NAME <- "SPARKI"
+
 #### Reference database ####
 COLNAME_REF_DB_PCT_FRAG_CLADE <- "pct_fragments_clade"
 COLNAME_REF_DB_MINIMISERS_CLADE <- "n_minimisers_clade"

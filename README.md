@@ -2,6 +2,15 @@
 
 This repository contains the code related to SPARKI (**S**tatistical **P**rocess **A**imed at **R**obust **K**raken2 **I**nterpretation), a framework developed in R to help collate, refine, visualise & interpret Kraken2 outputs.
 
+|                         Main                         |                         Develop                          |
+| :----------------------------------------------------: | :------------------------------------------------------: |
+| [![pipeline status][main-pipe-badge]][main-branch] | [![pipeline status][develop-pipe-badge]][develop-branch] |
+
+[main-pipe-badge]: https://gitlab.internal.sanger.ac.uk/team113_projects/jb62-projects/sparki/badges/main/pipeline.svg
+[main-branch]: https://gitlab.internal.sanger.ac.uk/team113_projects/jb62-projects/sparki/-/commits/main
+[develop-pipe-badge]: https://gitlab.internal.sanger.ac.uk/team113_projects/jb62-projects/sparki/badges/develop/pipeline.svg
+[develop-branch]: https://gitlab.internal.sanger.ac.uk/team113_projects/jb62-projects/sparki/-/commits/develop
+
 ## Installation
 ```
 git clone git@gitlab.internal.sanger.ac.uk:team113_projects/jb62-projects/sparki.git
