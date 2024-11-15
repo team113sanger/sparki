@@ -1,3 +1,15 @@
+# syntax=docker/dockerfile:1
+# MUTLI-STAGE DOCKERFILE for building a Python image
+# STAGE 1: base_stage is the base image for both the development and dev-staging/staging/production images
+# STAGE 2: development_only_stage is the image used for development (optimised for VSCode)
+
+########################
+# STAGE 1: base_stage #
+########################
+
+# IMPORTANT
+# If you change the base image, you will need to update the
+# PRE_FETCH_BASE_IMAGE variable in the .gitlab-ci.yml file also.
 FROM rocker/r-ver:4.2.2 AS base_stage
 
 USER root
@@ -75,6 +87,7 @@ RUN \
     vim \
     nano \
     git \
+    pre-commit \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -84,6 +97,8 @@ RUN \
 # Use Renv+pak via a wrapper script                #
 ####################################################
 
+# We use the renv package to bootstrap the R package installation and isolate them from the system
+# R installation.
 RUN R -e 'install.packages("renv")'
 
 # Copy the renv.lock file (if it exists) and the DESCRIPTION file to the
