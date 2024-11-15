@@ -8,10 +8,10 @@
 #' @return Processed data ready for downstream steps.
 #' @export
 prepare_data <- function(
-    std_reports_path, 
-    mpa_reports_path, 
-    reference_path, 
-    metadata_path, 
+    std_reports_path,
+    mpa_reports_path,
+    reference_path,
+    metadata_path,
     metadata_sample_col,
     metadata_columns,
     outdir_path,
@@ -27,14 +27,14 @@ prepare_data <- function(
 
     # Check the integrity of the directories provided & read reports.
     reports_paths <- list(
-        "std" = std_reports_path, 
+        "std" = std_reports_path,
         "mpa" = mpa_reports_path
     )
 
     for (report_format in names(reports_paths)) {
 
         reports_paths[[report_format]] <- check_report_directory(
-            dirpath = reports_paths[[report_format]], 
+            dirpath = reports_paths[[report_format]],
             report_format = report_format
         )
     }
@@ -62,7 +62,7 @@ prepare_data <- function(
             ))
         } else {
             metadata_columns <- parse_delimited_list(
-                del_list = metadata_columns, 
+                del_list = metadata_columns,
                 delimiter = ","
             )
         }
@@ -111,7 +111,7 @@ prepare_data <- function(
         # Check the integrity of the samples-to-remove file specified.
         check_file(remove)
 
-    } else { 
+    } else {
         warning("No list of samples to be removed has been provided.")
     }
 
@@ -126,7 +126,7 @@ prepare_data <- function(
         samples_to_remove <- loadSamplesToRemove(
             filepath = remove,
             verbose = verbose
-        )   
+        )
     }
 
     # Read standard reports.
@@ -135,7 +135,7 @@ prepare_data <- function(
         samples_to_remove = samples_to_remove,
         verbose = verbose
     )
-    
+
     # Read MPA-style reports.
     mpa_reports <- load_MPAreports(
         reports_paths[[2]],
@@ -145,7 +145,7 @@ prepare_data <- function(
 
     # Merge standard and MPA-style reports.
     merged_reports <- mergeReports(std_reports, mpa_reports)
-    
+
     # Read reference database data.
     ref_db <- loadReference(reference_path)
 
@@ -164,7 +164,7 @@ prepare_data <- function(
 
         # Add metadata to merged reports.
         merged_reports <- addMetadata(
-            merged_reports, metadata, 
+            merged_reports, metadata,
             metadata_sample_col, metadata_columns
         )
 
@@ -173,13 +173,13 @@ prepare_data <- function(
     }
 
     return(list(
-        merged_reports, 
-        ref_db, 
-        metadata, 
+        merged_reports,
+        ref_db,
+        metadata,
         metadata_sample_col,
-        metadata_columns, 
-        outdir_path, 
-        prefix, 
+        metadata_columns,
+        outdir_path,
+        prefix,
         domain
     ))
 
@@ -201,7 +201,7 @@ process_kraken2 <- function(
     reference_path,
     metadata_path,
     metadata_sample_col,
-    metadata_columns, 
+    metadata_columns,
     outdir_path,
     prefix,
     verbose,
@@ -238,15 +238,15 @@ process_kraken2 <- function(
     merged_reports <- addMinimiserData(merged_reports, ref_db)
 
     plotClassificationSummary_violin(
-        merged_reports, 
+        merged_reports,
         return_plot = FALSE,
         outdir = outdir,
         prefix = prefix
     )
 
     plotClassificationSummary_barplot(
-        merged_reports, 
-        include_sample_names = include_sample_names, 
+        merged_reports,
+        include_sample_names = include_sample_names,
         orientation = "horizontal",
         return_plot = FALSE,
         outdir = outdir,
@@ -275,18 +275,18 @@ process_kraken2 <- function(
     )
 
     plotDomainReads_violin(
-        merged_reports, 
-        include_eukaryotes = include_eukaryotes, 
+        merged_reports,
+        include_eukaryotes = include_eukaryotes,
         return_plot = FALSE,
         outdir = outdir,
         prefix = prefix
     )
 
     plotDomainReads_barplot(
-        merged_reports, 
-        include_eukaryotes = include_eukaryotes, 
-        include_sample_names = include_sample_names, 
-        orientation = "horizontal", 
+        merged_reports,
+        include_eukaryotes = include_eukaryotes,
+        include_sample_names = include_sample_names,
+        orientation = "horizontal",
         return_plot = FALSE,
         outdir = outdir,
         prefix = prefix
@@ -311,14 +311,14 @@ process_kraken2 <- function(
     for (d in domain) {
 
         plotMinimisers_dotplot(
-            merged_reports, 
-            domain = d, 
-            return_plot = FALSE, 
-            fig_width = 25, 
-            fig_height = 15, 
+            merged_reports,
+            domain = d,
+            return_plot = FALSE,
+            fig_width = 25,
+            fig_height = 15,
             outdir = outdir,
             prefix = prefix
-        )   
+        )
     }
 
     write.csv(

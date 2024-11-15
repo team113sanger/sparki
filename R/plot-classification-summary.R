@@ -9,7 +9,7 @@ getClassificationSummary <- function(report) {
         ))
     }
 
-    summary <- report |> 
+    summary <- report |>
         # Select columns of interest.
         dplyr::select(!!COLNAME_STD_SAMPLE, !!COLNAME_STD_TAXON, !!COLNAME_STD_N_FRAG_CLADE) |>
         # Select rows of interest.
@@ -33,7 +33,7 @@ getClassificationSummary <- function(report) {
         dplyr::relocate(
             !!COLNAME_CLASSIF_SUMMARY_LOG_N_FRAG, .after = !!COLNAME_CLASSIF_SUMMARY_N_FRAG
         )
-        
+
     return(summary)
 }
 
@@ -70,15 +70,15 @@ getClassificationProportion <- function(report, taxon) {
 }
 
 #' PLOT NUMBERS OF CLASSIFIED/UNCLASSIFIED READS PER SAMPLE (VIOLIN PLOT)
-#' 
+#'
 #' This function takes a standard Kraken2 report and creates a violin plot showing
 #' the number of classified and unclassified reads per sample.
-#' 
+#'
 #' @param report Standard Kraken2 report.
 #' @param return_plot Whether plot should be returned.
 #' @param outdir Output directory where the plot should be saved.
-#' @return 
-#' 
+#' @return
+#'
 plotClassificationSummary_violin <- function(report, return_plot, outdir, prefix = "") {
 
     # Stop if report provided is in MPA-style format.
@@ -92,9 +92,9 @@ plotClassificationSummary_violin <- function(report, return_plot, outdir, prefix
 
     # Create violin plot.
     plot <- ggplot2::ggplot(
-        summary, 
+        summary,
         ggplot2::aes(
-            x = get(COLNAME_CLASSIF_SUMMARY_READ_TYPE), 
+            x = get(COLNAME_CLASSIF_SUMMARY_READ_TYPE),
             y = get(COLNAME_CLASSIF_SUMMARY_LOG_N_FRAG)
         )
     ) +
@@ -118,27 +118,27 @@ plotClassificationSummary_violin <- function(report, return_plot, outdir, prefix
 
     # Decide what to do with plot based on user-defined options.
     handlePlot(
-        plot = plot, prefix = prefix, return_plot = return_plot, 
-        filename = "nReads_classified_vs_unclassified_absNumbers_violinPlot.pdf", 
+        plot = plot, prefix = prefix, return_plot = return_plot,
+        filename = "nReads_classified_vs_unclassified_absNumbers_violinPlot.pdf",
         outdir = outdir, fig_width = 3, fig_height = 4
     )
 }
 
 #' PLOT NUMBERS OF CLASSIFIED/UNCLASSIFIED READS PER SAMPLE (BAR PLOT)
-#' 
+#'
 #' This function takes a standard Kraken2 report and creates a bar plot showing
 #' the number of classified and unclassified reads per sample.
-#' 
+#'
 #' @param report Standard Kraken2 report.
 #' @param include_sample_names Whether to include sample names in the plot.
 #' @param orientation Whether plot should be horizontally or vertically oriented.
 #' @param return_plot Whether plot should be returned.
 #' @param outdir Output directory where the plot should be saved.
 #' @param prefix Prefix to be added to output plot name.
-#' @return 
-#' 
+#' @return
+#'
 plotClassificationSummary_barplot <- function(
-    report, include_sample_names = FALSE, orientation = "vertical", 
+    report, include_sample_names = FALSE, orientation = "vertical",
     return_plot, outdir, prefix = ""
 ) {
 
@@ -153,10 +153,10 @@ plotClassificationSummary_barplot <- function(
 
     # Create bar plot.
     plot <- ggplot2::ggplot(
-        summary, 
+        summary,
         ggplot2::aes(
-            x = get(COLNAME_CLASSIF_SUMMARY_N_FRAG), 
-            y = get(COLNAME_CLASSIF_SUMMARY_SAMPLE), 
+            x = get(COLNAME_CLASSIF_SUMMARY_N_FRAG),
+            y = get(COLNAME_CLASSIF_SUMMARY_SAMPLE),
             fill = get(COLNAME_CLASSIF_SUMMARY_READ_TYPE)
         )
     ) +
@@ -187,14 +187,14 @@ plotClassificationSummary_barplot <- function(
 
     adjusted_plot <- adjust_barplot(
         plot = plot, n_samples = length(unique(report[, COLNAME_STD_SAMPLE])),
-        include_sample_names = include_sample_names, orientation = orientation, 
+        include_sample_names = include_sample_names, orientation = orientation,
         filename = "nReads_classified_vs_unclassified_proportion_perSample_barPlot"
-    ) 
+    )
 
     # Decide what to do with plot based on user-defined options.
     handlePlot(
-        plot = adjusted_plot[[1]], prefix = prefix, return_plot = return_plot, 
-        filename = adjusted_plot[[2]], outdir = outdir, fig_width = adjusted_plot[[3]], 
+        plot = adjusted_plot[[1]], prefix = prefix, return_plot = return_plot,
+        filename = adjusted_plot[[2]], outdir = outdir, fig_width = adjusted_plot[[3]],
         fig_height = adjusted_plot[[4]]
     )
 }
@@ -212,7 +212,7 @@ plotClassificationProportion <- function(report, return_plot, outdir, prefix = "
 
     # Create violin plot.
     plot <- ggplot2::ggplot(
-        summary, 
+        summary,
         ggplot2::aes(x = "", y = get(COLNAME_PROP_CLASSIFIED))
     ) +
         ggplot2::geom_violin(scale = "width", fill = "palegreen1", color = "black") +
@@ -234,9 +234,8 @@ plotClassificationProportion <- function(report, return_plot, outdir, prefix = "
 
     # Decide what to do with plot based on user-defined options.
     handlePlot(
-        plot = plot, prefix = prefix, return_plot = return_plot, 
-        filename = "nReads_classifiedProportion_violinPlot.pdf", 
+        plot = plot, prefix = prefix, return_plot = return_plot,
+        filename = "nReads_classifiedProportion_violinPlot.pdf",
         outdir = outdir, fig_width = 3, fig_height = 4
     )
 }
-

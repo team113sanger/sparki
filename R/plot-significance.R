@@ -56,12 +56,12 @@ plotSignificanceSummary <- function(report, return_plot, outdir, prefix = "") {
     }
 
     plot <- ggplot2::ggplot(
-        summary, 
+        summary,
         ggplot2::aes(
-            x = get(COLNAME_SIGNIF_SUMMARY_SAMPLE), 
-            y = get(COLNAME_SIGNIF_SUMMARY_N_TAXA), 
+            x = get(COLNAME_SIGNIF_SUMMARY_SAMPLE),
+            y = get(COLNAME_SIGNIF_SUMMARY_N_TAXA),
             fill = get(COLNAME_SIGNIF_SUMMARY_SIGNIF)
-        ) 
+        )
     ) +
         ggplot2::geom_bar(position = "fill", stat = "identity") +
         ggplot2::facet_wrap(
@@ -92,8 +92,8 @@ plotSignificanceSummary <- function(report, return_plot, outdir, prefix = "") {
 
     # Decide what to do with plot based on user-defined options.
     handlePlot(
-        plot = plot, prefix = prefix, return_plot = return_plot, 
-        filename = "SignificanceSummary.pdf", outdir = outdir, fig_width = 10, 
+        plot = plot, prefix = prefix, return_plot = return_plot,
+        filename = "SignificanceSummary.pdf", outdir = outdir, fig_width = 10,
         fig_height = 5
     )
 }

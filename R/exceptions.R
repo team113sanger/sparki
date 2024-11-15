@@ -3,10 +3,10 @@ check_report_directory <- function(dirpath, report_format) {
     # Check that the directory exists and is not empty.
     dirpath <- check_directory(dirpath)
 
-    # Check that the directory contains MPA reports if it 
+    # Check that the directory contains MPA reports if it
     # is supposed to.
     if (
-        report_format == "mpa" && 
+        report_format == "mpa" &&
         length(list.files(dirpath, pattern = "mpa$")) == 0
     ) {
         stop(paste0(
@@ -14,10 +14,10 @@ check_report_directory <- function(dirpath, report_format) {
             "any MPA-style reports. Please review your input!"
         ))
 
-    # Check that the directory contains standard reports if it 
+    # Check that the directory contains standard reports if it
     # is supposed to.
     } else if (
-        report_format == "std" && 
+        report_format == "std" &&
         length(list.files(dirpath, pattern = "kraken$")) == 0
     ) {
         stop(paste0(
@@ -28,7 +28,7 @@ check_report_directory <- function(dirpath, report_format) {
     # Double-check that the report format specified is valid.
     } else if (!(report_format %in% c("std", "mpa"))) {
         stop(paste0("The format ", report_format, " is not valid."))
-    
+
     # Check that the directory is not empty.
     } else if (length(list.files(dirpath)) == 0) {
         stop(paste0(
@@ -36,7 +36,7 @@ check_report_directory <- function(dirpath, report_format) {
             "Please review your input!"
         ))
     }
-    
+
     return(dirpath)
 }
 
@@ -63,7 +63,7 @@ check_directory <- function(dirpath) {
             "The directory ", dirpath, " does not exist. ",
             "Please review your input!"
         ))
-    
+
     # Ensure that the directory path has a slash at the end.
     } else if (substr(dirpath, nchar(dirpath), nchar(dirpath)) != "/") {
         dirpath <- paste0(dirpath, "/")
@@ -73,7 +73,7 @@ check_directory <- function(dirpath) {
 }
 
 check_columns <- function(df, columns) {
-    
+
     for (column in columns) {
         if (!(column %in% colnames(df))) {
             stop(paste0(

@@ -27,11 +27,11 @@ addRank <- function(taxon) {
 }
 
 #' CALCULATE SAMPLE SIZES
-#' 
+#'
 #' @param report A report.
 #' @return An updated version of the input dataframe, with a new column containing sample sizes.
 #' @export
-#' 
+#'
 addSampleSize <- function(report) {
 
     # If report is in MPA format...
@@ -46,14 +46,14 @@ addSampleSize <- function(report) {
         ))
     }
 
-    subset <- report |> 
+    subset <- report |>
         # Select columns of interest.
         dplyr::select(!!COLNAME_STD_SAMPLE, !!COLNAME_STD_TAXON, !!COLNAME_STD_N_FRAG_CLADE) |>
         # Select rows of interest.
         dplyr::filter(!!as.name(COLNAME_STD_TAXON) %in% c("unclassified", "root")) |>
         # Reformat dataframe into a more convenient shape.
         tidyr::pivot_wider(
-            names_from = !!COLNAME_STD_TAXON, 
+            names_from = !!COLNAME_STD_TAXON,
             values_from = !!COLNAME_STD_N_FRAG_CLADE
         ) |>
         # Rename columns.
@@ -79,7 +79,7 @@ addMinimiserData <- function(report, ref_db) {
     if (is_mpa(report)) stop(paste0("This function does not support MPA-style reports."))
 
     # Select relevant columns.
-    ref_db <- ref_db |> 
+    ref_db <- ref_db |>
         dplyr::select(
             !!COLNAME_REF_DB_NCBI_ID,
             !!COLNAME_REF_DB_MINIMISERS_TAXON,
@@ -109,7 +109,7 @@ add_nTaxaInRank <- function(report) {
         # for each sample).
         dplyr::count(temp)
 
-    report <- report |> 
+    report <- report |>
         # Create temporary column with sample+rank combinations.
         dplyr::mutate(
             temp = paste(!!as.name(COLNAME_STD_SAMPLE), !!as.name(COLNAME_STD_RANK), sep = "_")
@@ -128,12 +128,12 @@ add_nTaxaInRank <- function(report) {
 
 
 #' ADD COLUMNS FROM ONE DATAFRAME TO ANOTHER
-#' 
-#' This function takes as input a dataframe (df1) and adds metadata to it from another dataframe (df2). Both 
-#' dataframes must have the same sample IDs present, as these IDs will be used as an "anchor" between the tables. 
+#'
+#' This function takes as input a dataframe (df1) and adds metadata to it from another dataframe (df2). Both
+#' dataframes must have the same sample IDs present, as these IDs will be used as an "anchor" between the tables.
 #' Sample IDs can be specified as either row names or a standard column in the dataframes. The columns from df2
 #' that should be added to df1 are specified by the user.
-#' 
+#'
 #' @param df1 Dataframe 1.
 #' @param df1_sample_col Name of column in df1 that contains sample IDs; alternatively, this can be "rownames".
 #' @param df2 Dataframe 2.
@@ -141,20 +141,20 @@ add_nTaxaInRank <- function(report) {
 #' @param categories Categories of interest from df2 that should be added to df1.
 #' @return An updated version of df1.
 #' @export
-#' 
+#'
 addMetadata <- function(report, metadata, metadata_sample_col, metadata_columns) {
 
     # Check report format.
     report_colname_sample <- ifelse(is_mpa(report), COLNAME_MPA_SAMPLE, COLNAME_STD_SAMPLE)
 
     # Process metadata dataframe (tibble).
-    metadata <- metadata |> 
+    metadata <- metadata |>
         # Select metadata columns that will be added to the report.
         dplyr::select(metadata_sample_col, metadata_columns) |>
         # Rename column with sample IDs to keep its name consistent
         # with the report.
         dplyr::rename(!!report_colname_sample := metadata_sample_col)
-    
+
     # Replace spaces (if any) with underscores.
     colnames(metadata) <- gsub(" ", "_", colnames(metadata))
     metadata_columns <- gsub(" ", "_", metadata_columns)

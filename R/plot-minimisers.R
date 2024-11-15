@@ -37,10 +37,10 @@ prepare_for_plotMinimisers <- function(report, domain_of_interest) {
 }
 
 #' PLOT PROPORTION OF MINIMISERS AND SIGNIFICANCE PER SAMPLE
-#' 
+#'
 #' This function takes a Kraken2 report, either in standard or MPA-style format, and creates
 #' a bar plot showing the number of classified reads per domain.
-#' 
+#'
 #' @param report Kraken2 report, either in standard or MPA-style format.
 #' @param include_sample_names Whether sample names should be displayed.
 #' @param orientation Whether plot should be horizontally or vertically oriented.
@@ -48,8 +48,8 @@ prepare_for_plotMinimisers <- function(report, domain_of_interest) {
 #' @param return_plot Whether plot should be returned.
 #' @param outdir Output directory where the plot should be saved.
 #' @param prefix Prefix to be added to output plot name.
-#' @return 
-#' 
+#' @return
+#'
 plotMinimisers_dotplot <- function(
     report, domain, fig_width, fig_height, return_plot, outdir, prefix = ""
 ) {
@@ -76,16 +76,16 @@ plotMinimisers_dotplot <- function(
     plot <- ggplot2::ggplot(
         df,
         ggplot2::aes(
-            x = get(COLNAME_STD_SAMPLE), 
-            y = get(COLNAME_STD_TAXON), 
-            fill = get(COLNAME_STD_RATIO_CLADE), 
-            color = get(COLNAME_STD_SIGNIF), 
+            x = get(COLNAME_STD_SAMPLE),
+            y = get(COLNAME_STD_TAXON),
+            fill = get(COLNAME_STD_RATIO_CLADE),
+            color = get(COLNAME_STD_SIGNIF),
             size = get(COLNAME_STD_LOG_N_FRAG_CLADE)
         )
     ) +
         ggplot2::geom_point(shape = 21, stroke = 1.25) +
         ggplot2::facet_grid(
-            rows = ggplot2::vars(get(COLNAME_STD_RANK)), 
+            rows = ggplot2::vars(get(COLNAME_STD_RANK)),
             scales = "free_y",
             space = "free_y"
         ) +
@@ -119,11 +119,11 @@ plotMinimisers_dotplot <- function(
         )
 
     handlePlot(
-        plot = plot, prefix = prefix, 
-        return_plot = return_plot, 
-        filename = paste0(domain, "_MINIMISERS.pdf"), 
-        outdir = outdir, 
-        fig_width = fig_width, 
+        plot = plot, prefix = prefix,
+        return_plot = return_plot,
+        filename = paste0(domain, "_MINIMISERS.pdf"),
+        outdir = outdir,
+        fig_width = fig_width,
         fig_height = fig_height
     )
 

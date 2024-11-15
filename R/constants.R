@@ -38,7 +38,7 @@ COLNAME_STD_PADJ <- "padj"
 COLNAME_STD_SIGNIF <- "significance"
 COLNAME_STD_N_TAXA_RANK <- "n_taxa_in_rank"
 
-#### MPA-style report #### 
+#### MPA-style report ####
 COLNAME_MPA_SAMPLE <- "sample"
 COLNAME_MPA_N_FRAG_CLADE <- "n_fragments_clade"
 COLNAME_MPA_TAXON_HIERARCHY <- "taxon_hierarchy"

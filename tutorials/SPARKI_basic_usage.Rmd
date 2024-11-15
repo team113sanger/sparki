@@ -2,15 +2,15 @@
 title: "Basic usage of SPARKI!"
 author: "Jacqueline M. Boccacino"
 date: "`r Sys.Date()`"
-output: 
+output:
   pdf_document
 fontsize: 14pt
 ---
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
-    echo = TRUE, 
-    warning = FALSE, 
+    echo = TRUE,
+    warning = FALSE,
     message = FALSE
 )
 knitr::opts_knit$set(root.dir = "/lustre/scratch126/casm/team113da/users/jb62/projects/sparki/")
@@ -25,9 +25,9 @@ source("R/plotting.R")
 source("R/constants.R")
 ```
 
-This tutorial will demonstrate how to run SPARKI on Kraken2 results. First of all, we will need Kraken2 reports in both standard and MPA-style formats. 
+This tutorial will demonstrate how to run SPARKI on Kraken2 results. First of all, we will need Kraken2 reports in both standard and MPA-style formats.
 A standard report can be generated with the option `r I("--report")` when running Kraken2 on the command line; please note that the flag `r I("--report-minimizer-data")`
-must also be used. An MPA-style report can be generated when the options `r I("--report")` and `r I("--use-mpa-style")` are combined on the command line; alternatively, 
+must also be used. An MPA-style report can be generated when the options `r I("--report")` and `r I("--use-mpa-style")` are combined on the command line; alternatively,
 MPA-style reports can be generated from a standard report with the script `r I("kreport2mpa.py")` from the KrakenTools toolkit.
 
 ## Loading Kraken2 results
@@ -174,7 +174,7 @@ Next, for each rank, it is possible to visualise the distribution of classified 
 
 ```{r distribution_histogram, echo = TRUE, fig.retina = 1, fig.width = 7, fig.height = 4, fig.align = 'center'}
 plotDistribution_histogram(
-  merged_reports, 
+  merged_reports,
   return_plot = TRUE,
   outdir = "test/outputs/",
   prefix = "SebT"
@@ -183,7 +183,7 @@ plotDistribution_histogram(
 
 ```{r distribution_violin, echo = TRUE, fig.retina = 1, fig.width = 6, fig.height = 2.5, fig.align = 'center'}
 plotDistribution_violin(
-  merged_reports, 
+  merged_reports,
   return_plot = TRUE,
   outdir = "test/outputs/",
   prefix = "SebT"
@@ -203,10 +203,10 @@ plotDomainReads_violin(
 ```
 
 Alternatively, we can also make a bar plot to look at each sample more closely:\
-  
+
 ```{r domain_reads_barplot, echo = TRUE, fig.retina = 1, fig.width = 7, fig.height = 2.25, fig.align = 'center'}
 plotDomainReads_barplot(
-  merged_reports, include_eukaryotes = FALSE, include_sample_names = FALSE, 
+  merged_reports, include_eukaryotes = FALSE, include_sample_names = FALSE,
   orientation = "horizontal", return_plot = TRUE,
   outdir = "test/outputs/", prefix = "SebT"
 )
@@ -227,7 +227,7 @@ Alternatively, we can also make a bar plot to look at each sample more closely:\
 
 ```{r domain_reads_barplot_eukaryotes, echo = TRUE, fig.retina = 1, fig.width = 7, fig.height = 2.25, fig.align = 'center'}
 plotDomainReads_barplot(
-  merged_reports, include_eukaryotes = TRUE, include_sample_names = FALSE, 
+  merged_reports, include_eukaryotes = TRUE, include_sample_names = FALSE,
   orientation = "horizontal", return_plot = TRUE,
   outdir = "test/outputs/", prefix = "SebT"
 )
@@ -244,18 +244,18 @@ merged_reports <- assessStatistics(merged_reports, ref_db, verbose = TRUE)
 
 ```{r final_plots}
 plotSignificanceSummary(
-  merged_reports, 
+  merged_reports,
   return_plot = TRUE,
   outdir = "test/outputs/",
   prefix = "SebT"
 )
 
 plotMinimisers_dotplot(
-  merged_reports, 
-  domain = "Viruses", 
-  return_plot = TRUE, 
-  fig_width = 25, 
-  fig_height = 15, 
+  merged_reports,
+  domain = "Viruses",
+  return_plot = TRUE,
+  fig_width = 25,
+  fig_height = 15,
   outdir = "test/outputs/",
   prefix = "SebT"
 )

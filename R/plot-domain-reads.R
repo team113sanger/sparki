@@ -6,7 +6,7 @@ prepare_for_plotDomainReads <- function(report, include_eukaryotes) {
     domains <- "Viruses|Archaea|Bacteria"
     if (include_eukaryotes == TRUE) domains <- paste0("Eukaryota|", domains)
 
-    report <- report |> 
+    report <- report |>
         # Select relevant columns.
         dplyr::select(
             !!COLNAME_STD_SAMPLE,
@@ -30,19 +30,19 @@ prepare_for_plotDomainReads <- function(report, include_eukaryotes) {
 
 
 #' PLOT NUMBERS OF CLASSIFIED READS PER DOMAIN (VIOLIN PLOT)
-#' 
+#'
 #' This function takes a Kraken2 report, either in standard or MPA-style format, and creates
 #' a violin plot showing the number of classified reads per domain.
-#' 
+#'
 #' @param report Kraken2 report, either in standard or MPA-style format.
 #' @param include_eukaryotes Whether to include eukaryotes in the plot.
 #' @param return_plot Whether plot should be returned.
 #' @param outdir Output directory where the plot should be saved.
 #' @param prefix Prefix to be added to output plot name.
-#' @return 
-#' 
+#' @return
+#'
 plotDomainReads_violin <- function(
-    report, include_eukaryotes = FALSE, return_plot, outdir, 
+    report, include_eukaryotes = FALSE, return_plot, outdir,
     prefix = "", fig_width, fig_height
 ) {
 
@@ -69,10 +69,10 @@ plotDomainReads_violin <- function(
 
     # Create violin plot.
     plot <- ggplot2::ggplot(
-        report, 
+        report,
         ggplot2::aes(
-            x = get(COLNAME_DOMAIN_READS_TAXON), 
-            y = get(COLNAME_DOMAIN_READS_LOG_N_FRAG), 
+            x = get(COLNAME_DOMAIN_READS_TAXON),
+            y = get(COLNAME_DOMAIN_READS_LOG_N_FRAG),
             fill = get(COLNAME_DOMAIN_READS_TAXON)
         )
     ) +
@@ -103,10 +103,10 @@ plotDomainReads_violin <- function(
 }
 
 #' PLOT NUMBERS OF CLASSIFIED READS PER DOMAIN (BAR PLOT)
-#' 
+#'
 #' This function takes a Kraken2 report, either in standard or MPA-style format, and creates
 #' a bar plot showing the number of classified reads per domain.
-#' 
+#'
 #' @param report Kraken2 report, either in standard or MPA-style format.
 #' @param include_sample_names Whether sample names should be displayed.
 #' @param orientation Whether plot should be horizontally or vertically oriented.
@@ -114,10 +114,10 @@ plotDomainReads_violin <- function(
 #' @param return_plot Whether plot should be returned.
 #' @param outdir Output directory where the plot should be saved.
 #' @param prefix Prefix to be added to output plot name.
-#' @return 
-#' 
+#' @return
+#'
 plotDomainReads_barplot <- function(
-    report, include_sample_names = FALSE, orientation = "vertical", 
+    report, include_sample_names = FALSE, orientation = "vertical",
     include_eukaryotes = FALSE, return_plot, outdir, prefix = ""
 ) {
 
@@ -137,10 +137,10 @@ plotDomainReads_barplot <- function(
     report <- prepare_for_plotDomainReads(report, include_eukaryotes)
 
     plot <- ggplot2::ggplot(
-        report, 
+        report,
         ggplot2::aes(
-            x = get(COLNAME_DOMAIN_READS_N_FRAG), 
-            y = get(COLNAME_DOMAIN_READS_SAMPLE), 
+            x = get(COLNAME_DOMAIN_READS_N_FRAG),
+            y = get(COLNAME_DOMAIN_READS_SAMPLE),
             fill = get(COLNAME_DOMAIN_READS_TAXON)
         )
     ) +
@@ -167,14 +167,14 @@ plotDomainReads_barplot <- function(
 
     adjusted_plot <- adjust_barplot(
         plot = plot, n_samples = length(unique(report[, COLNAME_STD_SAMPLE])),
-        include_sample_names = include_sample_names, orientation = orientation, 
+        include_sample_names = include_sample_names, orientation = orientation,
         filename = filename
-    ) 
+    )
 
     # Decide what to do with plot based on user-defined options.
     handlePlot(
-        plot = adjusted_plot[[1]], prefix = prefix, return_plot = return_plot, 
-        filename = adjusted_plot[[2]], outdir = outdir, fig_width = adjusted_plot[[3]], 
+        plot = adjusted_plot[[1]], prefix = prefix, return_plot = return_plot,
+        filename = adjusted_plot[[2]], outdir = outdir, fig_width = adjusted_plot[[3]],
         fig_height = adjusted_plot[[4]]
     )
 }

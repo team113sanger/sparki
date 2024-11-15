@@ -19,7 +19,7 @@ prepare_for_plotDistribution <- function(report) {
         ))
 
     report[[COLNAME_STD_RANK]] = factor(
-        report[[COLNAME_STD_RANK]], 
+        report[[COLNAME_STD_RANK]],
         levels = c("Domain", "Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species")
     )
 
@@ -55,7 +55,7 @@ plotDistribution_histogram <- function(report, return_plot, outdir, prefix = "")
     handlePlot(
         plot = plot, prefix = prefix, return_plot = return_plot, filename = "distribution_histogram.pdf",
         outdir = outdir, fig_width = 8, fig_height = 5
-    )    
+    )
 }
 
 plotDistribution_violin <- function(report, return_plot, outdir, prefix = "") {
@@ -65,7 +65,7 @@ plotDistribution_violin <- function(report, return_plot, outdir, prefix = "") {
     report <- prepare_for_plotDistribution(report)
 
     plot <- ggplot2::ggplot(
-        report, 
+        report,
         ggplot2::aes(
             x = get(COLNAME_STD_RANK),
             y = get(COLNAME_STD_N_FRAG_CLADE),
@@ -91,5 +91,5 @@ plotDistribution_violin <- function(report, return_plot, outdir, prefix = "") {
     handlePlot(
         plot = plot, prefix = prefix, return_plot = return_plot, filename = "distribution_violin.pdf",
         outdir = outdir, fig_width = 8, fig_height = 5
-    )    
+    )
 }

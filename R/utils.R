@@ -8,7 +8,7 @@ exportPlot <- function(plot, filename, outdir, fig_width, fig_height) {
     }
 
     ggpubr::ggexport(
-        plot, 
+        plot,
         filename = paste0(outdir, filename),
         width = fig_width,
         height = fig_height
@@ -31,14 +31,14 @@ handlePlot <- function(plot, prefix, filename, outdir, fig_width, fig_height, re
     # the plot should be saved to an output directory.
     if (!(is.na(outdir))) {
 
-        # Since the plot will be saved to an output directory, we need to deal with 
+        # Since the plot will be saved to an output directory, we need to deal with
         # the file name and ensure a prefix is added in case that was specified by
         # the user.
         filename <- handlePrefix(filename = filename, prefix = prefix)
 
         # Now we need to export the plot.
         exportPlot(
-            plot = plot, filename = filename, outdir = outdir, 
+            plot = plot, filename = filename, outdir = outdir,
             fig_width = fig_width, fig_height = fig_height
         )
 
@@ -57,14 +57,14 @@ handlePlot <- function(plot, prefix, filename, outdir, fig_width, fig_height, re
 process_barplot_orientation <- function(plot, n_samples, orientation, include_sample_names, factor) {
 
     # proportion (x-axis) vs samples (y-axis)
-    if (orientation %in% c("vertical", "v")) { 
+    if (orientation %in% c("vertical", "v")) {
 
         base_size <- 3
         if (include_sample_names == TRUE) base_size <- 12
-        
+
         pdf_width <- 5
         pdf_height <- determine_pdf_height(
-            n_elements = n_samples, 
+            n_elements = n_samples,
             base_size = 3,
             factor = factor
         )
@@ -75,11 +75,11 @@ process_barplot_orientation <- function(plot, n_samples, orientation, include_sa
         base_size <- 4
         if (include_sample_names == TRUE) base_size <- 16
 
-        plot <- plot + ggplot2::coord_flip() 
+        plot <- plot + ggplot2::coord_flip()
 
         pdf_height <- 3.5
         pdf_width <- determine_pdf_width(
-            n_elements = n_samples, 
+            n_elements = n_samples,
             base_size = 4,
             factor = factor
         )
@@ -88,7 +88,7 @@ process_barplot_orientation <- function(plot, n_samples, orientation, include_sa
         stop(paste0(
             "The orientation provided (", orientation, ") is not valid. ",
             "Please choose from the following options: 'horizontal' or 'h' ",
-            "for horizontal plots; 'vertical' or 'v' for vertical plots." 
+            "for horizontal plots; 'vertical' or 'v' for vertical plots."
         ))
     }
 
@@ -98,7 +98,7 @@ process_barplot_orientation <- function(plot, n_samples, orientation, include_sa
 process_barplot_ticknames <- function(plot, orientation, include_sample_names) {
 
     # proportion (x-axis) vs samples (y-axis)
-    if (orientation %in% c("vertical", "v")) { 
+    if (orientation %in% c("vertical", "v")) {
 
         if (include_sample_names == TRUE) {
 
@@ -120,7 +120,7 @@ process_barplot_ticknames <- function(plot, orientation, include_sample_names) {
             plot <- plot + ggplot2::theme(
                 axis.text.x = ggplot2::element_text(size = 3, angle = 90, vjust = 1, hjust = 1)
             )
-            
+
         } else {
 
             plot <- plot + ggplot2::theme(
@@ -135,7 +135,7 @@ process_barplot_ticknames <- function(plot, orientation, include_sample_names) {
         stop(paste0(
             "The orientation provided (", orientation, ") is not valid. ",
             "Please choose from the following options: 'horizontal' or 'h' ",
-            "for horizontal plots; 'vertical' or 'v' for vertical plots." 
+            "for horizontal plots; 'vertical' or 'v' for vertical plots."
         ))
 
     }
@@ -148,7 +148,7 @@ adjust_barplot <- function(plot, n_samples, include_sample_names, orientation, f
 
     if (include_sample_names) {
 
-        plot <- plot + ggplot2::geom_bar(position = "fill", stat = "identity", width = 0.9) 
+        plot <- plot + ggplot2::geom_bar(position = "fill", stat = "identity", width = 0.9)
         pdf_factor <- 0.6
         if (!(is.na(filename))) filename <- paste0(filename, orientation, "_withSampleNames.pdf")
 
@@ -157,19 +157,19 @@ adjust_barplot <- function(plot, n_samples, include_sample_names, orientation, f
         plot <- plot + ggplot2::geom_bar(position = "fill", stat = "identity", width = 1)
         pdf_factor <- 0.3
         if (!(is.na(filename))) filename <- paste0(filename, orientation, "_withoutSampleNames.pdf")
-            
+
     }
 
     plot <- process_barplot_ticknames(
-        plot = plot, 
-        orientation = orientation, 
+        plot = plot,
+        orientation = orientation,
         include_sample_names = include_sample_names
     )
 
     processed_plot <- process_barplot_orientation(
         plot = plot,
         n_samples = n_samples,
-        orientation = orientation, 
+        orientation = orientation,
         include_sample_names = include_sample_names,
         factor = pdf_factor
     )
@@ -182,12 +182,12 @@ adjust_barplot <- function(plot, n_samples, include_sample_names, orientation, f
 }
 
 #' DETERMINE WIDTH FOR PDF FILE
-#' 
+#'
 #' This function takes a number of elements (e.g. number of samples) and determines the width
 #' that should be used for a plot to be saved in PDF format. This function is tailored for the
 #' plots generated by plot_mahalanobis_with_metadata() and plot_mahalanobis_with_driver_genes(),
 #' so should be used with caution for any other ends.
-#' 
+#'
 #' @param n_elements Number of elements on the x-axis.
 #' @param base_size Base plot width when there is only one element on the x-axis.
 #' @param factor Value to help adjust the width.
@@ -204,12 +204,12 @@ determine_pdf_width <- function(n_elements, base_size = 1, factor = 1) {
 }
 
 #' DETERMINE HEIGHT FOR PDF FILE
-#' 
+#'
 #' This function takes a number of elements (e.g. number of genes) and determines the height
 #' that should be used for a plot to be saved in PDF format. This function is tailored for the
 #' plots generated by plot_mahalanobis_with_metadata() and plot_mahalanobis_with_driver_genes(),
 #' so should be used with caution for any other ends.
-#' 
+#'
 #' @param n_elements Number of elements on the y-axis.
 #' @param base_size Base plot height when there is only one element on the y-axis.
 #' @param factor Value to help adjust the height.
@@ -226,10 +226,10 @@ determine_pdf_height <- function(n_elements, base_size = 2, factor = 1) {
 }
 
 #' PARSE SYMBOL-DELIMITED LIST TO GET INDIVIDUAL ELEMENTS
-#' 
+#'
 #' This function takes a symbol-delimited list of elements and splits it up into individual elements.
 #' Symbols can be anything, e.g. ",", ";", "/", "//", "@", "." etc.
-#' 
+#'
 #' @param del_list A list with symbol-delimited values; the symbol can be a comma, for example.
 #' @return A vector with individual elements.
 #' @export
@@ -291,4 +291,3 @@ get_nDomainReads <- function(report, include_eukaryotes) {
 
     return(domain_reads)
 }
-

@@ -1,19 +1,19 @@
 #' LOAD INFORMATION FROM KRAKEN2'S REFERENCE DATABASE
-#' 
+#'
 #' This function takes the path to an 'inspect.txt' file inside a Kraken2 reference database
 #' and reads the table. The first 7 lines are skipped, as they correspond to header lines.
 #' Column names are added before the reference database dataframe is returned.
-#' 
+#'
 #' @param reference_path Path to an 'inspect.txt' file inside a Kraken2 reference database.
-#' @return A dataframe containing the information from the 'inspect.txt' file. 
+#' @return A dataframe containing the information from the 'inspect.txt' file.
 #' @export
-#' 
+#'
 loadReference <- function(reference_path, n_header_lines = 7) {
 
     # Read Kraken2 reference file (inspect.txt).
     ref <- read.table(
         reference_path,
-        row.names = NULL, 
+        row.names = NULL,
         header = FALSE,
         sep = "\t",
         skip = n_header_lines, # Skip header lines.
@@ -22,11 +22,11 @@ loadReference <- function(reference_path, n_header_lines = 7) {
     )
     # Add column names.
     colnames(ref) <- c(
-        COLNAME_REF_DB_PCT_FRAG_CLADE, 
+        COLNAME_REF_DB_PCT_FRAG_CLADE,
         COLNAME_REF_DB_MINIMISERS_CLADE,
         COLNAME_REF_DB_MINIMISERS_TAXON,
-        COLNAME_REF_DB_RANK, 
-        COLNAME_REF_DB_NCBI_ID, 
+        COLNAME_REF_DB_RANK,
+        COLNAME_REF_DB_NCBI_ID,
         COLNAME_REF_DB_TAXON
     )
 
@@ -38,17 +38,17 @@ loadReference <- function(reference_path, n_header_lines = 7) {
 }
 
 #' LOAD METADATA TABLE
-#' 
+#'
 #' This function takes the path to a metadata file and reads the metadata table using readr::read_delim().
-#' 
+#'
 #' @param metadata Path to a metadata table.
 #' @return A dataframe containing the metadata.
 #' @export
-#' 
+#'
 #' @examples
 #' loadMetadata("metadata.csv")
 #' loadMetadata(metadata = "metadata.csv")
-#' 
+#'
 loadMetadata <- function(metadata) {
 
     # Read metadata file.
@@ -68,7 +68,7 @@ check_mpa_lines <- function(mpa_reports) {
     updated_hierarchies <- mpa_reports |>
         # Create temporary column to store the original hierarchy column.
         dplyr::mutate(temp = !!as.name(COLNAME_MPA_TAXON_HIERARCHY)) |>
-        # Split hierarchies across 
+        # Split hierarchies across
         tidyr::separate_rows(!!COLNAME_MPA_TAXON_HIERARCHY, sep = "\\|") |>
         dplyr::mutate(
             rank_ = substr(!!as.name(COLNAME_MPA_TAXON_HIERARCHY), 1, 3),
@@ -77,12 +77,12 @@ check_mpa_lines <- function(mpa_reports) {
         dplyr::select(!!as.name(COLNAME_MPA_SAMPLE), temp, rank_, taxon_) |>
         dplyr::group_by(!!as.name(COLNAME_MPA_SAMPLE), temp) |>
         tidyr::complete(rank_ = expected_ranks, fill = list(taxon_ = NA)) |>
-        dplyr::arrange(factor(rank_, levels = expected_ranks), .by_group = TRUE) |> 
+        dplyr::arrange(factor(rank_, levels = expected_ranks), .by_group = TRUE) |>
         dplyr::mutate(rank_taxon = paste0(rank_, taxon_)) |>
         dplyr::summarise(updated_hierarchy = paste(rank_taxon, collapse = "|"), .groups = "keep") |>
         dplyr::rename(!!COLNAME_MPA_TAXON_HIERARCHY := temp)
 
-    mpa_reports <- dplyr::left_join( 
+    mpa_reports <- dplyr::left_join(
         mpa_reports, updated_hierarchies,
         by = dplyr::join_by(!!COLNAME_MPA_SAMPLE, !!COLNAME_MPA_TAXON_HIERARCHY)
     ) |>
@@ -92,11 +92,11 @@ check_mpa_lines <- function(mpa_reports) {
     return(mpa_reports)
 }
 
-#' LOAD MPA-STYLE REPORTS 
-#' 
+#' LOAD MPA-STYLE REPORTS
+#'
 #' This function takes a path to a directory containing MPA-style reports, reading and processing
 #' all reports into a single dataframe.
-#' 
+#'
 #' @param mpa_reports_dir Path to a directory containing MPA-style reports.
 #' @param verbose Whether to output log messages.
 #' @return A dataframe (tibble) with the content of all MPA-style reports from the specified directory.
@@ -110,7 +110,7 @@ load_MPAreports <- function(mpa_reports_dir, samples_to_remove, verbose = TRUE) 
     # Check if directory really has any MPA-style reports...
     if (length(mpa_files) == 0) {
         stop(paste0("No MPA-style reports were found at ", mpa_reports_dir, ". Please review your input."))
-    } 
+    }
 
 
     # Check if standard report files are empty...
@@ -135,10 +135,10 @@ load_MPAreports <- function(mpa_reports_dir, samples_to_remove, verbose = TRUE) 
 
     # Create a dataframe (tibble).
     mpa_reports <- readr::read_tsv(
-        mpa_files, 
-        col_names = c(COLNAME_MPA_TAXON_HIERARCHY, COLNAME_MPA_N_FRAG_CLADE), 
+        mpa_files,
+        col_names = c(COLNAME_MPA_TAXON_HIERARCHY, COLNAME_MPA_N_FRAG_CLADE),
         id = get("COLNAME_MPA_SAMPLE")
-    ) 
+    )
 
     # Add rank column.
     mpa_reports[, COLNAME_MPA_RANK] <- lapply(mpa_reports[, COLNAME_MPA_TAXON_HIERARCHY], addRank)
@@ -175,15 +175,15 @@ load_MPAreports <- function(mpa_reports_dir, samples_to_remove, verbose = TRUE) 
     }
 
     if (verbose) cat("MPA-style reports loaded successfully!\n")
-    
-    return(mpa_reports) 
+
+    return(mpa_reports)
 }
 
-#' LOAD STANDARD REPORTS 
-#' 
+#' LOAD STANDARD REPORTS
+#'
 #' This function takes a path to a directory containing standard reports, reading and processing
 #' all reports into a single dataframe.
-#' 
+#'
 #' @param mpa_reports_dir Path to a directory containing standard reports.
 #' @param verbose Whether to output log messages.
 #' @return A dataframe (tibble) with the content of all standard reports from the specified directory.
@@ -219,8 +219,8 @@ load_STDreports <- function(std_reports_dir, samples_to_remove, verbose = TRUE) 
     # Create a dataframe (tibble) and process.
     std_reports <- readr::read_tsv(
         std_files,
-        col_names = c(COLNAME_STD_PCT_FRAG_CLADE, COLNAME_STD_N_FRAG_CLADE, COLNAME_STD_N_FRAG_TAXON, 
-            COLNAME_STD_MINIMISERS, COLNAME_STD_UNIQ_MINIMISERS, COLNAME_STD_RANK, COLNAME_STD_NCBI_ID, 
+        col_names = c(COLNAME_STD_PCT_FRAG_CLADE, COLNAME_STD_N_FRAG_CLADE, COLNAME_STD_N_FRAG_TAXON,
+            COLNAME_STD_MINIMISERS, COLNAME_STD_UNIQ_MINIMISERS, COLNAME_STD_RANK, COLNAME_STD_NCBI_ID,
             COLNAME_STD_TAXON),
         id = get("COLNAME_STD_SAMPLE")
     ) |>
@@ -237,15 +237,15 @@ load_STDreports <- function(std_reports_dir, samples_to_remove, verbose = TRUE) 
 
     if (verbose) cat("Standard reports loaded successfully!\n")
 
-    return(std_reports) 
+    return(std_reports)
 }
 
 #' LOAD LIST OF SAMPLES TO BE EXCLUDED FROM SPARKI ANALYSIS
-#' 
+#'
 #' This function takes the path to a tab-delimited file, in which each line should
 #' be a sample ID, and returns a list with these IDs. Note that the sample IDs need
 #' to match those that are present in the merged reports dataframe.
-#' 
+#'
 #' @param filepath Path to a tab-delimited file in which each line is a sample ID.
 #' @return A list containing the samples IDs from the input file.
 #' @export

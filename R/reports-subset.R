@@ -1,7 +1,7 @@
 
 get_name_at_rank <- function(report, species, rank) {
 
-    # Get the species position (row number) in the report (first appearance only). 
+    # Get the species position (row number) in the report (first appearance only).
     species_position <- which(report[, COLNAME_STD_TAXON] == species)[1]
 
     # Find the corresponding rank position (row number) in the report (first appearance only).
@@ -18,7 +18,7 @@ get_name_at_rank <- function(report, species, rank) {
     }
 
     subset_report <- report |> dplyr::slice(rank_position)
-    
+
     return(subset_report[[COLNAME_STD_TAXON]])
 }
 
@@ -44,11 +44,11 @@ subsetReports <- function(report, species, verbose) {
         ))
     }
 
-    report <- report |> 
+    report <- report |>
         # Select rows corresponding to species, genus and family.
         dplyr::filter(!!as.name(COLNAME_STD_RANK) %in% c("F", "G", "S")) |>
         # Filter out the user-defined organism.
         dplyr::filter(!(!!as.name(COLNAME_STD_TAXON) %in% taxa_to_remove))
-    
+
     return(report)
 }
