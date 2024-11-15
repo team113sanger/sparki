@@ -8,7 +8,7 @@ get_test_mpa_report_dir <- function(case_type) {
       "Please choose from 'usual' or 'empty'."
     ))
   }
-  testthat::test_path("testdata", "mpa_reports", paste0("case_with_", case_type, "_reports"))
+  return(testthat::test_path("testdata", "mpa_reports", paste0("case_with_", case_type, "_reports")))
 }
 
 #' Helper function to get path to test data directory (standard reports)
@@ -21,12 +21,44 @@ get_test_std_report_dir <- function(case_type) {
       "Please choose from 'usual' or 'empty'."
     ))
   }
-  testthat::test_path("testdata", "std_reports", paste0("case_with_", case_type, "_reports"))
+  return(testthat::test_path("testdata", "std_reports", paste0("case_with_", case_type, "_reports")))
 }
 
 #' Helper function to get path to inspect.txt file in Kraken2's reference database
 #'
 #' @returns Path to Kraken2 reference database
+get_test_reference <- function() {
+  return(testthat::test_path("testdata", "inspect.txt"))
+}
+
+#' Create a temporary directory that auto-cleans after test
+#'
+#' @description
+#' Creates a temporary directory for test files and automatically cleans it up
+#' when the enclosing test or function exits, similar to pytest's tmp_path fixture.
+#'
+#' @param env The environment to bind cleanup behavior to. Defaults to parent.frame()
+#'
+#' @return Path to the created temporary directory as a character string
+#'
+#' @examples
+#' test_that("files are processed correctly", {
+#'   tmp_dir <- local_tmp_dir()
+#'   writeLines("test", file.path(tmp_dir, "test.txt"))
+#'   # Directory and contents are automatically cleaned up after test
+#' })
+#'
+get_local_tmp_dir <- function(env = parent.frame()) {
+  tmp_dir <- file.path(tempdir(), paste0("test-", format(Sys.time(), "%Y%m%d-%H%M%S-"), sample(1000, 1)))
+  dir.create(tmp_dir, recursive = TRUE)
+
+  withr::defer({
+    unlink(tmp_dir, recursive = TRUE)
+  }, env)
+
+  return(tmp_dir)
+}
+
 # get_test_std_report_dir <- function(case_type) {
 #   if (!(case_type %in% c("usual", "empty"))) {
 #     stop(paste0(

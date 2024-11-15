@@ -14,6 +14,8 @@ repos:
       - id: check-merge-conflict
       - id: check-added-large-files
         args: [--maxkb=500]
+        exclude: |
+          (?x)(tests/testthat/testdata)
   # - repo: https://github.com/lorenzwalthert/precommit
   #   rev: v0.4.0
   #   hooks:

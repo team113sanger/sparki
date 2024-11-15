@@ -31,4 +31,6 @@ Suggests:
     roxygen2 (>= 7.0.0),
     styler (>= 1.9.0),
     processx (>= 3.8.0),
+    withr,
+    glue
 Config/testthat/edition: 3
