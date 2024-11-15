@@ -11,4 +11,5 @@ Rscript -e "devtools::load_all(); SPARKI::cli()"\
   --reference 'tests/testthat/testdata/inspect.txt' \
   --organism 'Homo sapiens' \
   --domain 'Viruses,Bacteria' \
+  --prefix 'foo-' \
   --outdir "${OUTDIR}"

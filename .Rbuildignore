@@ -37,3 +37,4 @@
 ^gitlab-ci\.yml$
 ^\.pre-commit-config\.yaml$
 ^source_me\.sh$
+^manual-outdir
