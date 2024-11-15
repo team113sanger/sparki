@@ -20,3 +20,5 @@ repos:
   #   rev: v0.4.0
   #   hooks:
   #     - id: parsable-R
+  #     - id: no-print-statement
+  #     - id: no-debug-statement
