@@ -68,6 +68,8 @@ plotMinimisers_dotplot <- function(
     } else if (!("Significant" %in% df[[COLNAME_STD_SIGNIF]]) && "Non-significant" %in% df[[COLNAME_STD_SIGNIF]]) {
         ggplot_colours <- "snow3"
         ggplot_labels <- "Non-significant"
+    } else {
+        stop("Jacqueline you need to fix this - you need a base case for the ggplot colours and labels")
     }
 
     n_all_samples <- report[[COLNAME_STD_SAMPLE]] |> unique() |> length()
