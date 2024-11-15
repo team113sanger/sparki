@@ -1,0 +1,4 @@
+sample,type,date,status
+sample1,tumour,2024-11-15,ok
+sample2,tumour,2024-11-15,ok
+sample3,tumour,2024-11-15,ok
