@@ -1,20 +1,3 @@
-# my_library <- "/opt/repo/"
-# source(paste0(my_library, "R/main.R"))
-# source(paste0(my_library, "R/exceptions.R"))
-# source(paste0(my_library, "R/load-data.R"))
-# source(paste0(my_library, "R/plot-classification-summary.R"))
-# source(paste0(my_library, "R/plot-domain-reads.R"))
-# source(paste0(my_library, "R/plot-minimisers.R"))
-# source(paste0(my_library, "R/plot-read-distribution.R"))
-# source(paste0(my_library, "R/plot-significance.R"))
-# source(paste0(my_library, "R/reports-add-info.R"))
-# source(paste0(my_library, "R/reports-assess-statistics.R"))
-# source(paste0(my_library, "R/reports-merge.R"))
-# source(paste0(my_library, "R/reports-subset.R"))
-# source(paste0(my_library, "R/utils.R"))
-# source(paste0(my_library, "R/constants.R"))
-
-
 #' Command Line Interface for SPARKI
 #'
 #' @return NULL
