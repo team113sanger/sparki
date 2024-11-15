@@ -44,6 +44,15 @@ COLNAME_MPA_N_FRAG_CLADE <- "n_fragments_clade"
 COLNAME_MPA_TAXON_HIERARCHY <- "taxon_hierarchy"
 COLNAME_MPA_TAXON_LEAF <- "taxon_leaf"
 COLNAME_MPA_RANK <- "rank"
+COLNAME_MPA_DOMAIN <- "domain"
+COLNAME_MPA_KINGDOM <- "kingdom"
+COLNAME_MPA_PHYLUM <- "phylum"
+COLNAME_MPA_CLASS <- "class"
+COLNAME_MPA_ORDER <- "order"
+COLNAME_MPA_FAMILY <- "family"
+COLNAME_MPA_GENUS <- "genus"
+COLNAME_MPA_SPECIES <- "species"
+
 
 #### Auxiliary dataframes ####
 
