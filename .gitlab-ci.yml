@@ -58,7 +58,6 @@ unit-test:
     # Test image against unit tests
     - docker run --rm -t "${CANDIDATE_IMAGE}" Rscript -e "devtools::test(reporter = c('progress', 'fail'))"
     - echo "*** [SCRIPT] END ***"
-  allow_failure: true
 
 format-test:
   stage: test
@@ -67,7 +66,6 @@ format-test:
     - .specific-variables
     - .component-script-test-formatting-in-docker
     - .component-rules-except-release
-  allow_failure: true
 
 publish-develop:
   stage: publish
