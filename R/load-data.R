@@ -32,7 +32,7 @@ loadReference <- function(reference_path, n_header_lines = 7) {
 
     ref[, COLNAME_REF_DB_TAXON] <- gsub("^[[:space:]]\\s*(.*?)", "", ref[, COLNAME_REF_DB_TAXON], perl = TRUE)
 
-    message("Ref DB loaded successfully.")
+    message("LOG INFO: Reference database info loaded successfully!")
 
     return(ref)
 }
@@ -49,17 +49,17 @@ loadReference <- function(reference_path, n_header_lines = 7) {
 #' loadMetadata("metadata.csv")
 #' loadMetadata(metadata = "metadata.csv")
 #'
-loadMetadata <- function(metadata) {
+loadMetadata <- function(metadata, verbose) {
 
     # Read metadata file.
     mdata <- readr::read_delim(metadata)
 
-    message("Metadata loaded successfully.")
+    if (verbose == TRUE) {
+        message("LOG INFO: Metadata loaded successfully.")
+    }
 
     return(mdata)
 }
-
-
 
 check_mpa_lines <- function(mpa_reports) {
 
@@ -92,6 +92,31 @@ check_mpa_lines <- function(mpa_reports) {
     return(mpa_reports)
 }
 
+check_for_empty_files <- function(file_list, verbose) {
+
+    # Check if files are empty...
+    for (file in file_list) {
+
+        is_empty <- (file.size(file) == 0L)
+
+        # If the file is empty...
+        if (is_empty) {
+
+            if (verbose) {
+                message(
+                    "LOG WARNING: The file ", file, " is empty, so this sample ",
+                    "will not be included in the SPARKI analysis."
+                )
+            }
+
+            # Remove given file path from the list of paths.
+            file_list <- file_list[(file_list != file)]
+        }
+    }
+
+    return(file_list)
+}
+
 #' LOAD MPA-STYLE REPORTS
 #'
 #' This function takes a path to a directory containing MPA-style reports, reading and processing
@@ -102,33 +127,17 @@ check_mpa_lines <- function(mpa_reports) {
 #' @return A dataframe (tibble) with the content of all MPA-style reports from the specified directory.
 #' @export
 #'
-load_MPAreports <- function(mpa_reports_dir, samples_to_remove, verbose = TRUE) {
+load_MPAreports <- function(mpa_reports_dir, samples_to_remove, verbose) {
 
     # Get paths to MPA-style reports in a specified directory.
     mpa_files <- fs::dir_ls(mpa_reports_dir, glob = "*.mpa$")
 
     # Check if directory really has any MPA-style reports...
     if (length(mpa_files) == 0) {
-        stop(paste0("No MPA-style reports were found at ", mpa_reports_dir, ". Please review your input."))
+        stop("No MPA-style reports were found at ", mpa_reports_dir, ". Please review your input.")
     }
 
-
-    # Check if standard report files are empty...
-    for (mpa_file in mpa_files) {
-
-        is_empty <- (file.size(mpa_file) == 0L)
-
-        # If the standard report file is empty...
-        if (is_empty) {
-            warning(paste0(
-                "The MPA-style report file ", mpa_file, " is empty, so this sample will not ",
-                "be included in the SPARKI analysis."
-            ))
-
-            # Remove given standard report path from the list of paths.
-            mpa_files <- mpa_files[(mpa_files != mpa_file)]
-        }
-    }
+    mpa_files <- check_for_empty_files(mpa_files, verbose = verbose)
 
     # Create vector with taxonomic rank names.
     taxonomy <- c("domain", "kingdom", "phylum", "class", "order", "family", "genus", "species")
@@ -181,10 +190,12 @@ load_MPAreports <- function(mpa_reports_dir, samples_to_remove, verbose = TRUE) 
     if (!missing(samples_to_remove)) {
         mpa_reports <- mpa_reports |> dplyr::filter(!(!!as.name(COLNAME_MPA_SAMPLE) %in% samples_to_remove))
     } else {
-        message("No samples were filtered out from the collated MPA-style reports table.")
+        if (verbose == TRUE) {
+            message("LOG WARNING: No samples were filtered out from the collated MPA-style reports table.")
+        }
     }
 
-    if (verbose) message("MPA-style reports loaded successfully!")
+    if (verbose == TRUE) message("LOG INFO: MPA-style reports loaded successfully!")
 
     return(mpa_reports)
 }
@@ -199,32 +210,17 @@ load_MPAreports <- function(mpa_reports_dir, samples_to_remove, verbose = TRUE) 
 #' @return A dataframe (tibble) with the content of all standard reports from the specified directory.
 #' @export
 #'
-load_STDreports <- function(std_reports_dir, samples_to_remove, verbose = TRUE) {
+load_STDreports <- function(std_reports_dir, samples_to_remove, verbose = FALSE) {
 
     # Get paths to standard reports in a specified directory.
     std_files <- fs::dir_ls(std_reports_dir, glob = "*.kraken$")
 
     # Check if directory really has any standard reports...
     if (length(std_files) == 0) {
-        stop(paste0("No standard reports were found at ", std_reports_dir, ". Please review your input."))
+        stop("No standard reports were found at ", std_reports_dir, ". Please review your input.")
     }
 
-    # Check if standard report files are empty...
-    for (std_file in std_files) {
-
-        is_empty <- (file.size(std_file) == 0L)
-
-        # If the standard report file is empty...
-        if (is_empty) {
-            warning(paste0(
-                "The standard report file ", std_file, " is empty, so this sample will not ",
-                "be included in the SPARKI analysis."
-            ))
-
-            # Remove given standard report path from the list of paths.
-            std_files <- std_files[(std_files != std_file)]
-        }
-    }
+    std_files <- check_for_empty_files(std_files, verbose = verbose)
 
     # Create a dataframe (tibble) and process.
     std_reports <- readr::read_tsv(
@@ -243,10 +239,10 @@ load_STDreports <- function(std_reports_dir, samples_to_remove, verbose = TRUE) 
     if (!missing(samples_to_remove)) {
         std_reports <- std_reports |> dplyr::filter(!(!!as.name(COLNAME_STD_SAMPLE) %in% samples_to_remove))
     } else {
-        message("No samples were filtered out from the collated standard reports table.")
+        if (verbose) message("LOG WARNING: No samples were filtered out from the collated standard reports table.")
     }
 
-    if (verbose) message("Standard reports loaded successfully!")
+    if (verbose) message("LOG INFO: Standard reports loaded successfully!")
 
     return(std_reports)
 }
@@ -265,12 +261,12 @@ loadSamplesToRemove <- function(filepath, verbose) {
 
     samples_to_remove <- readr::read_table(filepath, col_names = "sample")
 
-    warning(paste0(
-        "Samples ", paste(samples_to_remove[["sample"]], collapse = ","),
-        " will be removed from SPARKI analysis."
-    ))
+    message(
+        "LOG WARNING: Samples ", paste(samples_to_remove[["sample"]], collapse = ","),
+        " will be removed from the SPARKI analysis."
+    )
 
-    if (verbose) message("Samples-to-remove loaded successfully.")
+    if (verbose) message("LOG INFO: Samples-to-remove loaded successfully.")
 
     return(samples_to_remove[["sample"]])
 }
