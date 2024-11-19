@@ -45,21 +45,21 @@ prepare_data <- function(
 
     # Check the integrity of the metadata file (if provided).
     if (is.na(metadata_path)) {
-        warning("No metadata file has been provided.")
+        message("LOG WARNING: No metadata file has been provided. Carrying on...")
     } else {
         check_file(file_path = metadata_path)
         if (is.na(metadata_columns)) {
-            stop(paste0(
+            stop(
                 "A metadata table has been provided, but ",
                 "no columns have been specified. Please ",
                 "review your input!"
-            ))
+            )
         } else if (is.na(metadata_sample_col)) {
-            stop(paste0(
+            stop(
                 "A metadata table has been provided, but ",
                 "no sample column has been specified. Please ",
                 "review your input!"
-            ))
+            )
         } else {
             metadata_columns <- parse_delimited_list(
                 del_list = metadata_columns,
@@ -81,7 +81,9 @@ prepare_data <- function(
 
     # Check prefix (if provided).
     if(is.na(prefix)) {
-        warning("No prefix has been provided.")
+        message(
+            "LOG WARNING: No prefix has been provided. Carrying on..."
+        )
     } else {
         prefix <- check_prefix(prefix)
     }
@@ -112,7 +114,10 @@ prepare_data <- function(
         check_file(remove)
 
     } else {
-        warning("No list of samples to be removed has been provided.")
+        message(
+            "LOG WARNING: No list of samples to be removed has been provided. ",
+            "Carrying on..."
+        )
     }
 
     #############
@@ -169,7 +174,7 @@ prepare_data <- function(
         )
 
     } else {
-        warning("No metadata was added to the reports.")
+        message("LOG WARNING: No metadata was added to the reports.")
     }
 
     return(list(
@@ -194,7 +199,7 @@ prepare_data <- function(
 #' @param verbose Verbosity level.
 #' @return Processed reports ready for downstream analysis.
 #' @export
-process_kraken2 <- function(
+run_sparki <- function(
     std_reports_path,
     mpa_reports_path,
     organism,
@@ -234,8 +239,8 @@ process_kraken2 <- function(
     prefix <- prepared_data[[7]]
     domain <- prepared_data[[8]]
 
-    merged_reports <- addSampleSize(merged_reports)
-    merged_reports <- addMinimiserData(merged_reports, ref_db)
+    merged_reports <- addSampleSize(merged_reports, verbose = verbose)
+    merged_reports <- addMinimiserData(merged_reports, ref_db, verbose = verbose)
 
     plotClassificationSummary_violin(
         merged_reports,
@@ -298,7 +303,7 @@ process_kraken2 <- function(
     )
 
     merged_reports <- subsetReports(merged_reports, species = organism, verbose = verbose)
-    merged_reports <- assessMinimiserRatio(merged_reports)
+    merged_reports <- assessMinimiserRatio(merged_reports, verbose = verbose)
     merged_reports <- assessStatistics(merged_reports, ref_db, verbose = verbose)
 
     plotSignificanceSummary(
