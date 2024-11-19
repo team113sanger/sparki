@@ -2,8 +2,8 @@
 set -eou pipefail
 
 OUTDIR="manual-outdir"
-rm -rf $OUTDIR
-mkdir -p $OUTDIR
+rm -rf ${OUTDIR}
+mkdir -p ${OUTDIR}
 
 Rscript -e "devtools::load_all(); SPARKI::cli()"\
   --std-reports 'tests/testthat/testdata/std_reports/case_with_usual_reports' \
@@ -11,5 +11,5 @@ Rscript -e "devtools::load_all(); SPARKI::cli()"\
   --reference 'tests/testthat/testdata/inspect.txt' \
   --organism 'Homo sapiens' \
   --domain 'Viruses,Bacteria' \
-  --prefix 'foo-' \
-  --outdir "${OUTDIR}"
+  --outdir "${OUTDIR}" \
+  --verbose
