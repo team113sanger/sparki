@@ -149,36 +149,30 @@ cli <- function() {
 
   # Check all required arguments have been provided.
   required_arguments <- c(
-    arguments$std_reports,
-    arguments$mpa_reports,
-    arguments$organism,
-    arguments$refdb,
-    arguments$outdir,
-    arguments$domain
+    arguments$std_reports, arguments$mpa_reports, arguments$organism,
+    arguments$refdb, arguments$outdir, arguments$domain
   )
   for (argument in required_arguments) {
-    if (is.na(argument)) {
-      stop(argument, " is required but has not been provided. Please review your input!")
-    }
+    if (is.na(argument)) stop(CLI_ERROR_ARGUMENT_NOT_PROVIDED, argument)
   }
 
   # If verbose, print all arguments to be used.
   if (arguments$verbose) {
-    message("LOG INFO: Running SPARKI with the following arguments:")
-    message("LOG INFO: \t- Standard reports directory: ", arguments$std_reports)
-    message("LOG INFO: \t- MPA-style reports directory: ", arguments$mpa_reports)
-    message("LOG INFO: \t- Organism set to: ", arguments$organism)
-    message("LOG INFO: \t- Reference DB: ", arguments$refdb)
-    message("LOG INFO: \t- Metadata: ", arguments$metadata)
-    message("LOG INFO: \t- Metadata sample column is: ", arguments$sample_col)
-    message("LOG INFO: \t- Metadata columns are: ", arguments$columns)
-    message("LOG INFO: \t- Output directory set to: ", arguments$outdir)
-    message("LOG INFO: \t- Prefix set to: ", arguments$prefix)
-    message("LOG INFO: \t- Verbose? ", arguments$verbose)
-    message("LOG INFO: \t- Include eukaryotes? ", arguments$inc_eukaryotes)
-    message("LOG INFO: \t- Include sample names? ", arguments$inc_sample_names)
-    message("LOG INFO: \t- Domain(s) of interest is(are): ", arguments$domain)
-    message("LOG INFO: \t- Samples to remove: ", arguments$remove)
+    message(CLI_INFO_ARGUMENTS)
+    message(CLI_INFO_ARGUMENT_STD_REPORTS, arguments$std_reports)
+    message(CLI_INFO_ARGUMENT_MPA_REPORTS, arguments$mpa_reports)
+    message(CLI_INFO_ARGUMENT_ORGANISM, arguments$organism)
+    message(CLI_INFO_ARGUMENT_REFERENCE, arguments$refdb)
+    message(CLI_INFO_ARGUMENT_METADATA, arguments$metadata)
+    message(CLI_INFO_ARGUMENT_SAMPLE_COL, arguments$sample_col)
+    message(CLI_INFO_ARGUMENT_COLUMNS, arguments$columns)
+    message(CLI_INFO_ARGUMENT_OUTDIR, arguments$outdir)
+    message(CLI_INFO_ARGUMENT_PREFIX, arguments$prefix)
+    message(CLI_INFO_ARGUMENT_VERBOSE, arguments$verbose)
+    message(CLI_INFO_ARGUMENT_INC_EUKARYOTES, arguments$inc_eukaryotes)
+    message(CLI_INFO_ARGUMENT_INC_SAMPLE_NAMES, arguments$inc_sample_names)
+    message(CLI_INFO_ARGUMENT_DOMAIN, arguments$domain)
+    message(CLI_INFO_ARGUMENT_SAMPLES_TO_REMOVE, arguments$remove)
   }
 
   # Carry out SPARKI analysis.

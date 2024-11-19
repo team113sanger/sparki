@@ -84,6 +84,7 @@ COLNAME_N_SAMPLES_SIGNIF_SIGNIF <- "significance"
 COLNAME_N_SAMPLES_SIGNIF_N_SAMPLES <- "n_samples"
 
 #### Info/Warning/Error messages ####
+
 LOAD_MPA_ERROR_NO_REPORTS_FOUND <- "No MPA-style reports were found in the directory provided. Please review your input:"
 LOAD_MPA_WARNING_NO_SAMPLES_REMOVED <- "LOG WARNING: No samples were filtered out from the collated MPA-style reports table."
 LOAD_MPA_INFO_SUCCESS <- "LOG INFO: MPA-style reports loaded successfully!"
@@ -94,3 +95,20 @@ LOAD_STD_INFO_SUCCESS <- "LOG INFO: Standard reports loaded successfully!"
 
 LOAD_SAMPLES_TO_REMOVE_WARNING <- "LOG WARNING: The following samples will not be included in the SPARKI analysis:"
 LOAD_SAMPLES_TO_REMOVE_SUCCESS <- "LOG INFO: Samples-to-remove loaded successfully!"
+
+CLI_ERROR_ARGUMENT_NOT_PROVIDED <- "Please review your input! The following argument is required but has not been provided:"
+CLI_INFO_ARGUMENTS <- "LOG INFO: Running SPARKI with the following arguments:"
+CLI_INFO_ARGUMENT_STD_REPORTS <- "LOG INFO: \t- Standard reports directory:"
+CLI_INFO_ARGUMENT_MPA_REPORTS <- "LOG INFO: \t- MPA-style reports directory:"
+CLI_INFO_ARGUMENT_ORGANISM <- "LOG INFO: \t- Organism set to:"
+CLI_INFO_ARGUMENT_REFERENCE <- "LOG INFO: \t- Reference DB:"
+CLI_INFO_ARGUMENT_METADATA <- "LOG INFO: \t- Metadata:"
+CLI_INFO_ARGUMENT_SAMPLE_COL <- "LOG INFO: \t- Metadata sample column is:"
+CLI_INFO_ARGUMENT_COLUMNS <- "LOG INFO: \t- Metadata columns are:"
+CLI_INFO_ARGUMENT_OUTDIR <- "LOG INFO: \t- Output directory set to:"
+CLI_INFO_ARGUMENT_PREFIX <- "LOG INFO: \t- Prefix set to: "
+CLI_INFO_ARGUMENT_VERBOSE <- "LOG INFO: \t- Verbose?"
+CLI_INFO_ARGUMENT_INC_EUKARYOTES <- "LOG INFO: \t- Include eukaryotes?"
+CLI_INFO_ARGUMENT_INC_SAMPLE_NAMES <- "LOG INFO: \t- Include sample names?"
+CLI_INFO_ARGUMENT_DOMAIN <- "LOG INFO: \t- Domain(s) of interest is(are):"
+CLI_INFO_ARGUMENT_SAMPLES_TO_REMOVE <- "LOG INFO: \t- Samples to remove:"
