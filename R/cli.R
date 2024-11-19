@@ -65,7 +65,7 @@ cli <- function() {
       c("-p", "--prefix"),
       dest = "prefix",
       action = "store",
-      default = NA,
+      default = "",
       type = "character",
       help = "Prefix of output files."
     ),
@@ -121,7 +121,8 @@ cli <- function() {
       c("--version"),
       action = "store_true",
       default = FALSE,
-      help = "Print version information and exit"
+      type = "logical",
+      help = "Print version information and exit."
     )
   )
 
@@ -146,8 +147,42 @@ cli <- function() {
     return(invisible())
   }
 
-  # Compute PCA analysis
-  process_kraken2(
+  # Check all required arguments have been provided.
+  required_arguments <- c(
+    arguments$std_reports,
+    arguments$mpa_reports,
+    arguments$organism,
+    arguments$refdb,
+    arguments$outdir,
+    arguments$domain
+  )
+  for (argument in required_arguments) {
+    if (is.na(argument)) {
+      stop(argument, " is required but has not been provided. Please review your input!")
+    }
+  }
+
+  # If verbose, print all arguments to be used.
+  if (arguments$verbose) {
+    message("LOG INFO: Running SPARKI with the following arguments:")
+    message("LOG INFO: \t- Standard reports directory: ", arguments$std_reports)
+    message("LOG INFO: \t- MPA-style reports directory: ", arguments$mpa_reports)
+    message("LOG INFO: \t- Organism set to: ", arguments$organism)
+    message("LOG INFO: \t- Reference DB: ", arguments$refdb)
+    message("LOG INFO: \t- Metadata: ", arguments$metadata)
+    message("LOG INFO: \t- Metadata sample column is: ", arguments$sample_col)
+    message("LOG INFO: \t- Metadata columns are: ", arguments$columns)
+    message("LOG INFO: \t- Output directory set to: ", arguments$outdir)
+    message("LOG INFO: \t- Prefix set to: ", arguments$prefix)
+    message("LOG INFO: \t- Verbose? ", arguments$verbose)
+    message("LOG INFO: \t- Include eukaryotes? ", arguments$inc_eukaryotes)
+    message("LOG INFO: \t- Include sample names? ", arguments$inc_sample_names)
+    message("LOG INFO: \t- Domain(s) of interest is(are): ", arguments$domain)
+    message("LOG INFO: \t- Samples to remove: ", arguments$remove)
+  }
+
+  # Carry out SPARKI analysis.
+  run_sparki(
     std_reports_path = arguments$std_reports,
     mpa_reports_path = arguments$mpa_reports,
     organism = arguments$organism,
