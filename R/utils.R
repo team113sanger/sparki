@@ -1,5 +1,7 @@
 
 # Private function.
+#' @export
+#'
 exportPlot <- function(plot, filename, outdir, fig_width, fig_height) {
 
     if (missing(fig_width) && missing(fig_height)) {
@@ -11,7 +13,8 @@ exportPlot <- function(plot, filename, outdir, fig_width, fig_height) {
         plot,
         filename = paste0(outdir, filename),
         width = fig_width,
-        height = fig_height
+        height = fig_height,
+        verbose = FALSE
     )
 }
 
@@ -192,7 +195,7 @@ adjust_barplot <- function(plot, n_samples, include_sample_names, orientation, f
 #' @param base_size Base plot width when there is only one element on the x-axis.
 #' @param factor Value to help adjust the width.
 #' @return Plot width for PDF file.
-#' @export
+#'
 determine_pdf_width <- function(n_elements, base_size = 1, factor = 1) {
 
     # Increment width if there are 2 elements or more.
@@ -214,7 +217,7 @@ determine_pdf_width <- function(n_elements, base_size = 1, factor = 1) {
 #' @param base_size Base plot height when there is only one element on the y-axis.
 #' @param factor Value to help adjust the height.
 #' @return Plot height for PDF file.
-#' @export
+#'
 determine_pdf_height <- function(n_elements, base_size = 2, factor = 1) {
 
     # Increment height if there are 2 elements or more.
@@ -232,7 +235,7 @@ determine_pdf_height <- function(n_elements, base_size = 2, factor = 1) {
 #'
 #' @param del_list A list with symbol-delimited values; the symbol can be a comma, for example.
 #' @return A vector with individual elements.
-#' @export
+#'
 parse_delimited_list <- function(del_list, delimiter) {
 
     # Split comma-separated list.
@@ -261,7 +264,8 @@ is_mpa <- function(report) {
 ## UTILITY FUNCTIONS FOR CREATING AUXILIARY DATAFRAMES ##
 #######################################################################################################
 
-# Number of reads under each domain for each sample.
+#' Number of reads under each domain for each sample.
+#' @export
 get_nDomainReads <- function(report, include_eukaryotes) {
 
     colname_sample <- ifelse(is_mpa(report), COLNAME_MPA_SAMPLE, COLNAME_STD_SAMPLE)
