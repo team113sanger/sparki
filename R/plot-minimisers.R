@@ -95,8 +95,7 @@ plotMinimisers_dotplot <- function(
         ggplot2::theme(
             axis.text.x = ggplot2::element_text(size = 10, angle = 90, vjust = 0.5, hjust = 1),
             axis.text.y = ggplot2::element_text(size = 12),
-            legend.text = ggplot2::element_text(size = 15),
-            legend.text.align = 0,
+            legend.text = ggplot2::element_text(size = 15, hjust = 0),
             legend.title = ggplot2::element_text(size = 15),
             axis.title = ggplot2::element_text(size = 15),
             plot.title = ggplot2::element_text(size = 16.5, face = "bold", hjust = 0.5),
