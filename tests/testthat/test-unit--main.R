@@ -1,5 +1,5 @@
 
-test_that("process_kraken2 - required options", {
+test_that("run_sparki - required options", {
     # Setup
     std_reports_path <- get_test_std_report_dir("usual")
     mpa_reports_path <- get_test_mpa_report_dir("usual")
@@ -9,7 +9,7 @@ test_that("process_kraken2 - required options", {
     metadata_sample_col <- NA
     metadata_columns <- NA
     outdir_path <- get_local_tmp_dir()
-    prefix <- "foo"
+    prefix <- NA
     verbose <- TRUE
     include_eukaryotes <- FALSE
     include_sample_names <- FALSE
@@ -22,7 +22,7 @@ test_that("process_kraken2 - required options", {
 
 
     # Build the command and get the expected version
-    SPARKI::process_kraken2(
+    SPARKI::run_sparki(
         std_reports_path,
         mpa_reports_path,
         organism,

@@ -31,6 +31,20 @@ get_test_reference <- function() {
   return(testthat::test_path("testdata", "inspect.txt"))
 }
 
+#' Helper function to get path to a metadata file
+#'
+#' @returns Path to metadata file
+get_test_metadata <- function() {
+  return(testthat::test_path("testdata", "metadata.txt"))
+}
+
+#' Helper function to get path to a samples-to-remove file
+#'
+#' @returns Path to a file with samples to be removed from the SPARKI analysis
+get_test_samples_to_remove <- function() {
+  return(testthat::test_path("testdata", "samples_to_remove.txt"))
+}
+
 #' Create a temporary directory that auto-cleans after test
 #'
 #' @description
