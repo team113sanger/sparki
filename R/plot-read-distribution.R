@@ -35,7 +35,7 @@ plotDistribution_histogram <- function(report, return_plot, outdir, prefix = "")
     plot <- ggplot2::ggplot(
         report, ggplot2::aes(x = get(COLNAME_STD_N_FRAG_CLADE), fill = get(COLNAME_STD_RANK))
     ) +
-            ggplot2::geom_histogram() +
+            ggplot2::geom_histogram(bins = 30) +
             ggplot2::facet_wrap(~get(COLNAME_STD_RANK), nrow = 2, scale = "free") +
             ggplot2::theme_classic() +
             ggplot2::theme(
