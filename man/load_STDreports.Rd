@@ -4,7 +4,7 @@
 \alias{load_STDreports}
 \title{LOAD STANDARD REPORTS}
 \usage{
-load_STDreports(std_reports_dir, verbose = TRUE)
+load_STDreports(std_reports_dir, samples_to_remove, verbose = FALSE)
 }
 \arguments{
 \item{verbose}{Whether to output log messages.}

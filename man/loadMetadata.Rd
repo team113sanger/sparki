@@ -4,7 +4,7 @@
 \alias{loadMetadata}
 \title{LOAD METADATA TABLE}
 \usage{
-loadMetadata(metadata)
+loadMetadata(metadata, verbose)
 }
 \arguments{
 \item{metadata}{Path to a metadata table.}

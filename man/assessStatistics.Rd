@@ -4,10 +4,7 @@
 \alias{assessStatistics}
 \title{ASSESS THE STATISTICAL SIGNIFICANCE OF RESULTS}
 \usage{
-assessStatistics(report, ref_db, verbose = TRUE)
-}
-\arguments{
-\item{ref_db}{}
+assessStatistics(report, ref_db, verbose)
 }
 \value{
 An updated version of the input dataframe, with new columns containing statistical significance results.

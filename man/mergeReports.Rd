@@ -4,7 +4,7 @@
 \alias{mergeReports}
 \title{MERGE STANDARD AND MPA-STYLE REPORTS}
 \usage{
-mergeReports(std_reports, mpa_reports, samples_to_remove)
+mergeReports(std_reports, mpa_reports)
 }
 \arguments{
 \item{std_reports}{A dataframe (tibble) with standard reports, loaded with load_STDreports().}

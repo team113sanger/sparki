@@ -4,7 +4,7 @@
 \alias{loadSamplesToRemove}
 \title{LOAD LIST OF SAMPLES TO BE EXCLUDED FROM SPARKI ANALYSIS}
 \usage{
-loadSamplesToRemove(filepath)
+loadSamplesToRemove(filepath, verbose)
 }
 \arguments{
 \item{filepath}{Path to a tab-delimited file in which each line is a sample ID.}
