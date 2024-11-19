@@ -1,12 +1,14 @@
 
-assessMinimiserRatio <- function(report) {
+assessMinimiserRatio <- function(report, verbose) {
 
     if (is_mpa(report)) {
-        stop(paste0("This function does not support MPA-style reports. Please provide a standard report."))
+        stop("This function does not support MPA-style reports.")
     }
 
     report[, COLNAME_STD_RATIO_TAXON] <- (report[, COLNAME_STD_UNIQ_MINIMISERS] / report[, COLNAME_STD_DB_MINIMISERS_TAXON])
     report[, COLNAME_STD_RATIO_CLADE] <- (report[, COLNAME_STD_UNIQ_MINIMISERS] / report[, COLNAME_STD_DB_MINIMISERS_CLADE])
+
+    if (verbose) message("LOG INFO: Minimiser ratio successfully calculated and added to the report!")
 
     return(report)
 }
@@ -50,11 +52,11 @@ calculate_p_value <- function(sample_n_uniq_minimisers_taxon, db_n_minimisers_ta
 #' @param report
 #' @param ref_db
 #' @return An updated version of the input dataframe, with new columns containing statistical significance results.
-assessStatistics <- function(report, ref_db, verbose = TRUE) {
+assessStatistics <- function(report, ref_db, verbose) {
 
-    if (is_mpa(report)) stop(paste0("This function does not support MPA-style reports."))
+    if (is_mpa(report)) stop("This function does not support MPA-style reports.")
 
-    if (verbose) cat("Calculating p-values...\n")
+    if (verbose) message("LOG INFO: Calculating p-values...")
 
     # Calculate p-values.
     report[, COLNAME_STD_PVALUE] <- calculate_p_value(
@@ -67,7 +69,7 @@ assessStatistics <- function(report, ref_db, verbose = TRUE) {
     # Add number of taxa identified in a given rank for a given sample.
     report <- add_nTaxaInRank(report)
 
-    if (verbose) cat("Adjusting p-values...\n")
+    if (verbose) message("LOG INFO: Adjusting p-values...")
 
     # Perform p-value correction.
     report[, COLNAME_STD_PADJ] <- sapply(seq_len(nrow(report)), function(x) {
@@ -86,7 +88,7 @@ assessStatistics <- function(report, ref_db, verbose = TRUE) {
         "Non-significant"
     )
 
-    if (verbose) cat("Successfully completed.\n")
+    if (verbose) message("LOG INFO: Statistical assessment successfully completed!")
 
     return(report)
 }

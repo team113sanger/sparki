@@ -32,7 +32,7 @@ addRank <- function(taxon) {
 #' @return An updated version of the input dataframe, with a new column containing sample sizes.
 #' @export
 #'
-addSampleSize <- function(report) {
+addSampleSize <- function(report, verbose) {
 
     # If report is in MPA format...
     if (is_mpa(report)) {
@@ -71,12 +71,14 @@ addSampleSize <- function(report) {
         # Reorder columns.
         dplyr::relocate(!!COLNAME_STD_SAMPLE_SIZE, .after = !!COLNAME_STD_SAMPLE)
 
+    if (verbose) message("LOG INFO: Sample size successfully added to the report!")
+
     return(report)
 }
 
-addMinimiserData <- function(report, ref_db) {
+addMinimiserData <- function(report, ref_db, verbose) {
 
-    if (is_mpa(report)) stop(paste0("This function does not support MPA-style reports."))
+    if (is_mpa(report)) stop("This function does not support MPA-style reports.")
 
     # Select relevant columns.
     ref_db <- ref_db |>
@@ -94,6 +96,8 @@ addMinimiserData <- function(report, ref_db) {
             !!COLNAME_STD_DB_MINIMISERS_CLADE := !!COLNAME_REF_DB_MINIMISERS_CLADE,
             !!COLNAME_STD_DB_MINIMISERS_TAXON := !!COLNAME_REF_DB_MINIMISERS_TAXON
         )
+
+    if (verbose) message("LOG INFO: Minimiser info successfully added to the report!")
 
     return(report)
 }
@@ -168,6 +172,8 @@ addMetadata <- function(report, metadata, metadata_sample_col, metadata_columns)
         # reorder the columns so that the metadata stays between the sample IDs and the
         # Kraken2 results.
         dplyr::relocate(metadata_columns, .after = !!report_colname_sample)
+
+    if (verbose) message("LOG INFO: Metadata successfully added to the report!")
 
     return(report)
 }

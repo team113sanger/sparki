@@ -39,9 +39,9 @@ subsetReports <- function(report, species, verbose) {
     taxa_to_remove <- c(species, genus, family)
 
     if (verbose == TRUE) {
-        warning(paste0(
-            "Filtering out ", species, ", ", genus, ", and ", family, "..."
-        ))
+        message(
+            "LOG WARNING: Filtering out ", species, ", ", genus, ", and ", family, "..."
+        )
     }
 
     report <- report |>
