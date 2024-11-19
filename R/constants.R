@@ -2,7 +2,7 @@
 ## HELPER CONSTANTS ##
 #####################################################################
 
-### CLI helptext ###
+#### CLI help text ####
 CLI_DESCRIPTION <- "SPARKI (Statistical Process Aimed at Robust Kraken2 Interpretation) is a framework to help collate, refine, visualise & interpret Kraken2 outputs."
 CLI_PROGRAM_NAME <- "SPARKI"
 
@@ -82,3 +82,15 @@ COLNAME_SIGNIF_SUMMARY_SIGNIF <- "significance"
 COLNAME_N_SAMPLES_SIGNIF_RANK <- "rank"
 COLNAME_N_SAMPLES_SIGNIF_SIGNIF <- "significance"
 COLNAME_N_SAMPLES_SIGNIF_N_SAMPLES <- "n_samples"
+
+#### Info/Warning/Error messages ####
+LOAD_MPA_ERROR_NO_REPORTS_FOUND <- "No MPA-style reports were found in the directory provided. Please review your input:"
+LOAD_MPA_WARNING_NO_SAMPLES_REMOVED <- "LOG WARNING: No samples were filtered out from the collated MPA-style reports table."
+LOAD_MPA_INFO_SUCCESS <- "LOG INFO: MPA-style reports loaded successfully!"
+
+LOAD_STD_ERROR_NO_REPORTS_FOUND <- "No standard reports were found in the directory provided. Please review your input:"
+LOAD_STD_WARNING_NO_SAMPLES_REMOVED <- "LOG WARNING: No samples were filtered out from the collated standard reports table."
+LOAD_STD_INFO_SUCCESS <- "LOG INFO: Standard reports loaded successfully!"
+
+LOAD_SAMPLES_TO_REMOVE_WARNING <- "LOG WARNING: The following samples will not be included in the SPARKI analysis:"
+LOAD_SAMPLES_TO_REMOVE_SUCCESS <- "LOG INFO: Samples-to-remove loaded successfully!"

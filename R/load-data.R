@@ -54,7 +54,7 @@ loadMetadata <- function(metadata, verbose) {
     # Read metadata file.
     mdata <- readr::read_delim(metadata)
 
-    if (verbose == TRUE) {
+    if (verbose) {
         message("LOG INFO: Metadata loaded successfully.")
     }
 
@@ -133,9 +133,7 @@ load_MPAreports <- function(mpa_reports_dir, samples_to_remove, verbose) {
     mpa_files <- fs::dir_ls(mpa_reports_dir, glob = "*.mpa$")
 
     # Check if directory really has any MPA-style reports...
-    if (length(mpa_files) == 0) {
-        stop("No MPA-style reports were found at ", mpa_reports_dir, ". Please review your input.")
-    }
+    if (length(mpa_files) == 0) stop(LOAD_MPA_ERROR_NO_REPORTS_FOUND, mpa_reports_dir)
 
     mpa_files <- check_for_empty_files(mpa_files, verbose = verbose)
 
@@ -190,12 +188,10 @@ load_MPAreports <- function(mpa_reports_dir, samples_to_remove, verbose) {
     if (!missing(samples_to_remove)) {
         mpa_reports <- mpa_reports |> dplyr::filter(!(!!as.name(COLNAME_MPA_SAMPLE) %in% samples_to_remove))
     } else {
-        if (verbose == TRUE) {
-            message("LOG WARNING: No samples were filtered out from the collated MPA-style reports table.")
-        }
+        if (verbose == TRUE) message(LOAD_MPA_WARNING_NO_SAMPLES_REMOVED)
     }
 
-    if (verbose == TRUE) message("LOG INFO: MPA-style reports loaded successfully!")
+    if (verbose == TRUE) message(LOAD_MPA_INFO_SUCCESS)
 
     return(mpa_reports)
 }
@@ -216,9 +212,7 @@ load_STDreports <- function(std_reports_dir, samples_to_remove, verbose = FALSE)
     std_files <- fs::dir_ls(std_reports_dir, glob = "*.kraken$")
 
     # Check if directory really has any standard reports...
-    if (length(std_files) == 0) {
-        stop("No standard reports were found at ", std_reports_dir, ". Please review your input.")
-    }
+    if (length(std_files) == 0) stop(LOAD_STD_ERROR_NO_REPORTS_FOUND, std_reports_dir)
 
     std_files <- check_for_empty_files(std_files, verbose = verbose)
 
@@ -239,10 +233,10 @@ load_STDreports <- function(std_reports_dir, samples_to_remove, verbose = FALSE)
     if (!missing(samples_to_remove)) {
         std_reports <- std_reports |> dplyr::filter(!(!!as.name(COLNAME_STD_SAMPLE) %in% samples_to_remove))
     } else {
-        if (verbose) message("LOG WARNING: No samples were filtered out from the collated standard reports table.")
+        if (verbose) message(LOAD_STD_WARNING_NO_SAMPLES_REMOVED)
     }
 
-    if (verbose) message("LOG INFO: Standard reports loaded successfully!")
+    if (verbose) message(LOAD_STD_INFO_SUCCESS)
 
     return(std_reports)
 }
@@ -261,12 +255,10 @@ loadSamplesToRemove <- function(filepath, verbose) {
 
     samples_to_remove <- readr::read_table(filepath, col_names = "sample")
 
-    message(
-        "LOG WARNING: Samples ", paste(samples_to_remove[["sample"]], collapse = ","),
-        " will be removed from the SPARKI analysis."
-    )
-
-    if (verbose) message("LOG INFO: Samples-to-remove loaded successfully.")
+    if (verbose) {
+        message(LOAD_SAMPLES_TO_REMOVE_WARNING, paste(samples_to_remove[["sample"]], collapse = ","))
+        message(LOAD_SAMPLES_TO_REMOVE_SUCCESS)
+    }
 
     return(samples_to_remove[["sample"]])
 }
