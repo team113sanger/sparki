@@ -1,6 +1,5 @@
 describe("CLI integration", {
   test_that("the --version option in the CLI works", {
-
     # Get the Rscript path in the system.
     rscript <- Sys.which("Rscript")
 
@@ -14,7 +13,7 @@ describe("CLI integration", {
     # Get the expected version.
     expected_version <- as.character(utils::packageVersion("SPARKI"))
 
-    # Define the expected exit code.
+    #  Define the expected exit code.
     expected_exit_code <- 0
 
     # Run the command
@@ -27,7 +26,7 @@ describe("CLI integration", {
       stderr_line_callback = NULL
     )
 
-    # Get actual outputs of the run.
+    #  Get actual outputs of the run.
     actual_output <- result$stdout
     actual_exit_code <- result$status
 
@@ -46,7 +45,6 @@ describe("CLI integration", {
   })
 
   test_that("the --help option in the CLI works", {
-
     # Get the Rscript path in the system.
     rscript <- Sys.which("Rscript")
 
@@ -57,7 +55,7 @@ describe("CLI integration", {
       "--help"
     )
 
-    # Define the expected program name and description, as well as
+    #  Define the expected program name and description, as well as
     # the expected exit status code.
     expected_program_name <- SPARKI:::CLI_PROGRAM_NAME
     expected_program_description <- SPARKI:::CLI_DESCRIPTION
@@ -73,7 +71,7 @@ describe("CLI integration", {
       stderr_line_callback = NULL
     )
 
-    # Get actual outputs of the run.
+    #  Get actual outputs of the run.
     actual_output <- result$stdout
     actual_exit_code <- result$status
 
@@ -92,9 +90,8 @@ describe("CLI integration", {
   })
 
 
-test_that("CLI works when all arguments, both required and optional, are provided", {
-
-    # Define input arguments for SPARKI.
+  test_that("CLI works when all arguments, both required and optional, are provided", {
+    #  Define input arguments for SPARKI.
     std_directory <- get_test_std_report_dir("usual")
     mpa_directory <- get_test_mpa_report_dir("usual")
     organism <- "'Homo sapiens'"
@@ -136,7 +133,7 @@ test_that("CLI works when all arguments, both required and optional, are provide
       stderr_line_callback = NULL
     )
 
-    # Define expected exit status.
+    #  Define expected exit status.
     expected_exit_code <- 0
 
     # Get actual exit status.
@@ -150,9 +147,8 @@ test_that("CLI works when all arguments, both required and optional, are provide
     )
   })
 
-test_that("CLI works when all required arguments are provided", {
-
-    # Define input arguments for SPARKI.
+  test_that("CLI works when all required arguments are provided", {
+    #  Define input arguments for SPARKI.
     std_directory <- get_test_std_report_dir("usual")
     mpa_directory <- get_test_mpa_report_dir("usual")
     organism <- "'Homo sapiens'"
@@ -181,7 +177,7 @@ test_that("CLI works when all required arguments are provided", {
       stderr_line_callback = NULL
     )
 
-    # Define expected exit status.
+    #  Define expected exit status.
     expected_exit_code <- 0
 
     # Get actual exit status.
@@ -196,10 +192,9 @@ test_that("CLI works when all required arguments are provided", {
   })
 
   test_that("CLI fails when the required argument --std-reports is not provided", {
-
-    # Define input arguments for SPARKI.
+    #  Define input arguments for SPARKI.
     std_directory <- NA
-    mpa_directory <-  get_test_mpa_report_dir("usual")
+    mpa_directory <- get_test_mpa_report_dir("usual")
     organism <- "'Homo sapiens'"
     reference <- get_test_reference()
     domain <- "Viruses"
@@ -234,10 +229,9 @@ test_that("CLI works when all required arguments are provided", {
   })
 
   test_that("CLI fails when the required argument --mpa-reports is not provided", {
-
-    # Define input arguments for SPARKI.
+    #  Define input arguments for SPARKI.
     std_directory <- get_test_std_report_dir("usual")
-    mpa_directory <-  NA
+    mpa_directory <- NA
     organism <- "'Homo sapiens'"
     reference <- get_test_reference()
     domain <- "Viruses"
@@ -272,10 +266,9 @@ test_that("CLI works when all required arguments are provided", {
   })
 
   test_that("CLI fails when the required argument --organism is not provided", {
-
-    # Define input arguments for SPARKI.
+    #  Define input arguments for SPARKI.
     std_directory <- get_test_std_report_dir("usual")
-    mpa_directory <-  get_test_mpa_report_dir("usual")
+    mpa_directory <- get_test_mpa_report_dir("usual")
     organism <- NA
     reference <- get_test_reference()
     domain <- "Viruses"
@@ -310,10 +303,9 @@ test_that("CLI works when all required arguments are provided", {
   })
 
   test_that("CLI fails when the required argument --reference is not provided", {
-
-    # Define input arguments for SPARKI.
+    #  Define input arguments for SPARKI.
     std_directory <- get_test_std_report_dir("usual")
-    mpa_directory <-  get_test_mpa_report_dir("usual")
+    mpa_directory <- get_test_mpa_report_dir("usual")
     organism <- "'Homo sapiens'"
     reference <- NA
     domain <- "Viruses"
@@ -348,10 +340,9 @@ test_that("CLI works when all required arguments are provided", {
   })
 
   test_that("CLI fails when the required argument --domain is not provided", {
-
-    # Define input arguments for SPARKI.
+    #  Define input arguments for SPARKI.
     std_directory <- get_test_std_report_dir("usual")
-    mpa_directory <-  get_test_mpa_report_dir("usual")
+    mpa_directory <- get_test_mpa_report_dir("usual")
     organism <- "'Homo sapiens"
     reference <- get_test_reference()
     domain <- NA
@@ -386,10 +377,9 @@ test_that("CLI works when all required arguments are provided", {
   })
 
   test_that("CLI fails when the required argument --outdir is not provided", {
-
-    # Define input arguments for SPARKI.
+    #  Define input arguments for SPARKI.
     std_directory <- get_test_std_report_dir("usual")
-    mpa_directory <-  get_test_mpa_report_dir("usual")
+    mpa_directory <- get_test_mpa_report_dir("usual")
     organism <- "'Homo sapiens"
     reference <- get_test_reference()
     domain <- "Viruses"
@@ -422,5 +412,4 @@ test_that("CLI works when all required arguments are provided", {
     # Assert that the exit code is not zero.
     expect_gt(actual_exit_code, 0)
   })
-
 })

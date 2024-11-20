@@ -3,7 +3,7 @@ describe("load_MPAreports()", {
     #  Define the expected number of columns.
     expected_number_of_columns <- 12
 
-    # Get path to test directory.
+    #  Get path to test directory.
     path_to_mpa <- get_test_mpa_report_dir("usual")
 
     # Load the MPA-style reports and obtain the actual numbers of rows and columns.
@@ -19,7 +19,7 @@ describe("load_MPAreports()", {
   })
 
   test_that("the columns in the dataframe returned by load_MPAreports() correspond to the appropriate classes", {
-    # Get path to test directory.
+    #  Get path to test directory.
     path_to_mpa <- get_test_mpa_report_dir("usual")
 
     # Load the MPA-style reports.
@@ -41,7 +41,7 @@ describe("load_MPAreports()", {
   })
 
   test_that("the columns in the dataframe returned by load_MPAreports() have the right names", {
-    # Get path to test directory.
+    #  Get path to test directory.
     path_to_mpa <- get_test_mpa_report_dir("usual")
 
     # Load the MPA-style reports and get actual column names.
@@ -69,7 +69,7 @@ describe("load_MPAreports()", {
   })
 
   test_that("load_MPAreports() does not fail if an MPA-style report is empty", {
-    # Get path to test directory.
+    #  Get path to test directory.
     path_to_mpa <- get_test_mpa_report_dir("empty")
     path_to_mpa <- paste0("'", path_to_mpa, "'")
 
@@ -89,10 +89,10 @@ describe("load_MPAreports()", {
       stderr_line_callback = NULL
     )
 
-    # Define the name of the sample whose file is empty.
+    #  Define the name of the sample whose file is empty.
     empty_sample <- "sample2_empty"
 
-    # Define the expected exit status and info/warning messages.
+    #  Define the expected exit status and info/warning messages.
     expected_exit_code <- 0
     expected_info_in_stderr <- "MPA-style reports loaded successfully!"
     expected_warning_in_stderr <- "is empty, so this sample will not be included in the SPARKI analysis."
@@ -119,7 +119,7 @@ describe("load_MPAreports()", {
       info = sprintf("Standard out was: %s\nStandard error was: %s", actual_stdout, actual_stderr)
     )
 
-    # Assert that the sample whose file was empty is not present in the output.
+    #  Assert that the sample whose file was empty is not present in the output.
     expect_false(
       grepl(empty_sample, actual_stdout, fixed = TRUE),
       info = sprintf("Standard out was:\n%s\nStandard error was:\n%s", actual_stdout, actual_stderr)
@@ -132,7 +132,7 @@ describe("load_STDreports()", {
     # Define the expected number of columns.
     expected_number_of_columns <- 9
 
-    # Get path to test directory.
+    #  Get path to test directory.
     path_to_std <- get_test_std_report_dir("usual")
 
     # Load the MPA-style reports and obtain the actual numbers of rows and columns.
@@ -148,7 +148,7 @@ describe("load_STDreports()", {
   })
 
   test_that("the columns in the dataframe returned by load_STDreports() correspond to the appropriate classes", {
-    # Get path to test directory.
+    #  Get path to test directory.
     path_to_std <- get_test_std_report_dir("usual")
 
     # Load the MPA-style reports.
@@ -167,7 +167,7 @@ describe("load_STDreports()", {
   })
 
   test_that("the columns in the dataframe returned by load_STDreports() have the right names", {
-    # Get path to test directory.
+    #  Get path to test directory.
     path_to_std <- get_test_std_report_dir("usual")
 
     # Load the MPA-style reports and get actual column names.
@@ -192,7 +192,7 @@ describe("load_STDreports()", {
   })
 
   test_that("load_STDreports() does not fail if a standard report is empty", {
-    # Get path to test directory.
+    #  Get path to test directory.
     path_to_std <- get_test_std_report_dir("empty")
     path_to_std <- paste0("'", path_to_std, "'")
 
@@ -212,10 +212,10 @@ describe("load_STDreports()", {
       stderr_line_callback = NULL
     )
 
-    # Define the name of the sample whose file is empty.
+    #  Define the name of the sample whose file is empty.
     empty_sample <- "sample2_empty"
 
-    # Define the expected exit status and info/warning messages.
+    #  Define the expected exit status and info/warning messages.
     expected_exit_code <- 0
     expected_info_in_stderr <- "Standard reports loaded successfully!"
     expected_warning_in_stderr <- "is empty, so this sample will not be included in the SPARKI analysis."
@@ -242,7 +242,7 @@ describe("load_STDreports()", {
       info = sprintf("Standard out was: %s\nStandard error was: %s", actual_stdout, actual_stderr)
     )
 
-    # Assert that the sample whose file was empty is not present in the output.
+    #  Assert that the sample whose file was empty is not present in the output.
     expect_false(
       grepl(empty_sample, actual_stdout, fixed = TRUE),
       info = sprintf("Standard out was:\n%s\nStandard error was:\n%s", actual_stdout, actual_stderr)
@@ -252,4 +252,4 @@ describe("load_STDreports()", {
 
 
 
-# testthat the values under domain/kingdom/.../genus/species are not just a big block of NAs!
+#  testthat the values under domain/kingdom/.../genus/species are not just a big block of NAs!

@@ -66,9 +66,12 @@ get_local_tmp_dir <- function(env = parent.frame()) {
   tmp_dir <- file.path(tempdir(), paste0("test-", format(Sys.time(), "%Y%m%d-%H%M%S-"), sample(1000, 1)))
   dir.create(tmp_dir, recursive = TRUE)
 
-  withr::defer({
-    unlink(tmp_dir, recursive = TRUE)
-  }, env)
+  withr::defer(
+    {
+      unlink(tmp_dir, recursive = TRUE)
+    },
+    env
+  )
 
   return(tmp_dir)
 }
