@@ -52,9 +52,7 @@ loadMetadata <- function(metadata, verbose) {
   #  Read metadata file.
   mdata <- readr::read_delim(metadata)
 
-  if (verbose) {
-    message("LOG INFO: Metadata loaded successfully.")
-  }
+  if (verbose) message(LOAD_METADATA_INFO_SUCCESS)
 
   return(mdata)
 }
@@ -96,14 +94,8 @@ check_for_empty_files <- function(file_list, verbose) {
 
     #  If the file is empty...
     if (is_empty) {
-      if (verbose) {
-        message(
-          "LOG WARNING: The file ", file, " is empty, so this sample ",
-          "will not be included in the SPARKI analysis."
-        )
-      }
-
       # Remove given file path from the list of paths.
+      if (verbose) message(CHECK_EMPTY_FILE_WARNING, file)
       file_list <- file_list[(file_list != file)]
     }
   }
