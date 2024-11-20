@@ -147,7 +147,7 @@ cli <- function() {
     return(invisible())
   }
 
-  # Check all required arguments have been provided.
+  #  Check all required arguments have been provided.
   required_arguments <- c(
     arguments$std_reports, arguments$mpa_reports, arguments$organism,
     arguments$refdb, arguments$outdir, arguments$domain

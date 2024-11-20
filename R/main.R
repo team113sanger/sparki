@@ -18,176 +18,167 @@ prepare_data <- function(
     prefix,
     verbose,
     domain,
-    remove
-) {
+    remove) {
+  ######################
+  #  CHECKS FOR REPORTS #
+  ######################
 
-    ######################
-    # CHECKS FOR REPORTS #
-    ######################
+  #  Check the integrity of the directories provided & read reports.
+  reports_paths <- list(
+    "std" = std_reports_path,
+    "mpa" = mpa_reports_path
+  )
 
-    # Check the integrity of the directories provided & read reports.
-    reports_paths <- list(
-        "std" = std_reports_path,
-        "mpa" = mpa_reports_path
+  for (report_format in names(reports_paths)) {
+    reports_paths[[report_format]] <- check_report_directory(
+      dirpath = reports_paths[[report_format]],
+      report_format = report_format
+    )
+  }
+
+  #######################
+  #  CHECKS FOR METADATA #
+  #######################
+
+  # Check the integrity of the metadata file (if provided).
+  if (is.na(metadata_path)) {
+    message("LOG WARNING: No metadata file has been provided. Carrying on...")
+  } else {
+    check_file(file_path = metadata_path)
+    if (is.na(metadata_columns)) {
+      stop(
+        "A metadata table has been provided, but ",
+        "no columns have been specified. Please ",
+        "review your input!"
+      )
+    } else if (is.na(metadata_sample_col)) {
+      stop(
+        "A metadata table has been provided, but ",
+        "no sample column has been specified. Please ",
+        "review your input!"
+      )
+    } else {
+      metadata_columns <- parse_delimited_list(
+        del_list = metadata_columns,
+        delimiter = ","
+      )
+    }
+  }
+
+  ########################
+  #  CHECKS FOR REFERENCE #
+  ########################
+
+  # Check the integrity of the reference file.
+  check_file(reference_path)
+
+  #####################
+  #  CHECKS FOR PREFIX #
+  #####################
+
+  #  Check prefix (if provided).
+  if (is.na(prefix)) {
+    message(
+      "LOG WARNING: No prefix has been provided. Carrying on..."
+    )
+  } else {
+    prefix <- check_prefix(prefix)
+  }
+
+  ###############################
+  #  CHECKS FOR OUTPUT DIRECTORY #
+  ###############################
+
+  # Check the integrity of the output directory.
+  outdir_path <- check_directory(outdir_path)
+
+  #####################
+  #  CHECKS FOR DOMAIN #
+  #####################
+
+  domain <- parse_delimited_list(domain, ",")
+
+  # Check the integrity of the domain specified.
+  for (d in domain) check_domain(d)
+
+  ####################################
+  #  CHECKS FOR SAMPLES TO BE REMOVED #
+  ####################################
+
+  if (!is.na(remove)) {
+    # Check the integrity of the samples-to-remove file specified.
+    check_file(remove)
+  } else {
+    message(
+      "LOG WARNING: No list of samples to be removed has been provided. ",
+      "Carrying on..."
+    )
+  }
+
+  #############
+  #  LOAD DATA #
+  #############
+
+  samples_to_remove <- NA
+  if (!is.na(remove)) {
+    #  Load samples-to-remove file.
+    samples_to_remove <- loadSamplesToRemove(
+      filepath = remove,
+      verbose = verbose
+    )
+  }
+
+  # Read standard reports.
+  std_reports <- load_STDreports(
+    reports_paths[[1]],
+    samples_to_remove = samples_to_remove,
+    verbose = verbose
+  )
+
+  #  Read MPA-style reports.
+  mpa_reports <- load_MPAreports(
+    reports_paths[[2]],
+    samples_to_remove = samples_to_remove,
+    verbose = verbose
+  )
+
+  #  Merge standard and MPA-style reports.
+  merged_reports <- mergeReports(std_reports, mpa_reports)
+
+  # Read reference database data.
+  ref_db <- loadReference(reference_path)
+
+  #  Read metadata (if any).
+  metadata <- NA
+  if (!(is.na(metadata_path))) {
+    #  Load metadata table.
+    metadata <- loadMetadata(metadata_path)
+
+    # Check columns are present in metadata table.
+    check_columns(
+      df = metadata,
+      columns = c(metadata_sample_col, metadata_columns)
     )
 
-    for (report_format in names(reports_paths)) {
-
-        reports_paths[[report_format]] <- check_report_directory(
-            dirpath = reports_paths[[report_format]],
-            report_format = report_format
-        )
-    }
-
-    #######################
-    # CHECKS FOR METADATA #
-    #######################
-
-    # Check the integrity of the metadata file (if provided).
-    if (is.na(metadata_path)) {
-        message("LOG WARNING: No metadata file has been provided. Carrying on...")
-    } else {
-        check_file(file_path = metadata_path)
-        if (is.na(metadata_columns)) {
-            stop(
-                "A metadata table has been provided, but ",
-                "no columns have been specified. Please ",
-                "review your input!"
-            )
-        } else if (is.na(metadata_sample_col)) {
-            stop(
-                "A metadata table has been provided, but ",
-                "no sample column has been specified. Please ",
-                "review your input!"
-            )
-        } else {
-            metadata_columns <- parse_delimited_list(
-                del_list = metadata_columns,
-                delimiter = ","
-            )
-        }
-    }
-
-    ########################
-    # CHECKS FOR REFERENCE #
-    ########################
-
-    # Check the integrity of the reference file.
-    check_file(reference_path)
-
-    #####################
-    # CHECKS FOR PREFIX #
-    #####################
-
-    # Check prefix (if provided).
-    if(is.na(prefix)) {
-        message(
-            "LOG WARNING: No prefix has been provided. Carrying on..."
-        )
-    } else {
-        prefix <- check_prefix(prefix)
-    }
-
-    ###############################
-    # CHECKS FOR OUTPUT DIRECTORY #
-    ###############################
-
-    # Check the integrity of the output directory.
-    outdir_path <- check_directory(outdir_path)
-
-    #####################
-    # CHECKS FOR DOMAIN #
-    #####################
-
-    domain <- parse_delimited_list(domain, ",")
-
-    # Check the integrity of the domain specified.
-    for (d in domain) check_domain(d)
-
-    ####################################
-    # CHECKS FOR SAMPLES TO BE REMOVED #
-    ####################################
-
-    if (!is.na(remove)) {
-
-        # Check the integrity of the samples-to-remove file specified.
-        check_file(remove)
-
-    } else {
-        message(
-            "LOG WARNING: No list of samples to be removed has been provided. ",
-            "Carrying on..."
-        )
-    }
-
-    #############
-    # LOAD DATA #
-    #############
-
-    samples_to_remove <- NA
-    if (!is.na(remove)) {
-
-        # Load samples-to-remove file.
-        samples_to_remove <- loadSamplesToRemove(
-            filepath = remove,
-            verbose = verbose
-        )
-    }
-
-    # Read standard reports.
-    std_reports <- load_STDreports(
-        reports_paths[[1]],
-        samples_to_remove = samples_to_remove,
-        verbose = verbose
+    #  Add metadata to merged reports.
+    merged_reports <- addMetadata(
+      merged_reports, metadata,
+      metadata_sample_col, metadata_columns
     )
+  } else {
+    message("LOG WARNING: No metadata was added to the reports.")
+  }
 
-    # Read MPA-style reports.
-    mpa_reports <- load_MPAreports(
-        reports_paths[[2]],
-        samples_to_remove = samples_to_remove,
-        verbose = verbose
-    )
-
-    # Merge standard and MPA-style reports.
-    merged_reports <- mergeReports(std_reports, mpa_reports)
-
-    # Read reference database data.
-    ref_db <- loadReference(reference_path)
-
-    # Read metadata (if any).
-    metadata <- NA
-    if (!(is.na(metadata_path))) {
-
-        # Load metadata table.
-        metadata <- loadMetadata(metadata_path)
-
-        # Check columns are present in metadata table.
-        check_columns(
-            df = metadata,
-            columns = c(metadata_sample_col, metadata_columns)
-        )
-
-        # Add metadata to merged reports.
-        merged_reports <- addMetadata(
-            merged_reports, metadata,
-            metadata_sample_col, metadata_columns
-        )
-
-    } else {
-        message("LOG WARNING: No metadata was added to the reports.")
-    }
-
-    return(list(
-        merged_reports,
-        ref_db,
-        metadata,
-        metadata_sample_col,
-        metadata_columns,
-        outdir_path,
-        prefix,
-        domain
-    ))
-
+  return(list(
+    merged_reports,
+    ref_db,
+    metadata,
+    metadata_sample_col,
+    metadata_columns,
+    outdir_path,
+    prefix,
+    domain
+  ))
 }
 
 #' PROCESS DATA
@@ -213,121 +204,118 @@ run_sparki <- function(
     include_eukaryotes,
     include_sample_names,
     domain,
-    remove
-) {
+    remove) {
+  prepared_data <- prepare_data(
+    std_reports_path = std_reports_path,
+    mpa_reports_path = mpa_reports_path,
+    reference_path = reference_path,
+    metadata_path = metadata_path,
+    metadata_sample_col = metadata_sample_col,
+    metadata_columns = metadata_columns,
+    outdir_path = outdir_path,
+    prefix = prefix,
+    verbose = verbose,
+    domain = domain,
+    remove = remove
+  )
 
-    prepared_data <- prepare_data(
-        std_reports_path = std_reports_path,
-        mpa_reports_path = mpa_reports_path,
-        reference_path = reference_path,
-        metadata_path = metadata_path,
-        metadata_sample_col = metadata_sample_col,
-        metadata_columns = metadata_columns,
-        outdir_path = outdir_path,
-        prefix = prefix,
-        verbose = verbose,
-        domain = domain,
-        remove = remove
+  merged_reports <- prepared_data[[1]]
+  ref_db <- prepared_data[[2]]
+  mdata <- prepared_data[[3]]
+  sample_col <- prepared_data[[4]]
+  columns <- prepared_data[[5]]
+  outdir <- prepared_data[[6]]
+  prefix <- prepared_data[[7]]
+  domain <- prepared_data[[8]]
+
+  merged_reports <- addSampleSize(merged_reports, verbose = verbose)
+  merged_reports <- addMinimiserData(merged_reports, ref_db, verbose = verbose)
+
+  plotClassificationSummary_violin(
+    merged_reports,
+    return_plot = FALSE,
+    outdir = outdir,
+    prefix = prefix
+  )
+
+  plotClassificationSummary_barplot(
+    merged_reports,
+    include_sample_names = include_sample_names,
+    orientation = "horizontal",
+    return_plot = FALSE,
+    outdir = outdir,
+    prefix = prefix
+  )
+
+  plotClassificationProportion(
+    merged_reports,
+    return_plot = FALSE,
+    outdir = outdir,
+    prefix = prefix
+  )
+
+  plotDistribution_histogram(
+    merged_reports,
+    return_plot = FALSE,
+    outdir = outdir,
+    prefix = prefix
+  )
+
+  plotDistribution_violin(
+    merged_reports,
+    return_plot = FALSE,
+    outdir = outdir,
+    prefix = prefix
+  )
+
+  plotDomainReads_violin(
+    merged_reports,
+    include_eukaryotes = include_eukaryotes,
+    return_plot = FALSE,
+    outdir = outdir,
+    prefix = prefix
+  )
+
+  plotDomainReads_barplot(
+    merged_reports,
+    include_eukaryotes = include_eukaryotes,
+    include_sample_names = include_sample_names,
+    orientation = "horizontal",
+    return_plot = FALSE,
+    outdir = outdir,
+    prefix = prefix
+  )
+
+  write.csv(
+    merged_reports,
+    paste0(outdir, prefix, "pre_filtering_and_statistics.csv")
+  )
+
+  merged_reports <- subsetReports(merged_reports, species = organism, verbose = verbose)
+  merged_reports <- assessMinimiserRatio(merged_reports, verbose = verbose)
+  merged_reports <- assessStatistics(merged_reports, ref_db, verbose = verbose)
+
+  plotSignificanceSummary(
+    merged_reports,
+    return_plot = FALSE,
+    outdir = outdir,
+    prefix = prefix
+  )
+
+  for (d in domain) {
+    plotMinimisers_dotplot(
+      merged_reports,
+      domain = d,
+      return_plot = FALSE,
+      fig_width = 25,
+      fig_height = 15,
+      outdir = outdir,
+      prefix = prefix
     )
+  }
 
-    merged_reports <- prepared_data[[1]]
-    ref_db <- prepared_data[[2]]
-    mdata <- prepared_data[[3]]
-    sample_col <- prepared_data[[4]]
-    columns <- prepared_data[[5]]
-    outdir <- prepared_data[[6]]
-    prefix <- prepared_data[[7]]
-    domain <- prepared_data[[8]]
-
-    merged_reports <- addSampleSize(merged_reports, verbose = verbose)
-    merged_reports <- addMinimiserData(merged_reports, ref_db, verbose = verbose)
-
-    plotClassificationSummary_violin(
-        merged_reports,
-        return_plot = FALSE,
-        outdir = outdir,
-        prefix = prefix
-    )
-
-    plotClassificationSummary_barplot(
-        merged_reports,
-        include_sample_names = include_sample_names,
-        orientation = "horizontal",
-        return_plot = FALSE,
-        outdir = outdir,
-        prefix = prefix
-    )
-
-    plotClassificationProportion(
-        merged_reports,
-        return_plot = FALSE,
-        outdir = outdir,
-        prefix = prefix
-    )
-
-    plotDistribution_histogram(
-        merged_reports,
-        return_plot = FALSE,
-        outdir = outdir,
-        prefix = prefix
-    )
-
-    plotDistribution_violin(
-        merged_reports,
-        return_plot = FALSE,
-        outdir = outdir,
-        prefix = prefix
-    )
-
-    plotDomainReads_violin(
-        merged_reports,
-        include_eukaryotes = include_eukaryotes,
-        return_plot = FALSE,
-        outdir = outdir,
-        prefix = prefix
-    )
-
-    plotDomainReads_barplot(
-        merged_reports,
-        include_eukaryotes = include_eukaryotes,
-        include_sample_names = include_sample_names,
-        orientation = "horizontal",
-        return_plot = FALSE,
-        outdir = outdir,
-        prefix = prefix
-    )
-
-    write.csv(
-        merged_reports,
-        paste0(outdir, prefix, "pre_filtering_and_statistics.csv")
-    )
-
-    merged_reports <- subsetReports(merged_reports, species = organism, verbose = verbose)
-    merged_reports <- assessMinimiserRatio(merged_reports, verbose = verbose)
-    merged_reports <- assessStatistics(merged_reports, ref_db, verbose = verbose)
-
-    plotSignificanceSummary(
-        merged_reports,
-        return_plot = FALSE,
-        outdir = outdir,
-        prefix = prefix
-    )
-
-    for (d in domain) {
-
-        plotMinimisers_dotplot(
-            merged_reports,
-            domain = d,
-            return_plot = FALSE,
-            fig_width = 25,
-            fig_height = 15,
-            outdir = outdir,
-            prefix = prefix
-        )
-    }
-
-    write.csv(
-        merged_reports,
-        paste0(outdir, prefix, "final_table_with_pvalues.csv")
-    )
+  write.csv(
+    merged_reports,
+    paste0(outdir, prefix, "final_table_with_pvalues.csv")
+  )
 }

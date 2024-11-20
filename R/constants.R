@@ -1,12 +1,12 @@
 ######################
-## HELPER CONSTANTS ##
+##  HELPER CONSTANTS ##
 #####################################################################
 
 #### CLI help text ####
 CLI_DESCRIPTION <- "SPARKI (Statistical Process Aimed at Robust Kraken2 Interpretation) is a framework to help collate, refine, visualise & interpret Kraken2 outputs."
 CLI_PROGRAM_NAME <- "SPARKI"
 
-#### Reference database ####
+####  Reference database ####
 COLNAME_REF_DB_PCT_FRAG_CLADE <- "pct_fragments_clade"
 COLNAME_REF_DB_MINIMISERS_CLADE <- "n_minimisers_clade"
 COLNAME_REF_DB_MINIMISERS_TAXON <- "n_minimisers_taxon"
@@ -14,7 +14,7 @@ COLNAME_REF_DB_RANK <- "rank"
 COLNAME_REF_DB_NCBI_ID <- "ncbi_id"
 COLNAME_REF_DB_TAXON <- "taxon"
 
-#### Standard report ####
+####  Standard report ####
 COLNAME_STD_SAMPLE <- "sample"
 COLNAME_STD_PCT_FRAG_CLADE <- "pct_fragments_clade"
 COLNAME_STD_N_FRAG_CLADE <- "n_fragments_clade"
@@ -38,7 +38,7 @@ COLNAME_STD_PADJ <- "padj"
 COLNAME_STD_SIGNIF <- "significance"
 COLNAME_STD_N_TAXA_RANK <- "n_taxa_in_rank"
 
-#### MPA-style report ####
+####  MPA-style report ####
 COLNAME_MPA_SAMPLE <- "sample"
 COLNAME_MPA_N_FRAG_CLADE <- "n_fragments_clade"
 COLNAME_MPA_TAXON_HIERARCHY <- "taxon_hierarchy"
@@ -54,7 +54,7 @@ COLNAME_MPA_GENUS <- "genus"
 COLNAME_MPA_SPECIES <- "species"
 
 
-#### Auxiliary dataframes ####
+####  Auxiliary dataframes ####
 
 # Number of classified/unclassified reads per sample.
 COLNAME_CLASSIF_SUMMARY_SAMPLE <- "sample"
@@ -72,13 +72,13 @@ COLNAME_DOMAIN_READS_TAXON <- "taxon"
 COLNAME_DOMAIN_READS_N_FRAG <- "n_fragments_clade"
 COLNAME_DOMAIN_READS_LOG_N_FRAG <- "log10_n_fragments_clade"
 
-# Significance summary.
+#  Significance summary.
 COLNAME_SIGNIF_SUMMARY_SAMPLE <- "sample"
 COLNAME_SIGNIF_SUMMARY_RANK <- "rank"
 COLNAME_SIGNIF_SUMMARY_N_TAXA <- "n_taxa"
 COLNAME_SIGNIF_SUMMARY_SIGNIF <- "significance"
 
-# Significance per sample.
+#  Significance per sample.
 COLNAME_N_SAMPLES_SIGNIF_RANK <- "rank"
 COLNAME_N_SAMPLES_SIGNIF_SIGNIF <- "significance"
 COLNAME_N_SAMPLES_SIGNIF_N_SAMPLES <- "n_samples"
