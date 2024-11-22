@@ -97,21 +97,21 @@ LOAD_SAMPLES_TO_REMOVE_WARNING <- "LOG WARNING: The following samples will not b
 LOAD_SAMPLES_TO_REMOVE_SUCCESS <- "LOG INFO: Samples-to-remove loaded successfully!"
 
 CLI_ERROR_ARGUMENT_NOT_PROVIDED <- "LOG ERROR: Please review your input! The following argument is required but has not been provided:"
-CLI_INFO_ARGUMENTS <- "LOG INFO: Running SPARKI with the following arguments:"
-CLI_INFO_ARGUMENT_STD_REPORTS <- "LOG INFO:\t- Standard reports directory:"
-CLI_INFO_ARGUMENT_MPA_REPORTS <- "LOG INFO:\t- MPA-style reports directory:"
-CLI_INFO_ARGUMENT_ORGANISM <- "LOG INFO:\t- Organism set to:"
-CLI_INFO_ARGUMENT_REFERENCE <- "LOG INFO:\t- Reference DB:"
-CLI_INFO_ARGUMENT_METADATA <- "LOG INFO:\t- Metadata:"
-CLI_INFO_ARGUMENT_SAMPLE_COL <- "LOG INFO:\t- Metadata sample column is:"
-CLI_INFO_ARGUMENT_COLUMNS <- "LOG INFO:\t- Metadata columns are:"
-CLI_INFO_ARGUMENT_OUTDIR <- "LOG INFO:\t- Output directory set to:"
+CLI_INFO_ARGUMENTS <- "LOG INFO: Running SPARKI with the following arguments: "
+CLI_INFO_ARGUMENT_STD_REPORTS <- "LOG INFO:\t- Standard reports directory: "
+CLI_INFO_ARGUMENT_MPA_REPORTS <- "LOG INFO:\t- MPA-style reports directory: "
+CLI_INFO_ARGUMENT_ORGANISM <- "LOG INFO:\t- Organism set to: "
+CLI_INFO_ARGUMENT_REFERENCE <- "LOG INFO:\t- Reference DB: "
+CLI_INFO_ARGUMENT_METADATA <- "LOG INFO:\t- Metadata: "
+CLI_INFO_ARGUMENT_SAMPLE_COL <- "LOG INFO:\t- Metadata sample column is: "
+CLI_INFO_ARGUMENT_COLUMNS <- "LOG INFO:\t- Metadata columns are: "
+CLI_INFO_ARGUMENT_OUTDIR <- "LOG INFO:\t- Output directory set to: "
 CLI_INFO_ARGUMENT_PREFIX <- "LOG INFO:\t- Prefix set to: "
-CLI_INFO_ARGUMENT_VERBOSE <- "LOG INFO:\t- Verbose?"
-CLI_INFO_ARGUMENT_INC_EUKARYOTES <- "LOG INFO:\t- Include eukaryotes?"
-CLI_INFO_ARGUMENT_INC_SAMPLE_NAMES <- "LOG INFO:\t- Include sample names?"
-CLI_INFO_ARGUMENT_DOMAIN <- "LOG INFO:\t- Domain(s) of interest is(are):"
-CLI_INFO_ARGUMENT_SAMPLES_TO_REMOVE <- "LOG INFO:\t- Samples to remove:"
+CLI_INFO_ARGUMENT_VERBOSE <- "LOG INFO:\t- Verbose? "
+CLI_INFO_ARGUMENT_INC_EUKARYOTES <- "LOG INFO:\t- Include eukaryotes? "
+CLI_INFO_ARGUMENT_INC_SAMPLE_NAMES <- "LOG INFO:\t- Include sample names? "
+CLI_INFO_ARGUMENT_DOMAIN <- "LOG INFO:\t- Domain(s) of interest is(are): "
+CLI_INFO_ARGUMENT_SAMPLES_TO_REMOVE <- "LOG INFO:\t- Samples to remove: "
 
 LOAD_METADATA_INFO_SUCCESS <- "LOG INFO: Metadata loaded successfully."
 
@@ -123,3 +123,27 @@ MAIN_WARNING_METADATA_NOT_PROVIDED <- "LOG WARNING: No metadata file has been pr
 MAIN_WARNING_NO_METADATA_ADDED <- "LOG WARNING: No metadata was added to the reports. Carrying on..."
 MAIN_ERROR_NO_COLUMNS_SPECIFIED <- "LOG ERROR: A metadata table has been provided, but no columns have been specified. Please review your input!"
 MAIN_ERROR_NO_SAMPLE_COL_SPECIFIED <- "LOG ERROR: A metadata table has been provided, but no sample column has been specified. Please review your input!"
+
+MERGE_REPORTS_INFO_SUCCESS <- "LOG INFO: Standard and MPA-style reports merged successfully!"
+
+EXCEPTIONS_CHECKDIR_DOES_NOT_EXIST <- "LOG ERROR: The directory provided does not exist. Please review your input! The directory path specified was: "
+EXCEPTIONS_CHECKDIR_EMPTY <- "LOG ERROR: The directory provided is empty. Please review your input! The directory path specified was: "
+
+EXCEPTIONS_CHECK_REPORT_DIR_NO_MPA <- "LOG ERROR: The directory provided does not contain any MPA-style reports. Please review your input! The directory path specified was: "
+EXCEPTIONS_CHECK_REPORT_DIR_NO_STD <- "LOG ERROR: The directory provided does not contain any standard reports. Please review your input! The directory path specified was: "
+EXCEPTIONS_CHECK_REPORT_DIR_INVALID <- "LOG ERROR: The report format specified is not valid. Valid formats are 'std' or 'mpa', but got: "
+EXCEPTIONS_CHECK_REPORT_DIR_BOTH_FORMATS <- "LOG ERROR: Both standard and MPA-style reports were found in the same directory, and this is not supported. The directory specified was: "
+
+EXCEPTIONS_CHECKFILE_DOES_NOT_EXIST <- "LOG ERROR: The file provided does not exist. Please review your input! The file path specified was: "
+EXCEPTIONS_CHECKFILE_EMPTY <- "LOG ERROR: The file provided is empty. Please review your input! The file path specified was: "
+
+EXCEPTIONS_CHECK_COLUMNS <- "LOG ERROR: The column provided does not exist in the metadata table provided. Please review your input! The column specified was: "
+
+EXCEPTIONS_CHECK_PREFIX_NOT_CHARACTER <- "LOG ERROR: The prefix must be of class 'character', but got: "
+
+EXCEPTIONS_CHECK_DOMAIN_NOT_VALID <- "LOG ERROR: The domain specified is not a valid. Please choose from 'Viruses', 'Bacteria', 'Archaea' or 'Eukaryota'. The value provided was: "
+
+#### Output file names ####
+PLOT_CLASSIF_SUMMARY_VIOLIN <- "nReads_classified_vs_unclassified_absNumbers_violinPlot"
+PLOT_CLASSIF_SUMMARY_BARPLOT <- "nReads_classified_vs_unclassified_proportion_perSample_barPlot"
+PLOT_CLASSIF_PROPORTION <- "nReads_classifiedProportion_violinPlot"
