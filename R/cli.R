@@ -111,7 +111,7 @@ cli <- function() {
     ),
     optparse::make_option(
       c("-s", "--samples-to-remove"),
-      dest = "remove",
+      dest = "samples_to_remove",
       action = "store",
       default = NA,
       type = "character",
@@ -172,7 +172,7 @@ cli <- function() {
     message(CLI_INFO_ARGUMENT_INC_EUKARYOTES, arguments$inc_eukaryotes)
     message(CLI_INFO_ARGUMENT_INC_SAMPLE_NAMES, arguments$inc_sample_names)
     message(CLI_INFO_ARGUMENT_DOMAIN, arguments$domain)
-    message(CLI_INFO_ARGUMENT_SAMPLES_TO_REMOVE, arguments$remove)
+    message(CLI_INFO_ARGUMENT_SAMPLES_TO_REMOVE, arguments$samples_to_remove)
   }
 
   # Carry out SPARKI analysis.
@@ -190,6 +190,6 @@ cli <- function() {
     include_eukaryotes = arguments$inc_eukaryotes,
     include_sample_names = arguments$inc_sample_names,
     domain = arguments$domain,
-    remove = arguments$remove
+    samples_to_remove = arguments$samples_to_remove
   )
 }
