@@ -1,27 +1,32 @@
 #' CARRY OUT CHECKS ON A GIVEN DIRECTORY
 #'
 #' This function takes the path to a given directory and performs a few checks:
-#' 1) First, it checks if the directory exists.
-#' 2) Second, it checks if the directory is empty.
-#' 3) Last, it ensures that the last character in the path is a slash symbol ("/").
+#' - It checks if the directory exists.
+#' - It checks if the directory is empty or not depending on the expectation.
+#' - It ensures that the last character in the path is a slash symbol ("/").
 #'
 #' @param dirpath Path to a given directory.
+#' @param expectation One of "empty" or "not_empty".
 #'
 #' @seealso [check_report_directory()] for another function that carries out
 #'  checks based on a given directory path.
 #'
 #' @examples
-#' check_directory(dirpath = "path/to/directory")
+#' check_directory(dirpath = "path/to/directory", expectation = "empty")
 #'
 #' @return Checked path to the given directory.
 #'
-check_directory <- function(dirpath) {
+check_directory <- function(dirpath, expectation) {
   # Check that the directory exists.
   if (!(dir.exists(dirpath))) {
     stop(EXCEPTIONS_CHECKDIR_DOES_NOT_EXIST, dirpath)
 
-  # Check that the directory is not empty.
-  } else if (length(list.files(dirpath)) == 0) {
+  # If the directory is not supposed to be empty, check that the directory is not empty.
+  } else if (expectation == "not_empty" && length(list.files(dirpath)) == 0) {
+    stop(EXCEPTIONS_CHECKDIR_NOT_EMPTY, dirpath)
+
+  # If the directory is supposed to be empty, check that the directory is empty.
+  } else if (expectation == "empty" && length(list.files(dirpath)) > 0) {
     stop(EXCEPTIONS_CHECKDIR_EMPTY, dirpath)
 
   # Ensure that the directory path has a slash at the end.
@@ -57,7 +62,7 @@ check_directory <- function(dirpath) {
 #'
 check_report_directory <- function(dirpath, report_format) {
   # Check that the directory exists and is not empty.
-  dirpath <- check_directory(dirpath)
+  dirpath <- check_directory(dirpath, expectation = "not_empty")
 
   # Get the number of standard or MPA-style reports in the directory.
   n_mpa_reports <- length(list.files(dirpath, pattern = "mpa$"))
@@ -121,7 +126,7 @@ check_columns <- function(df, columns) {
 #' CARRY OUT CHECKS ON A PREFIX
 #'
 #' This function takes a prefix and performs a few checks:
-#' 1) First, it checks if the prefix corresponds to the appropriate class ("character").
+#' 1) First, it checks if the prefix corresponds to the appropriate type ("character").
 #' 2) Second, it ensures that there is an underscore symbol ("_") at the end of the prefix.
 #'
 #' @param prefix A given prefix that will later be added to output file names.
@@ -131,7 +136,7 @@ check_columns <- function(df, columns) {
 #' check_prefix(prefix = "prefix")
 #'
 check_prefix <- function(prefix) {
-  if (!(is.character(prefix))) stop(EXCEPTIONS_CHECK_PREFIX_NOT_CHARACTER, class(prefix))
+  if (!(is.character(prefix))) stop(EXCEPTIONS_CHECK_PREFIX_NOT_CHARACTER, typeof(prefix))
   else if (substr(prefix, nchar(prefix), nchar(prefix)) != "_") prefix <- paste0(prefix, "_")
 
   return(prefix)
