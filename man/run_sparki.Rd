@@ -18,7 +18,7 @@ run_sparki(
   include_eukaryotes,
   include_sample_names,
   domain,
-  remove
+  samples_to_remove
 )
 }
 \arguments{
