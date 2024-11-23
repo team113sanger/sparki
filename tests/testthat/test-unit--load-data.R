@@ -26,18 +26,18 @@ describe("load_MPAreports()", {
     out <- SPARKI::load_MPAreports(path_to_mpa, verbose = FALSE)
 
     # Carry out tests.
-    expect_true(is.character(out[[COLNAME_MPA_SAMPLE]]))
-    expect_true(is.character(out[[COLNAME_MPA_TAXON_LEAF]]))
-    expect_true(is.character(out[[COLNAME_MPA_RANK]]))
-    expect_true(is.double(out[[COLNAME_MPA_N_FRAG_CLADE]]))
-    expect_true(is.character(out[[COLNAME_MPA_DOMAIN]]))
-    expect_true(is.character(out[[COLNAME_MPA_KINGDOM]]))
-    expect_true(is.character(out[[COLNAME_MPA_PHYLUM]]))
-    expect_true(is.character(out[[COLNAME_MPA_CLASS]]))
-    expect_true(is.character(out[[COLNAME_MPA_ORDER]]))
-    expect_true(is.character(out[[COLNAME_MPA_FAMILY]]))
-    expect_true(is.character(out[[COLNAME_MPA_GENUS]]))
-    expect_true(is.character(out[[COLNAME_MPA_SPECIES]]))
+    expect_type(out[[SPARKI:::COLNAME_MPA_SAMPLE]], "character")
+    expect_type(out[[SPARKI:::COLNAME_MPA_TAXON_LEAF]], "character")
+    expect_type(out[[SPARKI:::COLNAME_MPA_RANK]], "character")
+    expect_type(out[[SPARKI:::COLNAME_MPA_N_FRAG_CLADE]], "double")
+    expect_type(out[[SPARKI:::COLNAME_MPA_DOMAIN]], "character")
+    expect_type(out[[SPARKI:::COLNAME_MPA_KINGDOM]], "character")
+    expect_type(out[[SPARKI:::COLNAME_MPA_PHYLUM]], "character")
+    expect_type(out[[SPARKI:::COLNAME_MPA_CLASS]], "character")
+    expect_type(out[[SPARKI:::COLNAME_MPA_ORDER]], "character")
+    expect_type(out[[SPARKI:::COLNAME_MPA_FAMILY]], "character")
+    expect_type(out[[SPARKI:::COLNAME_MPA_GENUS]], "character")
+    expect_type(out[[SPARKI:::COLNAME_MPA_SPECIES]], "character")
   })
 
   test_that("the columns in the dataframe returned by load_MPAreports() have the right names", {
@@ -50,18 +50,18 @@ describe("load_MPAreports()", {
 
     # Get expected column names.
     expected_colnames <- c(
-      COLNAME_MPA_SAMPLE,
-      COLNAME_MPA_TAXON_LEAF,
-      COLNAME_MPA_RANK,
-      COLNAME_MPA_N_FRAG_CLADE,
-      COLNAME_MPA_DOMAIN,
-      COLNAME_MPA_KINGDOM,
-      COLNAME_MPA_PHYLUM,
-      COLNAME_MPA_CLASS,
-      COLNAME_MPA_ORDER,
-      COLNAME_MPA_FAMILY,
-      COLNAME_MPA_GENUS,
-      COLNAME_MPA_SPECIES
+      SPARKI:::COLNAME_MPA_SAMPLE,
+      SPARKI:::COLNAME_MPA_TAXON_LEAF,
+      SPARKI:::COLNAME_MPA_RANK,
+      SPARKI:::COLNAME_MPA_N_FRAG_CLADE,
+      SPARKI:::COLNAME_MPA_DOMAIN,
+      SPARKI:::COLNAME_MPA_KINGDOM,
+      SPARKI:::COLNAME_MPA_PHYLUM,
+      SPARKI:::COLNAME_MPA_CLASS,
+      SPARKI:::COLNAME_MPA_ORDER,
+      SPARKI:::COLNAME_MPA_FAMILY,
+      SPARKI:::COLNAME_MPA_GENUS,
+      SPARKI:::COLNAME_MPA_SPECIES
     )
 
     # Carry out tests.
@@ -70,14 +70,10 @@ describe("load_MPAreports()", {
 
   test_that("load_MPAreports() does not fail if an MPA-style report is empty", {
     #  Get path to test directory.
-    path_to_mpa <- get_test_mpa_report_dir("empty")
-    path_to_mpa <- paste0("'", path_to_mpa, "'")
+    path_to_mpa <- glue::single_quote(get_test_mpa_report_dir("empty"))
 
     # Build argument list.
-    args <- c(
-      "-e",
-      glue::glue("devtools::load_all(quiet = TRUE); SPARKI::load_MPAreports({path_to_mpa}, verbose = TRUE)")
-    )
+    args <- c("-e", glue::glue("devtools::load_all(quiet = TRUE); SPARKI::load_MPAreports({path_to_mpa}, verbose = TRUE)"))
 
     # Run the command
     result <- processx::run(
@@ -94,8 +90,8 @@ describe("load_MPAreports()", {
 
     #  Define the expected exit status and info/warning messages.
     expected_exit_code <- 0
-    expected_info_in_stderr <- "MPA-style reports loaded successfully!"
-    expected_warning_in_stderr <- "is empty, so this sample will not be included in the SPARKI analysis."
+    expected_info_in_stderr <- SPARKI:::LOAD_MPA_INFO_SUCCESS
+    expected_warning_in_stderr <- SPARKI:::CHECK_EMPTY_FILE_WARNING
 
     # Get actual exit code and standard out/error.
     actual_exit_code <- result$status
@@ -124,6 +120,39 @@ describe("load_MPAreports()", {
       grepl(empty_sample, actual_stdout, fixed = TRUE),
       info = sprintf("Standard out was:\n%s\nStandard error was:\n%s", actual_stdout, actual_stderr)
     )
+  })
+
+  test_that("load_MPAreports() generates the rank columns (from domain to species) correctly", {
+    #  Get path to test directory.
+    path_to_mpa <- get_test_mpa_report_dir("usual")
+
+    # Load the MPA-style reports and obtain the actual numbers of rows and columns.
+    out <- SPARKI::load_MPAreports(path_to_mpa, verbose = FALSE)
+
+    # Define columns that need to be checked.
+    columns_to_check <- c(
+      SPARKI:::COLNAME_MPA_DOMAIN,
+      SPARKI:::COLNAME_MPA_KINGDOM,
+      SPARKI:::COLNAME_MPA_PHYLUM,
+      SPARKI:::COLNAME_MPA_CLASS,
+      SPARKI:::COLNAME_MPA_ORDER,
+      SPARKI:::COLNAME_MPA_FAMILY,
+      SPARKI:::COLNAME_MPA_GENUS,
+      SPARKI:::COLNAME_MPA_SPECIES
+    )
+
+    # For each column specified above...
+    for (column in columns_to_check) {
+      # Get the number of NAs in the column.
+      n_NAs_in_column <- out[[column]] |> is.na() |> sum()
+
+      # Get the number of elements in the column (i.e. column length).
+      n_elements_in_column <- out[[column]] |> length()
+
+      # The number of NAs should be less than the number of elements in the column.
+      # If number of NAs = number of elements, then something has gone wrong.
+      expect_lt(n_NAs_in_column, n_elements_in_column)
+    }
   })
 })
 
@@ -155,15 +184,15 @@ describe("load_STDreports()", {
     out <- SPARKI::load_STDreports(path_to_std, verbose = FALSE)
 
     # Carry out tests.
-    expect_true(is.character(out[[COLNAME_STD_SAMPLE]]))
-    expect_true(is.double(out[[COLNAME_STD_PCT_FRAG_CLADE]]))
-    expect_true(is.double(out[[COLNAME_STD_N_FRAG_CLADE]]))
-    expect_true(is.double(out[[COLNAME_STD_N_FRAG_TAXON]]))
-    expect_true(is.double(out[[COLNAME_STD_MINIMISERS]]))
-    expect_true(is.double(out[[COLNAME_STD_UNIQ_MINIMISERS]]))
-    expect_true(is.character(out[[COLNAME_STD_RANK]]))
-    expect_true(is.double(out[[COLNAME_STD_NCBI_ID]]))
-    expect_true(is.character(out[[COLNAME_STD_TAXON]]))
+    expect_type(out[[SPARKI:::COLNAME_STD_SAMPLE]], "character")
+    expect_type(out[[SPARKI:::COLNAME_STD_PCT_FRAG_CLADE]], "double")
+    expect_type(out[[SPARKI:::COLNAME_STD_N_FRAG_CLADE]], "double")
+    expect_type(out[[SPARKI:::COLNAME_STD_N_FRAG_TAXON]], "double")
+    expect_type(out[[SPARKI:::COLNAME_STD_MINIMISERS]], "double")
+    expect_type(out[[SPARKI:::COLNAME_STD_UNIQ_MINIMISERS]], "double")
+    expect_type(out[[SPARKI:::COLNAME_STD_RANK]], "character")
+    expect_type(out[[SPARKI:::COLNAME_STD_NCBI_ID]], "double")
+    expect_type(out[[SPARKI:::COLNAME_STD_TAXON]], "character")
   })
 
   test_that("the columns in the dataframe returned by load_STDreports() have the right names", {
@@ -176,15 +205,15 @@ describe("load_STDreports()", {
 
     # Get expected column names.
     expected_colnames <- c(
-      COLNAME_STD_SAMPLE,
-      COLNAME_STD_PCT_FRAG_CLADE,
-      COLNAME_STD_N_FRAG_CLADE,
-      COLNAME_STD_N_FRAG_TAXON,
-      COLNAME_STD_MINIMISERS,
-      COLNAME_STD_UNIQ_MINIMISERS,
-      COLNAME_STD_RANK,
-      COLNAME_STD_NCBI_ID,
-      COLNAME_STD_TAXON
+      SPARKI:::COLNAME_STD_SAMPLE,
+      SPARKI:::COLNAME_STD_PCT_FRAG_CLADE,
+      SPARKI:::COLNAME_STD_N_FRAG_CLADE,
+      SPARKI:::COLNAME_STD_N_FRAG_TAXON,
+      SPARKI:::COLNAME_STD_MINIMISERS,
+      SPARKI:::COLNAME_STD_UNIQ_MINIMISERS,
+      SPARKI:::COLNAME_STD_RANK,
+      SPARKI:::COLNAME_STD_NCBI_ID,
+      SPARKI:::COLNAME_STD_TAXON
     )
 
     # Carry out tests.
@@ -194,13 +223,10 @@ describe("load_STDreports()", {
   test_that("load_STDreports() does not fail if a standard report is empty", {
     #  Get path to test directory.
     path_to_std <- get_test_std_report_dir("empty")
-    path_to_std <- paste0("'", path_to_std, "'")
+    path_to_std <- glue::single_quote(path_to_std)
 
     # Build argument list.
-    args <- c(
-      "-e",
-      glue::glue("devtools::load_all(quiet = TRUE); SPARKI::load_STDreports({path_to_std}, verbose = TRUE)")
-    )
+    args <- c("-e", glue::glue("devtools::load_all(quiet = TRUE); SPARKI::load_STDreports({path_to_std}, verbose = TRUE)"))
 
     # Run the command.
     result <- processx::run(
@@ -217,8 +243,8 @@ describe("load_STDreports()", {
 
     #  Define the expected exit status and info/warning messages.
     expected_exit_code <- 0
-    expected_info_in_stderr <- "Standard reports loaded successfully!"
-    expected_warning_in_stderr <- "is empty, so this sample will not be included in the SPARKI analysis."
+    expected_info_in_stderr <- SPARKI:::LOAD_STD_INFO_SUCCESS
+    expected_warning_in_stderr <- SPARKI:::CHECK_EMPTY_FILE_WARNING
 
     # Get actual exit code and standard out/error.
     actual_exit_code <- result$status
@@ -249,7 +275,3 @@ describe("load_STDreports()", {
     )
   })
 })
-
-
-
-#  testthat the values under domain/kingdom/.../genus/species are not just a big block of NAs!
