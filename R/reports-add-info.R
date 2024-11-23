@@ -139,17 +139,17 @@ add_nTaxaInRank <- function(report) {
 #' @return An updated version of df1.
 #' @export
 #'
-addMetadata <- function(report, metadata, metadata_sample_col, metadata_columns) {
+addMetadata <- function(report, metadata, metadata_sample_col, metadata_columns, verbose) {
   #  Check report format.
   report_colname_sample <- ifelse(is_mpa(report), COLNAME_MPA_SAMPLE, COLNAME_STD_SAMPLE)
 
   #  Process metadata dataframe (tibble).
   metadata <- metadata |>
     # Select metadata columns that will be added to the report.
-    dplyr::select(metadata_sample_col, metadata_columns) |>
+    dplyr::select(dplyr::all_of(metadata_sample_col), dplyr::all_of(metadata_columns)) |>
     # Rename column with sample IDs to keep its name consistent
     #  with the report.
-    dplyr::rename(!!report_colname_sample := metadata_sample_col)
+    dplyr::rename(!!report_colname_sample := dplyr::all_of(metadata_sample_col))
 
   #  Replace spaces (if any) with underscores.
   colnames(metadata) <- gsub(" ", "_", colnames(metadata))
@@ -163,7 +163,7 @@ addMetadata <- function(report, metadata, metadata_sample_col, metadata_columns)
     # Get names of columns that contain results (and not sample names / metadata) and
     #  reorder the columns so that the metadata stays between the sample IDs and the
     # Kraken2 results.
-    dplyr::relocate(metadata_columns, .after = !!report_colname_sample)
+    dplyr::relocate(dplyr::all_of(metadata_columns), .after = !!report_colname_sample)
 
   if (verbose) message("LOG INFO: Metadata successfully added to the report!")
 

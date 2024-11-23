@@ -127,7 +127,8 @@ MAIN_ERROR_NO_SAMPLE_COL_SPECIFIED <- "LOG ERROR: A metadata table has been prov
 MERGE_REPORTS_INFO_SUCCESS <- "LOG INFO: Standard and MPA-style reports merged successfully!"
 
 EXCEPTIONS_CHECKDIR_DOES_NOT_EXIST <- "LOG ERROR: The directory provided does not exist. Please review your input! The directory path specified was: "
-EXCEPTIONS_CHECKDIR_EMPTY <- "LOG ERROR: The directory provided is empty. Please review your input! The directory path specified was: "
+EXCEPTIONS_CHECKDIR_NOT_EMPTY <- "LOG ERROR: The directory provided is empty but it shouldn't be. Please review your input! The directory path specified was: "
+EXCEPTIONS_CHECKDIR_EMPTY <- "LOG ERROR: The directory provided is not empty but it should be. Please review your input! The directory path specified was: "
 
 EXCEPTIONS_CHECK_REPORT_DIR_NO_MPA <- "LOG ERROR: The directory provided does not contain any MPA-style reports. Please review your input! The directory path specified was: "
 EXCEPTIONS_CHECK_REPORT_DIR_NO_STD <- "LOG ERROR: The directory provided does not contain any standard reports. Please review your input! The directory path specified was: "

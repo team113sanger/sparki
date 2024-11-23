@@ -9,7 +9,7 @@
 #' information from the dataframe (tibble) with MPA-style reports.
 #' @export
 #'
-mergeReports <- function(std_reports, mpa_reports) {
+mergeReports <- function(std_reports, mpa_reports, verbose) {
   mpa_reports <- mpa_reports |>
     # Rename column for consistency with the standard report.
     dplyr::rename(!!COLNAME_STD_TAXON := !!COLNAME_MPA_TAXON_LEAF) |>
@@ -21,6 +21,8 @@ mergeReports <- function(std_reports, mpa_reports) {
     std_reports, mpa_reports,
     by = dplyr::join_by(!!COLNAME_STD_TAXON, !!COLNAME_STD_SAMPLE)
   )
+
+  if (verbose) message(MERGE_REPORTS_INFO_SUCCESS)
 
   return(merged_reports)
 }

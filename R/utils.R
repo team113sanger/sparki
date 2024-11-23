@@ -18,7 +18,10 @@ exportPlot <- function(plot, filename, outdir, fig_width, fig_height) {
 
 #  Private function.
 handlePrefix <- function(filename, prefix) {
-  if (prefix != "") prefix <- paste0(prefix, "_")
+  if (prefix != "" && substr(prefix, nchar(prefix), nchar(prefix)) != "_") {
+    prefix <- paste0(prefix, "_")
+  }
+
   filename <- paste0(prefix, filename)
 
   return(filename)

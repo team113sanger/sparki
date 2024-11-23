@@ -1,13 +1,4 @@
-#' PREPARE DATA
-#'
-#' @param std_reports_path Path to directory containing standard Kraken2 reports.
-#' @param mpa_reports_path Path to directory containing MPA-style reports.
-#' @param reference_path Path to file containing information on a Kraken2 reference database.
-#' @param metadata_path Path to metadata file.
-#' @param verbose Verbosity level.
-#' @return Processed data ready for downstream steps.
-#' @export
-prepare_data <- function(
+check_inputs <- function(
     std_reports_path,
     mpa_reports_path,
     reference_path,
@@ -18,167 +9,177 @@ prepare_data <- function(
     prefix,
     verbose,
     domain,
-    remove) {
+    samples_to_remove_path) {
+
   ######################
-  #  CHECKS FOR REPORTS #
+  # CHECKS FOR REPORTS #
   ######################
 
-  #  Check the integrity of the directories provided & read reports.
-  reports_paths <- list(
-    "std" = std_reports_path,
-    "mpa" = mpa_reports_path
-  )
-
-  for (report_format in names(reports_paths)) {
-    reports_paths[[report_format]] <- check_report_directory(
-      dirpath = reports_paths[[report_format]],
-      report_format = report_format
-    )
-  }
+  # Carry out checks on the directories with standard and MPA-style reports.
+  std_reports_path <- check_report_directory(dirpath = std_reports_path, report_format = "std")
+  mpa_reports_path <- check_report_directory(dirpath = mpa_reports_path, report_format = "mpa")
 
   #######################
-  #  CHECKS FOR METADATA #
+  # CHECKS FOR METADATA #
   #######################
 
-  # Check the integrity of the metadata file (if provided).
-  if (is.na(metadata_path)) {
-    message("LOG WARNING: No metadata file has been provided. Carrying on...")
-  } else {
-    check_file(file_path = metadata_path)
+  # Check if a metadata file has been provided.
+  if (is.na(metadata_path)) message(MAIN_WARNING_METADATA_NOT_PROVIDED)
+  else {
+    # Check if column names have been specified.
     if (is.na(metadata_columns)) {
-      stop(
-        "A metadata table has been provided, but ",
-        "no columns have been specified. Please ",
-        "review your input!"
-      )
+      stop(MAIN_ERROR_NO_COLUMNS_SPECIFIED)
+
+    # Check if a sample column has been specified.
     } else if (is.na(metadata_sample_col)) {
-      stop(
-        "A metadata table has been provided, but ",
-        "no sample column has been specified. Please ",
-        "review your input!"
-      )
+      stop(MAIN_ERROR_NO_SAMPLE_COL_SPECIFIED)
+
+    # Carry out further checks and processing on the metadata file path.
     } else {
-      metadata_columns <- parse_delimited_list(
-        del_list = metadata_columns,
-        delimiter = ","
-      )
+      # Check if the metadata file exists and is not empty.
+      check_file(file_path = metadata_path)
+
+      # Parse the comma-delimited column list.
+      metadata_columns <- parse_delimited_list(del_list = metadata_columns, delimiter = ",")
+
+      # Load the metadata table and check if the user-defined columns are present.
+      metadata <- loadMetadata(metadata_path, verbose = FALSE)
+      check_columns(df = metadata, columns = c(metadata_sample_col, metadata_columns))
     }
   }
 
   ########################
-  #  CHECKS FOR REFERENCE #
+  # CHECKS FOR REFERENCE #
   ########################
 
   # Check the integrity of the reference file.
   check_file(reference_path)
 
   #####################
-  #  CHECKS FOR PREFIX #
+  # CHECKS FOR PREFIX #
   #####################
 
-  #  Check prefix (if provided).
-  if (is.na(prefix)) {
-    message(
-      "LOG WARNING: No prefix has been provided. Carrying on..."
-    )
-  } else {
-    prefix <- check_prefix(prefix)
-  }
+  # Check prefix.
+  if (prefix == "") message(MAIN_WARNING_PREFIX_NOT_PROVIDED)
+  else prefix <- check_prefix(prefix)
 
   ###############################
-  #  CHECKS FOR OUTPUT DIRECTORY #
+  # CHECKS FOR OUTPUT DIRECTORY #
   ###############################
 
-  # Check the integrity of the output directory.
-  outdir_path <- check_directory(outdir_path)
+  # Check the output directory.
+  outdir_path <- check_directory(outdir_path, expectation = "empty")
 
   #####################
-  #  CHECKS FOR DOMAIN #
+  # CHECKS FOR DOMAIN #
   #####################
 
+  # Check the user-specified domain(s).
   domain <- parse_delimited_list(domain, ",")
-
-  # Check the integrity of the domain specified.
   for (d in domain) check_domain(d)
 
   ####################################
-  #  CHECKS FOR SAMPLES TO BE REMOVED #
+  # CHECKS FOR SAMPLES TO BE REMOVED #
   ####################################
 
-  if (!is.na(remove)) {
-    # Check the integrity of the samples-to-remove file specified.
-    check_file(remove)
-  } else {
-    message(
-      "LOG WARNING: No list of samples to be removed has been provided. ",
-      "Carrying on..."
-    )
-  }
+  # Check the integrity of the samples-to-remove file specified.
+  if (!is.na(samples_to_remove_path)) check_file(samples_to_remove_path)
+  else message(MAIN_WARNING_NO_SAMPLES_TO_REMOVE_PROVIDED)
 
-  #############
-  #  LOAD DATA #
-  #############
-
-  samples_to_remove <- NA
-  if (!is.na(remove)) {
-    #  Load samples-to-remove file.
-    samples_to_remove <- loadSamplesToRemove(
-      filepath = remove,
-      verbose = verbose
-    )
-  }
-
-  # Read standard reports.
-  std_reports <- load_STDreports(
-    reports_paths[[1]],
-    samples_to_remove = samples_to_remove,
-    verbose = verbose
+  return(
+    list(
+      std_reports_path,
+      mpa_reports_path,
+      reference_path,
+      metadata_path,
+      metadata_sample_col,
+      metadata_columns,
+      outdir_path,
+      prefix,
+      domain,
+      samples_to_remove_path)
   )
+}
 
-  #  Read MPA-style reports.
-  mpa_reports <- load_MPAreports(
-    reports_paths[[2]],
-    samples_to_remove = samples_to_remove,
-    verbose = verbose
-  )
-
-  #  Merge standard and MPA-style reports.
-  merged_reports <- mergeReports(std_reports, mpa_reports)
-
-  # Read reference database data.
-  ref_db <- loadReference(reference_path)
-
-  #  Read metadata (if any).
-  metadata <- NA
-  if (!(is.na(metadata_path))) {
-    #  Load metadata table.
-    metadata <- loadMetadata(metadata_path)
-
-    # Check columns are present in metadata table.
-    check_columns(
-      df = metadata,
-      columns = c(metadata_sample_col, metadata_columns)
-    )
-
-    #  Add metadata to merged reports.
-    merged_reports <- addMetadata(
-      merged_reports, metadata,
-      metadata_sample_col, metadata_columns
-    )
-  } else {
-    message("LOG WARNING: No metadata was added to the reports.")
-  }
-
-  return(list(
-    merged_reports,
-    ref_db,
-    metadata,
+#' PREPARE DATA
+#'
+#' @param std_reports_path Path to directory containing standard Kraken2 reports.
+#' @param mpa_reports_path Path to directory containing MPA-style reports.
+#' @param reference_path Path to file containing information on a Kraken2 reference database.
+#' @param metadata_path Path to metadata file.
+#' @param verbose Verbosity level.
+#' @return Processed data ready for downstream steps.
+#'
+load_data <- function(
+    std_reports_path,
+    mpa_reports_path,
+    reference_path,
+    metadata_path,
     metadata_sample_col,
     metadata_columns,
     outdir_path,
     prefix,
-    domain
-  ))
+    verbose,
+    domain,
+    samples_to_remove_path) {
+
+  # Check the user-defined inputs to ensure everything is ok
+  # before starting loading and processing the data.
+  checked_inputs <- check_inputs(
+    std_reports_path = std_reports_path,
+    mpa_reports_path = mpa_reports_path,
+    reference_path = reference_path,
+    metadata_path = metadata_path,
+    metadata_sample_col = metadata_sample_col,
+    metadata_columns = metadata_columns,
+    outdir_path = outdir_path,
+    prefix = prefix,
+    verbose = verbose,
+    domain = domain,
+    samples_to_remove_path = samples_to_remove_path
+  )
+  std_reports_path <- checked_inputs[[1]]
+  mpa_reports_path <- checked_inputs[[2]]
+  reference_path <- checked_inputs[[3]]
+  metadata_path <- checked_inputs[[4]]
+  metadata_sample_col <- checked_inputs[[5]]
+  metadata_columns <- checked_inputs[[6]]
+  outdir_path <- checked_inputs[[7]]
+  prefix <- checked_inputs[[8]]
+  domain <- checked_inputs[[9]]
+  samples_to_remove_path <- checked_inputs[[10]]
+
+  #  Load the samples-to-remove file.
+  samples_to_remove <- NA
+  if (!is.na(samples_to_remove_path)) {
+    samples_to_remove <- loadSamplesToRemove(filepath = samples_to_remove_path, verbose = verbose)
+  }
+
+  # Load standard and MPA-style reports, and merge them afterwards.
+  std_reports <- load_STDreports(std_reports_path, samples_to_remove = samples_to_remove, verbose = verbose)
+  mpa_reports <- load_MPAreports(mpa_reports_path, samples_to_remove = samples_to_remove, verbose = verbose)
+  merged_reports <- mergeReports(std_reports, mpa_reports, verbose = verbose)
+
+  # Load reference database data.
+  ref_db <- loadReference(reference_path)
+
+  # Load the metadata table.
+  metadata <- NA
+  if (!(is.na(metadata_path))) {
+    metadata <- loadMetadata(metadata_path, verbose = TRUE)
+
+    # Ensure that the user-specified columns are present in the metadata table provided.
+    check_columns(df = metadata, columns = c(metadata_sample_col, metadata_columns))
+
+    # Add metadata to merged reports.
+    merged_reports <- addMetadata(merged_reports, metadata, metadata_sample_col, metadata_columns, verbose = verbose)
+
+  # Throw a warning message if no metadata table has been provided.
+  } else message(MAIN_WARNING_NO_METADATA_ADDED)
+
+  return(
+    list(merged_reports, ref_db, metadata, metadata_sample_col, metadata_columns, outdir_path, prefix, domain)
+  )
 }
 
 #' PROCESS DATA
@@ -204,8 +205,10 @@ run_sparki <- function(
     include_eukaryotes,
     include_sample_names,
     domain,
-    remove) {
-  prepared_data <- prepare_data(
+    samples_to_remove) {
+
+  # Load data.
+  loaded_data <- load_data(
     std_reports_path = std_reports_path,
     mpa_reports_path = mpa_reports_path,
     reference_path = reference_path,
@@ -216,21 +219,22 @@ run_sparki <- function(
     prefix = prefix,
     verbose = verbose,
     domain = domain,
-    remove = remove
+    samples_to_remove = samples_to_remove
   )
+  merged_reports <- loaded_data[[1]]
+  ref_db <- loaded_data[[2]]
+  mdata <- loaded_data[[3]]
+  sample_col <- loaded_data[[4]]
+  columns <- loaded_data[[5]]
+  outdir <- loaded_data[[6]]
+  prefix <- loaded_data[[7]]
+  domain <- loaded_data[[8]]
 
-  merged_reports <- prepared_data[[1]]
-  ref_db <- prepared_data[[2]]
-  mdata <- prepared_data[[3]]
-  sample_col <- prepared_data[[4]]
-  columns <- prepared_data[[5]]
-  outdir <- prepared_data[[6]]
-  prefix <- prepared_data[[7]]
-  domain <- prepared_data[[8]]
-
+  # Add sample sizes and minimiser data to the merged reports table.
   merged_reports <- addSampleSize(merged_reports, verbose = verbose)
   merged_reports <- addMinimiserData(merged_reports, ref_db, verbose = verbose)
 
+  # Make a violin plot with the classification summary.
   plotClassificationSummary_violin(
     merged_reports,
     return_plot = FALSE,
@@ -238,6 +242,7 @@ run_sparki <- function(
     prefix = prefix
   )
 
+  # Make a barplot with the classification summary.
   plotClassificationSummary_barplot(
     merged_reports,
     include_sample_names = include_sample_names,
@@ -286,10 +291,7 @@ run_sparki <- function(
     prefix = prefix
   )
 
-  write.csv(
-    merged_reports,
-    paste0(outdir, prefix, "pre_filtering_and_statistics.csv")
-  )
+  write.csv(merged_reports, paste0(outdir, prefix, "pre_filtering_and_statistics.csv"))
 
   merged_reports <- subsetReports(merged_reports, species = organism, verbose = verbose)
   merged_reports <- assessMinimiserRatio(merged_reports, verbose = verbose)
@@ -314,8 +316,5 @@ run_sparki <- function(
     )
   }
 
-  write.csv(
-    merged_reports,
-    paste0(outdir, prefix, "final_table_with_pvalues.csv")
-  )
+  write.csv(merged_reports, paste0(outdir, prefix, "final_table_with_pvalues.csv"))
 }

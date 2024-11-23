@@ -50,7 +50,10 @@ loadReference <- function(reference_path, n_header_lines = 7) {
 #'
 loadMetadata <- function(metadata, verbose) {
   #  Read metadata file.
-  mdata <- readr::read_delim(metadata)
+  mdata <- readr::read_delim(
+    metadata,
+    show_col_types = FALSE # Supressing messages about column types when the dataframe is created.
+  )
 
   if (verbose) message(LOAD_METADATA_INFO_SUCCESS)
 
@@ -238,7 +241,11 @@ load_STDreports <- function(std_reports_dir, samples_to_remove, verbose = FALSE)
 #' @export
 #'
 loadSamplesToRemove <- function(filepath, verbose) {
-  samples_to_remove <- readr::read_table(filepath, col_names = "sample")
+  samples_to_remove <- readr::read_table(
+    filepath,
+    col_names = "sample",
+    show_col_types = FALSE # Supressing messages about column types when the dataframe is created.
+  )
 
   if (verbose) {
     message(LOAD_SAMPLES_TO_REMOVE_WARNING, paste(samples_to_remove[["sample"]], collapse = ","))

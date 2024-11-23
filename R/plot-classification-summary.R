@@ -115,8 +115,7 @@ plotClassificationSummary_violin <- function(report, return_plot, outdir, prefix
 
   #  Decide what to do with plot based on user-defined options.
   handlePlot(
-    plot = plot, prefix = prefix, return_plot = return_plot,
-    filename = "nReads_classified_vs_unclassified_absNumbers_violinPlot.pdf",
+    plot = plot, prefix = prefix, return_plot = return_plot, filename = paste0(PLOT_CLASSIF_SUMMARY_VIOLIN, ".pdf"),
     outdir = outdir, fig_width = 3, fig_height = 4
   )
 }
@@ -138,7 +137,7 @@ plotClassificationSummary_barplot <- function(
     report, include_sample_names = FALSE, orientation = "vertical",
     return_plot, outdir, prefix = "") {
   # Stop if report provided is in MPA-style format.
-  if (is_mpa(report)) stop(paste0("This function is not applicable to MPA-style reports."))
+  if (is_mpa(report)) stop("This function is not applicable to MPA-style reports.")
 
   #  Assign NA to outdir in case it has not been provided by the user.
   if (missing(outdir)) outdir <- NA
@@ -183,7 +182,7 @@ plotClassificationSummary_barplot <- function(
   adjusted_plot <- adjust_barplot(
     plot = plot, n_samples = length(unique(report[, COLNAME_STD_SAMPLE])),
     include_sample_names = include_sample_names, orientation = orientation,
-    filename = "nReads_classified_vs_unclassified_proportion_perSample_barPlot"
+    filename = PLOT_CLASSIF_SUMMARY_BARPLOT
   )
 
   #  Decide what to do with plot based on user-defined options.
@@ -196,7 +195,7 @@ plotClassificationSummary_barplot <- function(
 
 plotClassificationProportion <- function(report, return_plot, outdir, prefix = "") {
   # Stop if report provided is in MPA-style format.
-  if (is_mpa(report)) stop(paste0("This function is not applicable to MPA-style reports."))
+  if (is_mpa(report)) stop("This function is not applicable to MPA-style reports.")
 
   #  Assign NA to outdir in case it has not been provided by the user.
   if (missing(outdir)) outdir <- NA
@@ -228,8 +227,7 @@ plotClassificationProportion <- function(report, return_plot, outdir, prefix = "
 
   #  Decide what to do with plot based on user-defined options.
   handlePlot(
-    plot = plot, prefix = prefix, return_plot = return_plot,
-    filename = "nReads_classifiedProportion_violinPlot.pdf",
+    plot = plot, prefix = prefix, return_plot = return_plot, filename = paste0(PLOT_CLASSIF_PROPORTION, ".pdf"),
     outdir = outdir, fig_width = 3, fig_height = 4
   )
 }
