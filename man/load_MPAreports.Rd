@@ -4,7 +4,7 @@
 \alias{load_MPAreports}
 \title{LOAD MPA-STYLE REPORTS}
 \usage{
-load_MPAreports(mpa_reports_dir, verbose = TRUE)
+load_MPAreports(mpa_reports_dir, samples_to_remove, verbose)
 }
 \arguments{
 \item{mpa_reports_dir}{Path to a directory containing MPA-style reports.}

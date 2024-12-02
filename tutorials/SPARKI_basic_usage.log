@@ -368,7 +368,7 @@ Package hyperref Info: Link coloring OFF on input line 108.
 * paper: <default>
 * layout: <same size as paper>
 * layoutoffset:(h,v)=(0.0pt,0.0pt)
-* modes: 
+* modes:
 * h-part:(L,W,R)=(72.26999pt, 469.75502pt, 72.26999pt)
 * v-part:(T,H,B)=(72.26999pt, 650.43001pt, 72.26999pt)
 * \paperwidth=614.295pt
@@ -560,7 +560,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 503--505
 LaTeX2e <2024-06-01> patch level 2
 L3 programming layer <2024-07-20>
  ***********
- ) 
+ )
 Here is how much of TeX's memory you used:
  11624 strings out of 475539
  180034 string characters out of 5777353
@@ -576,4 +576,3 @@ PDF statistics:
  105 compressed objects within 2 object streams
  26 named destinations out of 1000 (max. 500000)
  73 words of extra memory for PDF output out of 10000 (max. 10000000)
-

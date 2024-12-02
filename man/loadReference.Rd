@@ -4,7 +4,7 @@
 \alias{loadReference}
 \title{LOAD INFORMATION FROM KRAKEN2'S REFERENCE DATABASE}
 \usage{
-loadReference(reference_path, n_header_lines = 7)
+loadReference(reference_path, n_header_lines = 7, verbose)
 }
 \arguments{
 \item{reference_path}{Path to an 'inspect.txt' file inside a Kraken2 reference database.}

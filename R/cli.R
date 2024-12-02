@@ -1,20 +1,3 @@
-# my_library <- "/opt/repo/"
-# source(paste0(my_library, "R/main.R"))
-# source(paste0(my_library, "R/exceptions.R"))
-# source(paste0(my_library, "R/load-data.R"))
-# source(paste0(my_library, "R/plot-classification-summary.R"))
-# source(paste0(my_library, "R/plot-domain-reads.R"))
-# source(paste0(my_library, "R/plot-minimisers.R"))
-# source(paste0(my_library, "R/plot-read-distribution.R"))
-# source(paste0(my_library, "R/plot-significance.R"))
-# source(paste0(my_library, "R/reports-add-info.R"))
-# source(paste0(my_library, "R/reports-assess-statistics.R"))
-# source(paste0(my_library, "R/reports-merge.R"))
-# source(paste0(my_library, "R/reports-subset.R"))
-# source(paste0(my_library, "R/utils.R"))
-# source(paste0(my_library, "R/constants.R"))
-
-
 #' Command Line Interface for SPARKI
 #'
 #' @return NULL
@@ -82,7 +65,7 @@ cli <- function() {
       c("-p", "--prefix"),
       dest = "prefix",
       action = "store",
-      default = NA,
+      default = "",
       type = "character",
       help = "Prefix of output files."
     ),
@@ -128,7 +111,7 @@ cli <- function() {
     ),
     optparse::make_option(
       c("-s", "--samples-to-remove"),
-      dest = "remove",
+      dest = "samples_to_remove",
       action = "store",
       default = NA,
       type = "character",
@@ -138,7 +121,8 @@ cli <- function() {
       c("--version"),
       action = "store_true",
       default = FALSE,
-      help = "Print version information and exit"
+      type = "logical",
+      help = "Print version information and exit."
     )
   )
 
@@ -163,8 +147,36 @@ cli <- function() {
     return(invisible())
   }
 
-  # Compute PCA analysis
-  process_kraken2(
+  #  Check all required arguments have been provided.
+  required_arguments <- c(
+    arguments$std_reports, arguments$mpa_reports, arguments$organism,
+    arguments$refdb, arguments$outdir, arguments$domain
+  )
+  for (argument in required_arguments) {
+    if (is.na(argument)) stop(CLI_ERROR_ARGUMENT_NOT_PROVIDED, argument)
+  }
+
+  # If verbose, print all arguments to be used.
+  if (arguments$verbose) {
+    message(CLI_INFO_ARGUMENTS)
+    message(CLI_INFO_ARGUMENT_STD_REPORTS, arguments$std_reports)
+    message(CLI_INFO_ARGUMENT_MPA_REPORTS, arguments$mpa_reports)
+    message(CLI_INFO_ARGUMENT_ORGANISM, arguments$organism)
+    message(CLI_INFO_ARGUMENT_REFERENCE, arguments$refdb)
+    message(CLI_INFO_ARGUMENT_METADATA, arguments$metadata)
+    message(CLI_INFO_ARGUMENT_SAMPLE_COL, arguments$sample_col)
+    message(CLI_INFO_ARGUMENT_COLUMNS, arguments$columns)
+    message(CLI_INFO_ARGUMENT_OUTDIR, arguments$outdir)
+    message(CLI_INFO_ARGUMENT_PREFIX, arguments$prefix)
+    message(CLI_INFO_ARGUMENT_VERBOSE, arguments$verbose)
+    message(CLI_INFO_ARGUMENT_INC_EUKARYOTES, arguments$inc_eukaryotes)
+    message(CLI_INFO_ARGUMENT_INC_SAMPLE_NAMES, arguments$inc_sample_names)
+    message(CLI_INFO_ARGUMENT_DOMAIN, arguments$domain)
+    message(CLI_INFO_ARGUMENT_SAMPLES_TO_REMOVE, arguments$samples_to_remove)
+  }
+
+  # Carry out SPARKI analysis.
+  run_sparki(
     std_reports_path = arguments$std_reports,
     mpa_reports_path = arguments$mpa_reports,
     organism = arguments$organism,
@@ -178,6 +190,6 @@ cli <- function() {
     include_eukaryotes = arguments$inc_eukaryotes,
     include_sample_names = arguments$inc_sample_names,
     domain = arguments$domain,
-    remove = arguments$remove
+    samples_to_remove = arguments$samples_to_remove
   )
 }

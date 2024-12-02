@@ -4,7 +4,7 @@
 \alias{addSampleSize}
 \title{CALCULATE SAMPLE SIZES}
 \usage{
-addSampleSize(report)
+addSampleSize(report, verbose)
 }
 \arguments{
 \item{report}{A report.}

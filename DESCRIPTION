@@ -1,6 +1,6 @@
 Package: SPARKI
 Title: A tool for the interpretation of pathogen identification results
-Version: 0.0.3
+Version: 0.0.4
 Authors@R: c(
     person("Jacqueline", "Boccacino", email = "jb62@sanger.ac.uk", role = c("cre", "aut"),
            comment = c(ORCID = "0000-0001-6813-5217")),
@@ -13,7 +13,7 @@ Description: SPARKI (Statistical Process Aimed at Robust Kraken 2 Interpretation
 License: AGPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Depends:
     R (>= 4.2.0)
 Imports:
@@ -31,4 +31,6 @@ Suggests:
     roxygen2 (>= 7.0.0),
     styler (>= 1.9.0),
     processx (>= 3.8.0),
+    withr,
+    glue
 Config/testthat/edition: 3

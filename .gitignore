@@ -84,3 +84,13 @@ rsconnect/
 test/*
 from-farm22/*
 tests/testthat/_snaps
+renv/*
+manual-outdir/foo-__distribution_histogram.pdf
+manual-outdir/foo-__distribution_violin.pdf
+manual-outdir/foo-__nReads_classified_vs_unclassified_absNumbers_violinPlot.pdf
+manual-outdir/foo-__nReads_classified_vs_unclassified_proportion_perSample_barPlothorizontal_withoutSampleNames.pdf
+manual-outdir/foo-__nReads_classifiedProportion_violinPlot.pdf
+manual-outdir/foo-__nReadsDomains_barplot_without_eukaryoteshorizontal_withoutSampleNames.pdf
+manual-outdir/foo-__nReadsDomains_violin_without_eukaryotes.pdf
+manual-outdir/foo-__SignificanceSummary.pdf
+manual-outdir/foo-_pre_filtering_and_statistics.csv
