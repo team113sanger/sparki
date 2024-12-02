@@ -1,4 +1,4 @@
-# :sparkles: SPARKI: a tool for the interpretation of pathogen identification results :sparkles:
+# ✨ SPARKI: a tool for the interpretation of pathogen identification results ✨
 
 This repository contains the code related to SPARKI (**S**tatistical **P**rocess **A**imed at **R**obust **K**raken2 **I**nterpretation), a framework developed in R to help collate, refine, visualise & interpret Kraken2 outputs.
 
