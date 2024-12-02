@@ -12,6 +12,7 @@ describe("load_MPAreports()", {
     actual_number_of_columns <- ncol(out)
 
     # Carry out tests.
+    expect_s3_class(out, "data.frame")
     expect_false(actual_number_of_rows == 0)
     expect_false(actual_number_of_columns == 0)
     expect_false(is.null(dim(out)))
@@ -29,7 +30,7 @@ describe("load_MPAreports()", {
     expect_type(out[[SPARKI:::COLNAME_MPA_SAMPLE]], "character")
     expect_type(out[[SPARKI:::COLNAME_MPA_TAXON_LEAF]], "character")
     expect_type(out[[SPARKI:::COLNAME_MPA_RANK]], "character")
-    expect_type(out[[SPARKI:::COLNAME_MPA_N_FRAG_CLADE]], "double")
+    expect_type(out[[SPARKI:::COLNAME_MPA_N_FRAG_CLADE]], "integer")
     expect_type(out[[SPARKI:::COLNAME_MPA_DOMAIN]], "character")
     expect_type(out[[SPARKI:::COLNAME_MPA_KINGDOM]], "character")
     expect_type(out[[SPARKI:::COLNAME_MPA_PHYLUM]], "character")
@@ -170,6 +171,7 @@ describe("load_STDreports()", {
     actual_number_of_columns <- ncol(out)
 
     # Carry out tests.
+    expect_s3_class(out, "data.frame")
     expect_false(actual_number_of_rows == 0)
     expect_false(actual_number_of_columns == 0)
     expect_false(is.null(dim(out)))
@@ -186,12 +188,12 @@ describe("load_STDreports()", {
     # Carry out tests.
     expect_type(out[[SPARKI:::COLNAME_STD_SAMPLE]], "character")
     expect_type(out[[SPARKI:::COLNAME_STD_PCT_FRAG_CLADE]], "double")
-    expect_type(out[[SPARKI:::COLNAME_STD_N_FRAG_CLADE]], "double")
-    expect_type(out[[SPARKI:::COLNAME_STD_N_FRAG_TAXON]], "double")
-    expect_type(out[[SPARKI:::COLNAME_STD_MINIMISERS]], "double")
-    expect_type(out[[SPARKI:::COLNAME_STD_UNIQ_MINIMISERS]], "double")
+    expect_type(out[[SPARKI:::COLNAME_STD_N_FRAG_CLADE]], "integer")
+    expect_type(out[[SPARKI:::COLNAME_STD_N_FRAG_TAXON]], "integer")
+    expect_type(out[[SPARKI:::COLNAME_STD_MINIMISERS]], "integer")
+    expect_type(out[[SPARKI:::COLNAME_STD_UNIQ_MINIMISERS]], "integer")
     expect_type(out[[SPARKI:::COLNAME_STD_RANK]], "character")
-    expect_type(out[[SPARKI:::COLNAME_STD_NCBI_ID]], "double")
+    expect_type(out[[SPARKI:::COLNAME_STD_NCBI_ID]], "character")
     expect_type(out[[SPARKI:::COLNAME_STD_TAXON]], "character")
   })
 

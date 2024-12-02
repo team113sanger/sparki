@@ -2,7 +2,7 @@
 % Please edit documentation in R/main.R
 \name{run_sparki}
 \alias{run_sparki}
-\title{PROCESS DATA}
+\title{RUN AN END-TO-END SPARKI ANALYSIS}
 \usage{
 run_sparki(
   std_reports_path,
@@ -22,19 +22,40 @@ run_sparki(
 )
 }
 \arguments{
-\item{std_reports_path}{Path to directory containing standard Kraken2 reports.}
+\item{std_reports_path}{Path to a directory containing standard Kraken2 reports.}
 
-\item{mpa_reports_path}{Path to directory containing MPA-style reports.}
+\item{mpa_reports_path}{Path to a directory containing MPA-style reports.}
 
-\item{reference_path}{Path to file containing information on a Kraken2 reference database.}
+\item{organism}{Species being analysed (e.g. Homo sapiens).}
+
+\item{reference_path}{Path to an "inspect.txt" file in a Kraken2 reference database.}
 
 \item{metadata_path}{Path to metadata file.}
 
-\item{verbose}{Verbosity level.}
+\item{metadata_sample_col}{The name of the column that contains sample IDs in the metadata table
+specified via 'metadata_path'.}
+
+\item{metadata_columns}{Comma-separated column names from the metadata table specified via 'metadata_path'.}
+
+\item{outdir_path}{Path to an output directory.}
+
+\item{prefix}{Prefix to be added to output files.}
+
+\item{verbose}{Whether to run in verbose mode.}
+
+\item{include_eukaryotes}{Whether eukaryotes should be included in all output plots (some plots will have
+eukaryotes included regardless of this option).}
+
+\item{include_sample_names}{Whether sample names should be included in all output plots (some plots will
+have sample names included regardless of this option).}
+
+\item{domain}{Domain(s) of interest (one of "Eukaryota", "Bacteria", "Viruses" or "Archaea").}
+
+\item{samples_to_remove}{A list of samples that should not be included in the SPARKI analysis.}
 }
 \value{
 Processed reports ready for downstream analysis.
 }
 \description{
-PROCESS DATA
+RUN AN END-TO-END SPARKI ANALYSIS
 }

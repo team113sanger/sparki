@@ -157,3 +157,15 @@ check_domain <- function(domain) {
     stop(EXCEPTIONS_CHECK_DOMAIN_NOT_VALID, domain)
   }
 }
+
+check_organism <- function(std_reports_path, mpa_reports_path, organism) {
+  std_reports <- load_STDreports(std_reports_path, verbose = FALSE)
+  if (!(organism %in% std_reports[[COLNAME_STD_TAXON]])) {
+    stop(EXCEPTIONS_CHECK_ORGANISM_STD, organism)
+  }
+
+  mpa_reports <- load_MPAreports(mpa_reports_path, verbose = FALSE)
+  if (!(organism %in% mpa_reports[[COLNAME_MPA_SPECIES]])) {
+    stop(EXCEPTIONS_CHECK_ORGANISM_MPA, organism)
+  }
+}

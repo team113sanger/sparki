@@ -15,7 +15,7 @@ Checked prefix.
 \description{
 This function takes a prefix and performs a few checks:
 \enumerate{
-\item First, it checks if the prefix corresponds to the appropriate class ("character").
+\item First, it checks if the prefix corresponds to the appropriate type ("character").
 \item Second, it ensures that there is an underscore symbol ("_") at the end of the prefix.
 }
 }

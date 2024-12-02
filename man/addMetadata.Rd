@@ -4,7 +4,7 @@
 \alias{addMetadata}
 \title{ADD COLUMNS FROM ONE DATAFRAME TO ANOTHER}
 \usage{
-addMetadata(report, metadata, metadata_sample_col, metadata_columns)
+addMetadata(report, metadata, metadata_sample_col, metadata_columns, verbose)
 }
 \arguments{
 \item{categories}{Categories of interest from df2 that should be added to df1.}

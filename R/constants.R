@@ -121,6 +121,11 @@ MAIN_WARNING_PREFIX_NOT_PROVIDED <- "LOG WARNING: No prefix has been provided. C
 MAIN_WARNING_NO_SAMPLES_TO_REMOVE_PROVIDED <- "LOG WARNING: No list of samples to be removed has been provided. Carrying on..."
 MAIN_WARNING_METADATA_NOT_PROVIDED <- "LOG WARNING: No metadata file has been provided. Carrying on..."
 MAIN_WARNING_NO_METADATA_ADDED <- "LOG WARNING: No metadata was added to the reports. Carrying on..."
+MAIN_ERROR_NO_STD_PROVIDED <- "LOG ERROR: No standard reports directory has been specified. Please review your input!"
+MAIN_ERROR_NO_MPA_PROVIDED <- "LOG ERROR: No MPA-style reports directory has been specified. Please review your input!"
+MAIN_ERROR_NO_REF_PROVIDED <- "LOG ERROR: No reference database file has been specified. Please review your input!"
+MAIN_ERROR_NO_OUTDIR_PROVIDED <- "LOG ERROR: No output directory has been specified. Please review your input!"
+MAIN_ERROR_NO_DOMAIN_PROVIDED <- "LOG ERROR: No domain has been specified. Please review your input!"
 MAIN_ERROR_NO_COLUMNS_SPECIFIED <- "LOG ERROR: A metadata table has been provided, but no columns have been specified. Please review your input!"
 MAIN_ERROR_NO_SAMPLE_COL_SPECIFIED <- "LOG ERROR: A metadata table has been provided, but no sample column has been specified. Please review your input!"
 
@@ -143,6 +148,9 @@ EXCEPTIONS_CHECK_COLUMNS <- "LOG ERROR: The column provided does not exist in th
 EXCEPTIONS_CHECK_PREFIX_NOT_CHARACTER <- "LOG ERROR: The prefix must be of class 'character', but got: "
 
 EXCEPTIONS_CHECK_DOMAIN_NOT_VALID <- "LOG ERROR: The domain specified is not a valid. Please choose from 'Viruses', 'Bacteria', 'Archaea' or 'Eukaryota'. The value provided was: "
+
+EXCEPTIONS_CHECK_ORGANISM_STD <- "LOG ERROR: The organism specified was not found in the standard reports. Please review your input! The organism provided was: "
+EXCEPTIONS_CHECK_ORGANISM_MPA <- "LOG ERROR: The organism specified was not found in the MPA-style reports. Please review your input! The organism provided was: "
 
 #### Output file names ####
 PLOT_CLASSIF_SUMMARY_VIOLIN <- "nReads_classified_vs_unclassified_absNumbers_violinPlot"

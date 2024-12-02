@@ -4,24 +4,26 @@
 \alias{check_directory}
 \title{CARRY OUT CHECKS ON A GIVEN DIRECTORY}
 \usage{
-check_directory(dirpath)
+check_directory(dirpath, expectation)
 }
 \arguments{
 \item{dirpath}{Path to a given directory.}
+
+\item{expectation}{One of "empty" or "not_empty".}
 }
 \value{
 Checked path to the given directory.
 }
 \description{
 This function takes the path to a given directory and performs a few checks:
-\enumerate{
-\item First, it checks if the directory exists.
-\item Second, it checks if the directory is empty.
-\item Last, it ensures that the last character in the path is a slash symbol ("/").
+\itemize{
+\item It checks if the directory exists.
+\item It checks if the directory is empty or not depending on the expectation.
+\item It ensures that the last character in the path is a slash symbol ("/").
 }
 }
 \examples{
-check_directory(dirpath = "path/to/directory")
+check_directory(dirpath = "path/to/directory", expectation = "empty")
 
 }
 \seealso{

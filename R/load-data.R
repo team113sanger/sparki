@@ -8,7 +8,7 @@
 #' @return A dataframe containing the information from the 'inspect.txt' file.
 #' @export
 #'
-loadReference <- function(reference_path, n_header_lines = 7) {
+loadReference <- function(reference_path, n_header_lines = 7, verbose) {
   # Read Kraken2 reference file (inspect.txt).
   ref <- read.table(
     reference_path,
@@ -19,6 +19,7 @@ loadReference <- function(reference_path, n_header_lines = 7) {
     quote = "",
     stringsAsFactors = FALSE
   )
+
   #  Add column names.
   colnames(ref) <- c(
     COLNAME_REF_DB_PCT_FRAG_CLADE,
@@ -30,8 +31,9 @@ loadReference <- function(reference_path, n_header_lines = 7) {
   )
 
   ref[, COLNAME_REF_DB_TAXON] <- gsub("^[[:space:]]\\s*(.*?)", "", ref[, COLNAME_REF_DB_TAXON], perl = TRUE)
+  ref[, COLNAME_REF_DB_NCBI_ID] <- as.character(ref[, COLNAME_REF_DB_NCBI_ID])
 
-  message("LOG INFO: Reference database info loaded successfully!")
+  if (verbose) message("LOG INFO: Reference database info loaded successfully!")
 
   return(ref)
 }
@@ -117,7 +119,7 @@ check_for_empty_files <- function(file_list, verbose) {
 #' @export
 #'
 load_MPAreports <- function(mpa_reports_dir, samples_to_remove, verbose) {
-  #  Get paths to MPA-style reports in a specified directory.
+  # Get paths to MPA-style reports in a specified directory.
   mpa_files <- fs::dir_ls(mpa_reports_dir, glob = "*.mpa$")
 
   #  Check if directory really has any MPA-style reports...
@@ -133,6 +135,7 @@ load_MPAreports <- function(mpa_reports_dir, samples_to_remove, verbose) {
     mpa_files,
     col_names = c(COLNAME_MPA_TAXON_HIERARCHY, COLNAME_MPA_N_FRAG_CLADE),
     id = get("COLNAME_MPA_SAMPLE"),
+    col_types = "cic",
     show_col_types = FALSE # Supressing messages about column types when the dataframe is created.
   )
 
@@ -212,6 +215,7 @@ load_STDreports <- function(std_reports_dir, samples_to_remove, verbose = FALSE)
       COLNAME_STD_TAXON
     ),
     id = get("COLNAME_STD_SAMPLE"),
+    col_types = "diiiicccc",
     show_col_types = FALSE # Supressing messages about column types when the dataframe is created.
   ) |>
     # Remove the subranks.
@@ -244,6 +248,7 @@ loadSamplesToRemove <- function(filepath, verbose) {
   samples_to_remove <- readr::read_table(
     filepath,
     col_names = "sample",
+    col_types = "c",
     show_col_types = FALSE # Supressing messages about column types when the dataframe is created.
   )
 

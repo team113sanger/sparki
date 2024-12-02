@@ -7,6 +7,7 @@
 load_data(
   std_reports_path,
   mpa_reports_path,
+  organism,
   reference_path,
   metadata_path,
   metadata_sample_col,
