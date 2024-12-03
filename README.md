@@ -1,4 +1,4 @@
-# :sparkles: SPARKI: a tool for the interpretation of pathogen identification results :sparkles:
+# ✨ SPARKI: a tool for the interpretation of pathogen identification results ✨
 
 This repository contains the code related to SPARKI (**S**tatistical **P**rocess **A**imed at **R**obust **K**raken2 **I**nterpretation), a framework developed in R to help collate, refine, visualise & interpret Kraken2 outputs.
 
@@ -11,10 +11,70 @@ This repository contains the code related to SPARKI (**S**tatistical **P**rocess
 [develop-pipe-badge]: https://gitlab.internal.sanger.ac.uk/team113_projects/jb62-projects/sparki/badges/develop/pipeline.svg
 [develop-branch]: https://gitlab.internal.sanger.ac.uk/team113_projects/jb62-projects/sparki/-/commits/develop
 
-## Installation
+## Table of contents
+- [Installation - quick start](#installation---quick-start)
+    - [Installing with `remotes`](#installing-with-remotes)
+    - [Installing with `renv`](#installing-with-renv)
+    - [Installing a specific tag, branch or commit of `SPARKI`](#installing-a-specific-tag-branch-or-commit-of-sparki)
+
+## Installation - quick start
+
+This package requires a **Personal Access Token** (PAT) to be able to install it from the **Sanger GitLab**. You can generate a PAT by following the instructions [here](https://gitlab.internal.sanger.ac.uk/-/user_settings/personal_access_tokens).
+
+You can install SPARKI using the `remotes` or `renv` package.
+
+If you are installing SPARKI on the Sanger farm you can use R version 4.2 or
+newer. For convenience, you can load the R 4.4 module with the following command:
+
+```bash
+module load rocker/rver/4.4.0
 ```
-git clone git@gitlab.internal.sanger.ac.uk:team113_projects/jb62-projects/sparki.git
-cd sparki
+
+### Installing with `remotes`
+
+Start an R shell, install the `remotes` package if you haven't already, and then
+install SPARKI:
+
+```R
+PAT <- "glpat-...<your-pat-goes-here>..."
+install.packages("remotes")
+remotes::install_gitlab(
+  repo = "team113_projects/jb62-projects/sparki",
+  host = "gitlab.internal.sanger.ac.uk",
+  auth_token = PAT
+)
+```
+
+### Installing with `renv`
+
+If you are using `renv` to manage your R environment, you can add SPARKI to your
+project by running the following commands in an R shell:
+
+```R
+# It is assumed that you have already created an `renv` environment
+options(renv.config.gitlab.host = "gitlab.internal.sanger.ac.uk")
+PAT <- "glpat-...<your-pat-goes-here>..."
+Sys.setenv(GITLAB_PAT = PAT)
+renv::install("gitlab::team113_projects/jb62-projects/sparki")
+```
+
+### Installing a specific tag, branch or commit of `SPARKI`
+
+You can install a specific branch, tag or commit by adding a `@ref` to the end of the repo URL. For example, to install the `develop` branch:
+
+With `remotes`:
+```R
+remotes::install_gitlab(
+  repo = "team113_projects/jb62-projects/sparki@develop",
+  host = "gitlab.internal.sanger.ac.uk",
+  auth_token = "..."
+)
+```
+
+With `renv`:
+```R
+options(renv.config.gitlab.host = "gitlab.internal.sanger.ac.uk")
+renv::install("gitlab::team113_projects/jb62-projects/sparki@develop")
 ```
 
 ## Using SPARKI's command line interface (CLI)
