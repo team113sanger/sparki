@@ -21,6 +21,7 @@ Imports:
     fs,
     ggplot2,
     ggpubr,
+    logger,
     optparse,
     readr,
     tidyr
