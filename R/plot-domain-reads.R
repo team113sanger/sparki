@@ -6,8 +6,6 @@
 #' @return A summary dataframe with the numbers of classified reads per
 #'  domain per sample.
 #'
-#' @export
-#'
 prepare_for_plotDomainReads <- function(report, include_eukaryotes) {
   domains <- "Viruses|Archaea|Bacteria"
   if (include_eukaryotes == TRUE) domains <- paste0("Eukaryota|", domains)
@@ -32,7 +30,7 @@ prepare_for_plotDomainReads <- function(report, include_eukaryotes) {
       !!COLNAME_DOMAIN_READS_LOG_N_FRAG := log10(!!as.name(COLNAME_DOMAIN_READS_N_FRAG))
     )
 
-  logger::log_debug(PLOT_DOMAIN_PREPARE)
+  logger::log_debug(PREPARE_PLOT_DOMAIN_SUCCESS)
 
   return(report)
 }

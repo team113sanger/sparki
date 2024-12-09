@@ -195,7 +195,12 @@ ADD_INFO_SAMPLE_SIZE_SUCCESS <- "The sample sizes were calculated and added to t
 
 # addMinimiserData()
 ADD_INFO_MINIMISERS_SUCCESS <- "The minimiser info was retrieved and added to the report."
+
+# addMetadata()
 ADD_INFO_METADATA_SUCCESS <- "The metadata columns specified were added to the report."
+
+# add_nTaxaInRank()
+ADD_INFO_N_TAXA_SUCCESS <- "The numbers of taxa per rank per sample was were added to the report."
 
 #### plot-classification-summary.R ####
 
@@ -207,6 +212,43 @@ PLOT_CLASS_SUMM_BARPLOT_SUCCESS <- "Created bar plot with classication summary."
 
 # plotClassificationProportion()
 PLOT_CLASS_PROPORTION_SUCCESS <- "Created violin plot with classication proportion."
+
+
+#### plot-domain-reads.R ####
+
+# Shared across functions
+INC_EUKARYOTES_INVALID_VALUE <- "The value of 'include_eukaryotes' should be either TRUE or FALSE, but the value provided was: "
+INC_SAMP_NAMES_INVALID_VALUE <-  "The value of 'include_sample_names' should be either TRUE or FALSE, but the value provided was: "
+
+# prepare_for_plotDomainReads()
+PREPARE_PLOT_DOMAIN_SUCCESS <- "Prepared dataframe with numbers of reads per domain per sample."
+
+# plotDomainReads_violin()
+PLOT_DOMAIN_VIOLIN_SUCCESS <- "Created violin plot with the numbers of classified reads per domain per sample."
+
+# plotDomainReads_barplot()
+PLOT_DOMAIN_BARPLOT_SUCCESS <- "Created bar plot with the numbers of classified reads per domain per sample."
+
+#### plot-minimisers.R ####
+
+# prepare_for_plotMinimisers()
+PREPARE_PLOT_MINIMISERS_SUCCESS <- "Prepared dataframe for plotMinimisers_dotplot()."
+PREPARE_PLOT_MINIMISERS_PADJ_NOT_FOUND <- "The statistical assessment columns have not been found in the report provided as input to prepare_for_plotMinimisers(). Did you forget to run assessStatistics()?"
+
+# plotMinimisers_dotplot()
+PLOT_MINIMISERS_SIGNIF_NOT_FOUND <- "Neither significant or non-significant results were found in the report provided."
+PLOT_MINIMISERS_SUCCESS <- "Created dot plot with minimiser proportions and statistical assessment results."
+
+#### plot-significance.R ####
+
+# getSignificanceSummary()
+GET_SIGNIFICANCE_SIGNIF_NOT_FOUND <- "The statistical assessment columns have not been found in the report provided as input to getSignificanceSummary(). Did you forget to run assessStatistics()?"
+GET_SIGNIFICANCE_SUCCESS <- "Prepared dataframe for plotSignificanceSummary()."
+
+# plotSignificanceSummary()
+PLOT_SIGNIFICANCE_SIGNIF_NOT_FOUND <- "Neither significant or non-significant results were found in the report provided."
+PLOT_SIGNIFICANCE_SUCCESS <- "Created plot with the statistical significance summary."
+
 
 ##-------------------##
 ## OUTPUT FILE NAMES ##

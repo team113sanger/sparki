@@ -145,7 +145,7 @@ plotMinimisers_dotplot <- function(
     ggplot2::ylab("Taxon") +
     ggplot2::ggtitle(
       paste0(
-        "Showing ", n_subset_samples, " samples (out of ", n_all_samples
+        "Showing ", n_subset_samples, " samples (out of ", n_all_samples,
         ") with results available for domain: ", domain
       )
     )

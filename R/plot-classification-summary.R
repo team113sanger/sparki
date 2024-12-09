@@ -82,7 +82,7 @@ getClassificationProportion <- function(report) {
 #'
 #' @export
 #'
-plotClassificationSummary_violin <- function(report, return_plot, outdir, prefix = "") {
+plotClassificationSummary_violin <- function(report, return_plot, outdir, prefix) {
   # Assign NA to outdir in case it has not been provided by the user.
   if (missing(outdir)) outdir <- NA
 
@@ -115,7 +115,7 @@ plotClassificationSummary_violin <- function(report, return_plot, outdir, prefix
     ggplot2::ylab(expression("log"[10] ~ "(# reads)")) +
     ggplot2::scale_color_manual(values = c("indianred2", "royalblue"))
 
-  #  Decide what to do with plot based on user-defined options.
+  # Decide what to do with plot based on user-defined options.
   handlePlot(
     plot = plot, prefix = prefix, return_plot = return_plot, filename = paste0(PLOT_CLASSIF_SUMMARY_VIOLIN, ".pdf"),
     outdir = outdir, fig_width = 3, fig_height = 4
@@ -143,11 +143,11 @@ plotClassificationSummary_violin <- function(report, return_plot, outdir, prefix
 #'
 plotClassificationSummary_barplot <- function(
     report,
-    include_sample_names = FALSE,
+    include_sample_names,
     orientation = "vertical",
     return_plot,
     outdir,
-    prefix = "") {
+    prefix) {
 
   # Assign NA to outdir in case it has not been provided by the user.
   if (missing(outdir)) outdir <- NA
@@ -155,7 +155,7 @@ plotClassificationSummary_barplot <- function(
   # Prepare data for plotting.
   summary <- getClassificationSummary(report)
 
-  #  Create bar plot.
+  # Create bar plot.
   plot <- ggplot2::ggplot(
     summary,
     ggplot2::aes(

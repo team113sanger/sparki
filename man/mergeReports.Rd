@@ -7,15 +7,15 @@
 mergeReports(std_reports, mpa_reports)
 }
 \arguments{
-\item{std_reports}{A dataframe (tibble) with standard reports, loaded with load_STDreports().}
+\item{std_reports}{A dataframe with standard reports, loaded with load_STDreports().}
 
-\item{mpa_reports}{A dataframe (tibble) with MPA-style reports, loaded with load_MPAreports().}
+\item{mpa_reports}{A dataframe with MPA-style reports, loaded with load_MPAreports().}
 }
 \value{
-An updated version of the dataframe (tibble) with standard reports, now containing the
-information from the dataframe (tibble) with MPA-style reports.
+An updated version of the dataframe with standard reports, now containing the
+information from the dataframe with MPA-style reports.
 }
 \description{
-This function takes a standard and an MPA-style dataframe, loaded with load_STDreports() and
-load_MPAreports() respectively, and merges the latter into the former.
+This function takes a standard and an MPA-style dataframe, loaded with load_STDreports()
+and load_MPAreports() respectively, and merges the latter into the former.
 }
