@@ -190,7 +190,6 @@ adjust_barplot <- function(plot, n_samples, include_sample_names, orientation, f
     plot = plot,
     n_samples = n_samples,
     orientation = orientation,
-    include_sample_names = include_sample_names,
     factor = pdf_factor
   )
 
