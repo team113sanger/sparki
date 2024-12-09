@@ -1,3 +1,20 @@
+#' Check input arguments before running the SPARKI analysis
+#'
+#' @param std_reports_path Path to a directory containing standard reports.
+#' @param mpa_reports_path Path to a directory containing MPA-style reports.
+#' @param organism Species-level name of the organism being analysed.
+#' @param reference_path Path to 'inspect.txt' file in a Kraken2 reference database.
+#' @param metadata_path Path to metadata table file.
+#' @param metadata_sample_col Name of column containing sample IDs in the metadata table.
+#' @param metadata_columns Name of columns of interest in the metadata table.
+#' @param outdir_path Path to output directory.
+#' @param prefix Prefix to be added to output file names.
+#' @param domain Domain(s) of interest.
+#' @param samples_to_remove_path Path to file containing a list of samples that should
+#'  be removed from the SPARKI analysis.
+#'
+#' @return A list containing the input arguments after checks.
+#'
 check_inputs <- function(
     std_reports_path,
     mpa_reports_path,
@@ -8,7 +25,6 @@ check_inputs <- function(
     metadata_columns,
     outdir_path,
     prefix,
-    verbose,
     domain,
     samples_to_remove_path) {
 
@@ -17,9 +33,9 @@ check_inputs <- function(
   ######################
 
   # Carry out checks on the directories with standard and MPA-style reports.
-  if (is.na(std_reports_path)) stop(MAIN_ERROR_NO_STD_PROVIDED)
+  if (is.na(std_reports_path)) stop(MAIN_NO_STD_PROVIDED)
   std_reports_path <- check_report_directory(dirpath = std_reports_path, report_format = "std")
-  if (is.na(mpa_reports_path)) stop(MAIN_ERROR_NO_MPA_PROVIDED)
+  if (is.na(mpa_reports_path)) stop(MAIN_NO_MPA_PROVIDED)
   mpa_reports_path <- check_report_directory(dirpath = mpa_reports_path, report_format = "mpa")
 
   #######################
@@ -32,15 +48,19 @@ check_inputs <- function(
   #######################
 
   # Check if a metadata file has been provided.
-  if (is.na(metadata_path)) message(MAIN_WARNING_METADATA_NOT_PROVIDED)
+  if (is.na(metadata_path)) {
+    logger::log_info(MAIN_METADATA_NOT_PROVIDED)
+  }
   else {
     # Check if column names have been specified.
     if (is.na(metadata_columns)) {
-      stop(MAIN_ERROR_NO_COLUMNS_SPECIFIED)
+      logger::log_fatal(MAIN_NO_COLUMNS_SPECIFIED)
+      stop(MAIN_NO_COLUMNS_SPECIFIED)
 
     # Check if a sample column has been specified.
     } else if (is.na(metadata_sample_col)) {
-      stop(MAIN_ERROR_NO_SAMPLE_COL_SPECIFIED)
+      logger::log_fatal(MAIN_NO_SAMPLE_COL_SPECIFIED)
+      stop(MAIN_NO_SAMPLE_COL_SPECIFIED)
 
     # Carry out further checks and processing on the metadata file path.
     } else {
@@ -51,7 +71,7 @@ check_inputs <- function(
       metadata_columns <- parse_delimited_list(del_list = metadata_columns, delimiter = ",")
 
       # Load the metadata table and check if the user-defined columns are present.
-      metadata <- loadMetadata(metadata_path, verbose = FALSE)
+      metadata <- loadMetadata(metadata_path)
       check_columns(df = metadata, columns = c(metadata_sample_col, metadata_columns))
     }
   }
@@ -61,7 +81,10 @@ check_inputs <- function(
   ########################
 
   # Check the integrity of the reference file.
-  if (is.na(reference_path)) stop(MAIN_ERROR_NO_REF_PROVIDED)
+  if (is.na(reference_path)) {
+    logger::log_fatal(MAIN_NO_REF_PROVIDED)
+    stop(MAIN_NO_REF_PROVIDED)
+  }
   check_file(reference_path)
 
   #####################
@@ -69,7 +92,9 @@ check_inputs <- function(
   #####################
 
   # Check prefix.
-  if (prefix == "") message(MAIN_WARNING_PREFIX_NOT_PROVIDED)
+  if (prefix == "") {
+    logger::log_info(MAIN_PREFIX_NOT_PROVIDED)
+  }
   else prefix <- check_prefix(prefix)
 
   ###############################
@@ -77,7 +102,10 @@ check_inputs <- function(
   ###############################
 
   # Check the output directory.
-  if (is.na(outdir_path)) stop(MAIN_ERROR_NO_OUTDIR_PROVIDED)
+  if (is.na(outdir_path)) {
+    logger::log_fatal(MAIN_NO_OUTDIR_PROVIDED)
+    stop(MAIN_NO_OUTDIR_PROVIDED)
+  }
   outdir_path <- check_directory(outdir_path, expectation = "empty")
 
   #####################
@@ -85,7 +113,10 @@ check_inputs <- function(
   #####################
 
   # Check the user-specified domain(s).
-  if (is.na(domain)) stop(MAIN_ERROR_NO_DOMAIN_PROVIDED)
+  if (is.na(domain)) {
+    logger::log_fatal(MAIN_NO_DOMAIN_PROVIDED)
+    stop(MAIN_NO_DOMAIN_PROVIDED)
+  }
   domain <- parse_delimited_list(domain, ",")
   for (d in domain) check_domain(d)
 
@@ -94,8 +125,12 @@ check_inputs <- function(
   ####################################
 
   # Check the integrity of the samples-to-remove file specified.
-  if (!is.na(samples_to_remove_path)) check_file(samples_to_remove_path)
-  else message(MAIN_WARNING_NO_SAMPLES_TO_REMOVE_PROVIDED)
+  if (!is.na(samples_to_remove_path)) {
+    check_file(samples_to_remove_path)
+  }
+  else {
+    logger::log_info(MAIN_NO_SAMPLES_TO_REMOVE_PROVIDED)
+  }
 
   return(
     list(
@@ -112,14 +147,22 @@ check_inputs <- function(
   )
 }
 
-#' PREPARE DATA
+#' Load and prepare data for SPARKI analysis
 #'
-#' @param std_reports_path Path to directory containing standard Kraken2 reports.
-#' @param mpa_reports_path Path to directory containing MPA-style reports.
-#' @param reference_path Path to file containing information on a Kraken2 reference database.
-#' @param metadata_path Path to metadata file.
-#' @param verbose Verbosity level.
-#' @return Processed data ready for downstream steps.
+#' @param std_reports_path Path to a directory containing standard reports.
+#' @param mpa_reports_path Path to a directory containing MPA-style reports.
+#' @param organism Species-level name of the organism being analysed.
+#' @param reference_path Path to 'inspect.txt' file in a Kraken2 reference database.
+#' @param metadata_path Path to metadata table file.
+#' @param metadata_sample_col Name of column containing sample IDs in the metadata table.
+#' @param metadata_columns Name of columns of interest in the metadata table.
+#' @param outdir_path Path to output directory.
+#' @param prefix Prefix to be added to output file names.
+#' @param domain Domain(s) of interest.
+#' @param samples_to_remove_path Path to file containing a list of samples that should
+#'  be removed from the SPARKI analysis.
+#'
+#' @return A list containing the input arguments ready for the SPARKI analysis.
 #'
 load_data <- function(
     std_reports_path,
@@ -131,7 +174,6 @@ load_data <- function(
     metadata_columns,
     outdir_path,
     prefix,
-    verbose,
     domain,
     samples_to_remove_path) {
 
@@ -147,7 +189,6 @@ load_data <- function(
     metadata_columns = metadata_columns,
     outdir_path = outdir_path,
     prefix = prefix,
-    verbose = verbose,
     domain = domain,
     samples_to_remove_path = samples_to_remove_path
   )
@@ -165,59 +206,59 @@ load_data <- function(
   #  Load the samples-to-remove file.
   samples_to_remove <- NA
   if (!is.na(samples_to_remove_path)) {
-    samples_to_remove <- loadSamplesToRemove(filepath = samples_to_remove_path, verbose = verbose)
+    samples_to_remove <- loadSamplesToRemove(filepath = samples_to_remove_path)
   }
 
   # Load standard and MPA-style reports, and merge them afterwards.
-  std_reports <- load_STDreports(std_reports_path, samples_to_remove = samples_to_remove, verbose = verbose)
-  mpa_reports <- load_MPAreports(mpa_reports_path, samples_to_remove = samples_to_remove, verbose = verbose)
-  merged_reports <- mergeReports(std_reports, mpa_reports, verbose = verbose)
+  std_reports <- load_STDreports(std_reports_path, samples_to_remove = samples_to_remove)
+  mpa_reports <- load_MPAreports(mpa_reports_path, samples_to_remove = samples_to_remove)
+  merged_reports <- mergeReports(std_reports, mpa_reports)
 
   # Load reference database data.
-  ref_db <- loadReference(reference_path, verbose = verbose)
+  ref_db <- loadReference(reference_path)
 
   # Load the metadata table.
   metadata <- NA
   if (!(is.na(metadata_path))) {
-    metadata <- loadMetadata(metadata_path, verbose = verbose)
+    metadata <- loadMetadata(metadata_path)
 
     # Ensure that the user-specified columns are present in the metadata table provided.
     check_columns(df = metadata, columns = c(metadata_sample_col, metadata_columns))
 
     # Add metadata to merged reports.
-    merged_reports <- addMetadata(merged_reports, metadata, metadata_sample_col, metadata_columns, verbose = verbose)
+    merged_reports <- addMetadata(merged_reports, metadata, metadata_sample_col, metadata_columns)
 
   # Throw a warning message if no metadata table has been provided.
-  } else message(MAIN_WARNING_NO_METADATA_ADDED)
+  } else logger::log_info(MAIN_NO_METADATA_ADDED)
 
   return(
     list(merged_reports, ref_db, metadata, metadata_sample_col, metadata_columns, outdir_path, prefix, domain)
   )
 }
 
-#' RUN AN END-TO-END SPARKI ANALYSIS
+#' Run an end-to-end SPARKI analysis
 #'
-#' @param std_reports_path Path to a directory containing standard Kraken2 reports.
+#' @param std_reports_path Path to a directory containing standard reports.
 #' @param mpa_reports_path Path to a directory containing MPA-style reports.
-#' @param organism Species being analysed (e.g. Homo sapiens).
-#' @param reference_path Path to an "inspect.txt" file in a Kraken2 reference database.
-#' @param metadata_path Path to metadata file.
-#' @param metadata_sample_col The name of the column that contains sample IDs in the metadata table
-#'  specified via 'metadata_path'.
-#' @param metadata_columns Comma-separated column names from the metadata table specified via 'metadata_path'.
-#' @param outdir_path Path to an output directory.
-#' @param prefix Prefix to be added to output files.
-#' @param verbose Whether to run in verbose mode.
-#' @param include_eukaryotes Whether eukaryotes should be included in all output plots (some plots will have
-#'  eukaryotes included regardless of this option).
-#' @param include_sample_names Whether sample names should be included in all output plots (some plots will
-#'  have sample names included regardless of this option).
-#' @param domain Domain(s) of interest (one of "Eukaryota", "Bacteria", "Viruses" or "Archaea").
-#' @param samples_to_remove A list of samples that should not be included in the SPARKI analysis.
+#' @param organism Species-level name of the organism being analysed.
+#' @param reference_path Path to 'inspect.txt' file in a Kraken2 reference database.
+#' @param metadata_path Path to metadata table file.
+#' @param metadata_sample_col Name of column containing sample IDs in the metadata table.
+#' @param metadata_columns Name of columns of interest in the metadata table.
+#' @param outdir_path Path to output directory.
+#' @param prefix Prefix to be added to output file names.
+#' @param include_eukaryotes Whether eukaryotes should be included in all plots (they are
+#'  included in some of the plots regardless of this flag).
+#' @param include_sample_names Whether sample names should be included in all plots (they
+#'  are included in some of the plots regardless of this flag).
+#' @param domain Domain(s) of interest.
+#' @param samples_to_remove_path Path to file containing a list of samples that should
+#'  be removed from the SPARKI analysis.
 #'
 #' @return Processed reports ready for downstream analysis.
 #' @export
-run_sparki <- function(
+#'
+run_analysis <- function(
     std_reports_path,
     mpa_reports_path,
     organism,
@@ -227,11 +268,10 @@ run_sparki <- function(
     metadata_columns,
     outdir_path,
     prefix,
-    verbose,
     include_eukaryotes,
     include_sample_names,
     domain,
-    samples_to_remove) {
+    samples_to_remove_path) {
 
   # Load data.
   loaded_data <- load_data(
@@ -244,9 +284,8 @@ run_sparki <- function(
     metadata_columns = metadata_columns,
     outdir_path = outdir_path,
     prefix = prefix,
-    verbose = verbose,
     domain = domain,
-    samples_to_remove = samples_to_remove
+    samples_to_remove_path = samples_to_remove_path
   )
   merged_reports <- loaded_data[[1]]
   ref_db <- loaded_data[[2]]
@@ -258,8 +297,9 @@ run_sparki <- function(
   domain <- loaded_data[[8]]
 
   # Add sample sizes and minimiser data to the merged reports table.
-  merged_reports <- addSampleSize(merged_reports, verbose = verbose)
-  merged_reports <- addMinimiserData(merged_reports, ref_db, verbose = verbose)
+  merged_reports <- addSampleSize(merged_reports)
+  merged_reports <- addMinimiserData(merged_reports, ref_db)
+  merged_reports <- add_nTaxaInRank(merged_reports)
 
   # Make a violin plot with the classification summary.
   plotClassificationSummary_violin(
@@ -326,9 +366,9 @@ run_sparki <- function(
     paste0(outdir, prefix, "pre_filtering_and_statistics.csv")
   )
 
-  merged_reports <- subsetReports(merged_reports, species = organism, verbose = verbose)
-  merged_reports <- assessMinimiserRatio(merged_reports, verbose = verbose)
-  merged_reports <- assessStatistics(merged_reports, ref_db, verbose = verbose)
+  merged_reports <- subsetReports(merged_reports, species = organism)
+  merged_reports <- assessMinimiserRatio(merged_reports)
+  merged_reports <- assessStatistics(merged_reports, ref_db)
 
   plotSignificanceSummary(
     merged_reports,

@@ -9,7 +9,7 @@ Authors@R: c(
     person("Jamie", "Billington", email = "jb63@sanger.ac.uk", role = c("aut")),
     person("Ian", "Vermes", email = "iv3@sanger.ac.uk", role = c("aut"))
         )
-Description: SPARKI (Statistical Process Aimed at Robust Kraken 2 Interpretation, <sparki>) was developed as both an R package and a command line tool to help researchers interpret the outputs of Kraken 2 (Wood et al. 2019). It is available both as a standalone software and as part of an end-to-end pathogen identification pipeline (sparki-nf, <sparki-nf>). The main sample-level results yielded by SPARKI are, for each taxon, (i) the proportion of minimisers found in the sample (the higher the proportion of minimisers, the more of the organism’s genome is likely present in the sample) and (ii) the statistical significance of the result.
+Description: SPARKI (Statistical Process Aimed at Robust Kraken 2 Interpretation, <sparki>) was developed as both an R package and a command line tool to help researchers interpret the outputs of Kraken 2 (Wood et al. 2019). It is available both as a standalone software and as part of an end-to-end pathogen identification pipeline (sparki-nf). The main sample-level results yielded by SPARKI are, for each taxon, (i) the proportion of minimisers found in the sample (the higher the proportion of minimisers, the more of the organism’s genome is likely present in the sample) and (ii) the statistical significance of the result.
 License: AGPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -21,6 +21,7 @@ Imports:
     fs,
     ggplot2,
     ggpubr,
+    logger,
     optparse,
     readr,
     tidyr

@@ -1,21 +1,27 @@
-#' LOAD INFORMATION FROM KRAKEN2'S REFERENCE DATABASE
+#' Load the 'inspect.txt' file from a Kraken2 reference database
 #'
 #' This function takes the path to an 'inspect.txt' file inside a Kraken2 reference database
 #' and reads the table. The first 7 lines are skipped, as they correspond to header lines.
 #' Column names are added before the reference database dataframe is returned.
 #'
 #' @param reference_path Path to an 'inspect.txt' file inside a Kraken2 reference database.
+#'
 #' @return A dataframe containing the information from the 'inspect.txt' file.
+#'
 #' @export
 #'
-loadReference <- function(reference_path, n_header_lines = 7, verbose) {
+#' @examples
+#' loadReference("inspect.txt")
+#' loadReference(reference_path = "inspect.txt")
+#'
+loadReference <- function(reference_path) {
   # Read Kraken2 reference file (inspect.txt).
-  ref <- read.table(
+  ref <- utils::read.table(
     reference_path,
     row.names = NULL,
     header = FALSE,
     sep = "\t",
-    skip = n_header_lines, #  Skip header lines.
+    skip = 7, #  Skip header lines.
     quote = "",
     stringsAsFactors = FALSE
   )
@@ -33,35 +39,45 @@ loadReference <- function(reference_path, n_header_lines = 7, verbose) {
   ref[, COLNAME_REF_DB_TAXON] <- gsub("^[[:space:]]\\s*(.*?)", "", ref[, COLNAME_REF_DB_TAXON], perl = TRUE)
   ref[, COLNAME_REF_DB_NCBI_ID] <- as.character(ref[, COLNAME_REF_DB_NCBI_ID])
 
-  if (verbose) message("LOG INFO: Reference database info loaded successfully!")
+  logger::log_info("Reference database info loaded successfully!")
 
   return(ref)
 }
 
-#' LOAD METADATA TABLE
+#' Load a metadata table
 #'
-#' This function takes the path to a metadata file and reads the metadata table using readr::read_delim().
+#' This function takes the path to a metadata file and reads the metadata table using
+#' readr::read_delim().
 #'
 #' @param metadata Path to a metadata table.
+#'
 #' @return A dataframe containing the metadata.
+#'
 #' @export
 #'
 #' @examples
 #' loadMetadata("metadata.csv")
 #' loadMetadata(metadata = "metadata.csv")
 #'
-loadMetadata <- function(metadata, verbose) {
+loadMetadata <- function(metadata) {
   #  Read metadata file.
   mdata <- readr::read_delim(
     metadata,
     show_col_types = FALSE # Supressing messages about column types when the dataframe is created.
   )
 
-  if (verbose) message(LOAD_METADATA_INFO_SUCCESS)
+  logger::log_info(LOAD_METADATA_SUCCESS)
 
   return(mdata)
 }
 
+#' Ensure taxon hierarchies in an MPA-style report are "complete"
+#'
+#' @param mpa_reports A report loaded by load_MPAreports().
+#'
+#' @return An updated version of the report provided, with all taxon
+#'  hierarchies being "complete".
+#'
 check_mpa_lines <- function(mpa_reports) {
   expected_ranks <- c("d__", "k__", "p__", "c__", "o__", "f__", "g__", "s__")
 
@@ -92,7 +108,13 @@ check_mpa_lines <- function(mpa_reports) {
   return(mpa_reports)
 }
 
-check_for_empty_files <- function(file_list, verbose) {
+#' Exclude empty reports from the analysis
+#'
+#' @param file_list A list containing paths to standard or MPA-style reports.
+#'
+#' @return An updated version of file list, without empty reports.
+#'
+check_for_empty_files <- function(file_list) {
   #  Check if files are empty...
   for (file in file_list) {
     is_empty <- (file.size(file) == 0L)
@@ -100,7 +122,7 @@ check_for_empty_files <- function(file_list, verbose) {
     #  If the file is empty...
     if (is_empty) {
       # Remove given file path from the list of paths.
-      if (verbose) message(CHECK_EMPTY_FILE_WARNING, file)
+      logger::log_info(paste0(CHECK_EMPTY_FILE_WARNING, glue::double_quote(file)))
       file_list <- file_list[(file_list != file)]
     }
   }
@@ -108,24 +130,26 @@ check_for_empty_files <- function(file_list, verbose) {
   return(file_list)
 }
 
-#' LOAD MPA-STYLE REPORTS
+#' Load MPA-style reports
 #'
-#' This function takes a path to a directory containing MPA-style reports, reading and processing
-#' all reports into a single dataframe.
+#' This function takes a path to a directory containing MPA-style reports, reading and collating
+#' all sample-level reports into a single dataframe.
 #'
 #' @param mpa_reports_dir Path to a directory containing MPA-style reports.
-#' @param verbose Whether to output log messages.
+#' @param samples_to_remove A list of samples to be removed, loaded with loadSamplesToRemove().
+#'
 #' @return A dataframe (tibble) with the content of all MPA-style reports from the specified directory.
+#'
 #' @export
 #'
-load_MPAreports <- function(mpa_reports_dir, samples_to_remove, verbose) {
+load_MPAreports <- function(mpa_reports_dir, samples_to_remove) {
   # Get paths to MPA-style reports in a specified directory.
   mpa_files <- fs::dir_ls(mpa_reports_dir, glob = "*.mpa$")
 
   #  Check if directory really has any MPA-style reports...
-  if (length(mpa_files) == 0) stop(LOAD_MPA_ERROR_NO_REPORTS_FOUND, mpa_reports_dir)
+  if (length(mpa_files) == 0) stop(LOAD_MPA_NO_REPORTS_FOUND, mpa_reports_dir)
 
-  mpa_files <- check_for_empty_files(mpa_files, verbose = verbose)
+  mpa_files <- check_for_empty_files(mpa_files)
 
   #  Create vector with taxonomic rank names.
   taxonomy <- c("domain", "kingdom", "phylum", "class", "order", "family", "genus", "species")
@@ -179,32 +203,34 @@ load_MPAreports <- function(mpa_reports_dir, samples_to_remove, verbose) {
   if (!missing(samples_to_remove)) {
     mpa_reports <- mpa_reports |> dplyr::filter(!(!!as.name(COLNAME_MPA_SAMPLE) %in% samples_to_remove))
   } else {
-    if (verbose == TRUE) message(LOAD_MPA_WARNING_NO_SAMPLES_REMOVED)
+    logger::log_info(LOAD_MPA_NO_SAMPLES_REMOVED)
   }
 
-  if (verbose == TRUE) message(LOAD_MPA_INFO_SUCCESS)
+  logger::log_info(LOAD_MPA_SUCCESS)
 
   return(mpa_reports)
 }
 
-#' LOAD STANDARD REPORTS
+#' Load standard reports
 #'
-#' This function takes a path to a directory containing standard reports, reading and processing
-#' all reports into a single dataframe.
+#' This function takes a path to a directory containing standard reports, reading and collating
+#' all sample-level reports into a single dataframe.
 #'
-#' @param mpa_reports_dir Path to a directory containing standard reports.
-#' @param verbose Whether to output log messages.
+#' @param std_reports_dir Path to a directory containing standard reports.
+#' @param samples_to_remove A list of samples to be removed, loaded with loadSamplesToRemove().
+#'
 #' @return A dataframe (tibble) with the content of all standard reports from the specified directory.
+#'
 #' @export
 #'
-load_STDreports <- function(std_reports_dir, samples_to_remove, verbose = FALSE) {
+load_STDreports <- function(std_reports_dir, samples_to_remove) {
   #  Get paths to standard reports in a specified directory.
   std_files <- fs::dir_ls(std_reports_dir, glob = "*.kraken$")
 
   #  Check if directory really has any standard reports...
-  if (length(std_files) == 0) stop(LOAD_STD_ERROR_NO_REPORTS_FOUND, std_reports_dir)
+  if (length(std_files) == 0) stop(LOAD_STD_NO_REPORTS_FOUND, std_reports_dir)
 
-  std_files <- check_for_empty_files(std_files, verbose = verbose)
+  std_files <- check_for_empty_files(std_files)
 
   # Create a dataframe (tibble) and process.
   std_reports <- readr::read_tsv(
@@ -226,25 +252,28 @@ load_STDreports <- function(std_reports_dir, samples_to_remove, verbose = FALSE)
   if (!missing(samples_to_remove)) {
     std_reports <- std_reports |> dplyr::filter(!(!!as.name(COLNAME_STD_SAMPLE) %in% samples_to_remove))
   } else {
-    if (verbose) message(LOAD_STD_WARNING_NO_SAMPLES_REMOVED)
+    logger::log_info(LOAD_STD_NO_SAMPLES_REMOVED)
   }
 
-  if (verbose) message(LOAD_STD_INFO_SUCCESS)
+  logger::log_info(LOAD_STD_SUCCESS)
 
   return(std_reports)
 }
 
-#' LOAD LIST OF SAMPLES TO BE EXCLUDED FROM SPARKI ANALYSIS
+#' Load list of samples to be removed from the SPARKI analysis
 #'
 #' This function takes the path to a tab-delimited file, in which each line should
 #' be a sample ID, and returns a list with these IDs. Note that the sample IDs need
-#' to match those that are present in the merged reports dataframe.
+#' to match those that are present in the reports to be loaded with load_STDreports()
+#' and load_MPAreports().
 #'
 #' @param filepath Path to a tab-delimited file in which each line is a sample ID.
+#'
 #' @return A list containing the samples IDs from the input file.
+#'
 #' @export
 #'
-loadSamplesToRemove <- function(filepath, verbose) {
+loadSamplesToRemove <- function(filepath) {
   samples_to_remove <- readr::read_table(
     filepath,
     col_names = "sample",
@@ -252,10 +281,8 @@ loadSamplesToRemove <- function(filepath, verbose) {
     show_col_types = FALSE # Supressing messages about column types when the dataframe is created.
   )
 
-  if (verbose) {
-    message(LOAD_SAMPLES_TO_REMOVE_WARNING, paste(samples_to_remove[["sample"]], collapse = ","))
-    message(LOAD_SAMPLES_TO_REMOVE_SUCCESS)
-  }
+  logger::log_info(paste0(LOAD_SAMPLES_TO_REMOVE_WARNING, " ", paste(samples_to_remove[["sample"]], collapse = ",")))
+  logger::log_info(LOAD_SAMPLES_TO_REMOVE_SUCCESS)
 
   return(samples_to_remove[["sample"]])
 }

@@ -2,9 +2,9 @@
 % Please edit documentation in R/load-data.R
 \name{loadReference}
 \alias{loadReference}
-\title{LOAD INFORMATION FROM KRAKEN2'S REFERENCE DATABASE}
+\title{Load the 'inspect.txt' file from a Kraken2 reference database}
 \usage{
-loadReference(reference_path, n_header_lines = 7, verbose)
+loadReference(reference_path)
 }
 \arguments{
 \item{reference_path}{Path to an 'inspect.txt' file inside a Kraken2 reference database.}
@@ -16,4 +16,9 @@ A dataframe containing the information from the 'inspect.txt' file.
 This function takes the path to an 'inspect.txt' file inside a Kraken2 reference database
 and reads the table. The first 7 lines are skipped, as they correspond to header lines.
 Column names are added before the reference database dataframe is returned.
+}
+\examples{
+loadReference("inspect.txt")
+loadReference(reference_path = "inspect.txt")
+
 }

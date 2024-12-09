@@ -2,7 +2,7 @@
 % Please edit documentation in R/exceptions.R
 \name{check_columns}
 \alias{check_columns}
-\title{CHECK IF A SET OF COLUMN NAMES IS PRESENT IN A GIVEN DATAFRAME}
+\title{Check if a set of column names is present in a given dataframe}
 \usage{
 check_columns(df, columns)
 }
@@ -18,6 +18,6 @@ are expected to be found in the given dataframe; then it checks if each
 column is indeed present, throwing an error otherwise.
 }
 \examples{
-check_columns(df = df, columns = c("col1", "col2", "col3"))
+check_columns(df = my_dataframe, columns = c("col1", "col2", "col3"))
 
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/exceptions.R
 \name{check_prefix}
 \alias{check_prefix}
-\title{CARRY OUT CHECKS ON A PREFIX}
+\title{Carry out checks on a prefix}
 \usage{
 check_prefix(prefix)
 }

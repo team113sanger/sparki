@@ -1,5 +1,7 @@
 describe("load_MPAreports()", {
   test_that("load_MPAreports() returns a dataframe with the appropriate dimensions", {
+    logger::log_threshold(logger::OFF)
+
     #  Define the expected number of columns.
     expected_number_of_columns <- 12
 
@@ -7,7 +9,7 @@ describe("load_MPAreports()", {
     path_to_mpa <- get_test_mpa_report_dir("usual")
 
     # Load the MPA-style reports and obtain the actual numbers of rows and columns.
-    out <- SPARKI::load_MPAreports(path_to_mpa, verbose = FALSE)
+    out <- SPARKI::load_MPAreports(path_to_mpa)
     actual_number_of_rows <- nrow(out)
     actual_number_of_columns <- ncol(out)
 
@@ -20,11 +22,13 @@ describe("load_MPAreports()", {
   })
 
   test_that("the columns in the dataframe returned by load_MPAreports() correspond to the appropriate classes", {
+    logger::log_threshold(logger::OFF)
+
     #  Get path to test directory.
     path_to_mpa <- get_test_mpa_report_dir("usual")
 
     # Load the MPA-style reports.
-    out <- SPARKI::load_MPAreports(path_to_mpa, verbose = FALSE)
+    out <- SPARKI::load_MPAreports(path_to_mpa)
 
     # Carry out tests.
     expect_type(out[[SPARKI:::COLNAME_MPA_SAMPLE]], "character")
@@ -42,11 +46,13 @@ describe("load_MPAreports()", {
   })
 
   test_that("the columns in the dataframe returned by load_MPAreports() have the right names", {
+    logger::log_threshold(logger::OFF)
+
     #  Get path to test directory.
     path_to_mpa <- get_test_mpa_report_dir("usual")
 
     # Load the MPA-style reports and get actual column names.
-    out <- SPARKI::load_MPAreports(path_to_mpa, verbose = FALSE)
+    out <- SPARKI::load_MPAreports(path_to_mpa)
     actual_colnames <- colnames(out)
 
     # Get expected column names.
@@ -70,65 +76,32 @@ describe("load_MPAreports()", {
   })
 
   test_that("load_MPAreports() does not fail if an MPA-style report is empty", {
-    #  Get path to test directory.
-    path_to_mpa <- glue::single_quote(get_test_mpa_report_dir("empty"))
+    logger::log_threshold(logger::OFF)
 
-    # Build argument list.
-    args <- c("-e", glue::glue("devtools::load_all(quiet = TRUE); SPARKI::load_MPAreports({path_to_mpa}, verbose = TRUE)"))
-
-    # Run the command
-    result <- processx::run(
-      command = Sys.which("Rscript"),
-      args = args,
-      error_on_status = FALSE,
-      echo = FALSE,
-      stdout_line_callback = NULL,
-      stderr_line_callback = NULL
-    )
-
-    #  Define the name of the sample whose file is empty.
+    # Get path to test directory and define the name of the sample whose file
+    # known to be empty.
+    path_to_mpa <- get_test_mpa_report_dir("empty")
     empty_sample <- "sample2_empty"
 
-    #  Define the expected exit status and info/warning messages.
-    expected_exit_code <- 0
-    expected_info_in_stderr <- SPARKI:::LOAD_MPA_INFO_SUCCESS
-    expected_warning_in_stderr <- SPARKI:::CHECK_EMPTY_FILE_WARNING
+    # First try to run load_MPAreports() to ensure no errors will be thrown.
+    expect_no_error(SPARKI::load_MPAreports(path_to_mpa))
 
-    # Get actual exit code and standard out/error.
-    actual_exit_code <- result$status
-    actual_stdout <- result$stdout
-    actual_stderr <- result$stderr
+    # Now run load_MPAreports() again, storing the resulting dataframe for
+    # further inspection.
+    out <- SPARKI::load_MPAreports(path_to_mpa)
 
-    # Assert that the exit code is zero.
-    expect_equal(
-      actual_exit_code,
-      expected_exit_code,
-      info = sprintf("Command failed with status %s", actual_exit_code)
-    )
-
-    # Assert that stderr contains the expected log info/warning messages.
-    expect_true(
-      grepl(expected_info_in_stderr, actual_stderr, fixed = TRUE),
-      info = sprintf("Standard out was:\n%s\nStandard error was:\n%s", actual_stdout, actual_stderr)
-    )
-    expect_true(
-      grepl(expected_warning_in_stderr, actual_stderr, fixed = TRUE),
-      info = sprintf("Standard out was: %s\nStandard error was: %s", actual_stdout, actual_stderr)
-    )
-
-    #  Assert that the sample whose file was empty is not present in the output.
-    expect_false(
-      grepl(empty_sample, actual_stdout, fixed = TRUE),
-      info = sprintf("Standard out was:\n%s\nStandard error was:\n%s", actual_stdout, actual_stderr)
-    )
+    # Assert that the sample whose file was empty is not present in the output.
+    expect_false(empty_sample %in% out[[SPARKI:::COLNAME_MPA_SAMPLE]])
   })
 
   test_that("load_MPAreports() generates the rank columns (from domain to species) correctly", {
-    #  Get path to test directory.
+    logger::log_threshold(logger::OFF)
+
+    # Get path to test directory.
     path_to_mpa <- get_test_mpa_report_dir("usual")
 
     # Load the MPA-style reports and obtain the actual numbers of rows and columns.
-    out <- SPARKI::load_MPAreports(path_to_mpa, verbose = FALSE)
+    out <- SPARKI::load_MPAreports(path_to_mpa)
 
     # Define columns that need to be checked.
     columns_to_check <- c(
@@ -155,10 +128,61 @@ describe("load_MPAreports()", {
       expect_lt(n_NAs_in_column, n_elements_in_column)
     }
   })
+
+  test_that("the helper function check_mpa_lines() behaves as expected", {
+    logger::log_threshold(logger::OFF)
+
+    # Create mock MPA-style report with a few possibilities of taxon hierarachies.
+    # Sample column.
+    samples <- rep("sample", times = 7)
+    # Taxon hierarchy column.
+    taxon_hierarchies <- c(
+      "d__Domain|k__Kingdom|p__Phylum|c__Class|o__Order|f__Family|g__Genus|s__Species", # Complete case.
+      "d__Domain|p__Phylum|c__Class|o__Order|f__Family|g__Genus|s__Species", # Missing kingdom.
+      "s__Species", # Missing everything but species.
+      "d__Domain|p__Phylum|g__Genus|s__Species", # Missing kingdom, class, order, and family.
+      "d__Domain|s__Species", # Missing everything but domain and species.
+      "d__Domain|k__Kingdom|p__Phylum|c__Class|o__Order|f__Family", # Missing genus and species.
+      "d__Domain" # Missing everything but domain.
+    )
+    # Column with clade-level fragments.
+    n_frag_clade <- c(10, 2, 5, 10, 4, 12, 20)
+    # Rank column.
+    ranks <- c("S", "S", "S", "S", "S", "F", "D")
+    # Create mock dataframe.
+    mpa_reports <- data.frame(samples, taxon_hierarchies, n_frag_clade, ranks)
+    colnames(mpa_reports) <- c(
+      SPARKI:::COLNAME_MPA_SAMPLE,
+      SPARKI:::COLNAME_MPA_TAXON_HIERARCHY,
+      SPARKI:::COLNAME_MPA_N_FRAG_CLADE,
+      SPARKI:::COLNAME_MPA_RANK
+    )
+
+    # Apply check_mpa_lines() to mock MPA-style report.
+    checked_mpa_reports <- SPARKI:::check_mpa_lines(mpa_reports)
+
+    # Define expected hierarchies.
+    expected_hierachies <- c(
+      "d__Domain|k__Kingdom|p__Phylum|c__Class|o__Order|f__Family|g__Genus|s__Species",
+      "d__Domain|k__NA|p__Phylum|c__Class|o__Order|f__Family|g__Genus|s__Species",
+      "d__NA|k__NA|p__NA|c__NA|o__NA|f__NA|g__NA|s__Species",
+      "d__Domain|k__NA|p__Phylum|c__NA|o__NA|f__NA|g__Genus|s__Species",
+      "d__Domain|k__NA|p__NA|c__NA|o__NA|f__NA|g__NA|s__Species",
+      "d__Domain|k__Kingdom|p__Phylum|c__Class|o__Order|f__Family|g__NA|s__NA",
+      "d__Domain|k__NA|p__NA|c__NA|o__NA|f__NA|g__NA|s__NA"
+    )
+    # Define actual hierarchies.
+    actual_hierachies <- checked_mpa_reports[[SPARKI:::COLNAME_MPA_TAXON_HIERARCHY]]
+
+    # Carry out test.
+    expect_identical(actual_hierachies, expected_hierachies)
+  })
 })
 
 describe("load_STDreports()", {
   test_that("load_STDreports() returns a dataframe with the appropriate dimensions", {
+    logger::log_threshold(logger::OFF)
+
     # Define the expected number of columns.
     expected_number_of_columns <- 9
 
@@ -166,7 +190,7 @@ describe("load_STDreports()", {
     path_to_std <- get_test_std_report_dir("usual")
 
     # Load the MPA-style reports and obtain the actual numbers of rows and columns.
-    out <- SPARKI::load_STDreports(path_to_std, verbose = FALSE)
+    out <- SPARKI::load_STDreports(path_to_std)
     actual_number_of_rows <- nrow(out)
     actual_number_of_columns <- ncol(out)
 
@@ -179,11 +203,13 @@ describe("load_STDreports()", {
   })
 
   test_that("the columns in the dataframe returned by load_STDreports() correspond to the appropriate classes", {
-    #  Get path to test directory.
+    logger::log_threshold(logger::OFF)
+
+    # Get path to test directory.
     path_to_std <- get_test_std_report_dir("usual")
 
     # Load the MPA-style reports.
-    out <- SPARKI::load_STDreports(path_to_std, verbose = FALSE)
+    out <- SPARKI::load_STDreports(path_to_std)
 
     # Carry out tests.
     expect_type(out[[SPARKI:::COLNAME_STD_SAMPLE]], "character")
@@ -198,11 +224,13 @@ describe("load_STDreports()", {
   })
 
   test_that("the columns in the dataframe returned by load_STDreports() have the right names", {
-    #  Get path to test directory.
+    logger::log_threshold(logger::OFF)
+
+    # Get path to test directory.
     path_to_std <- get_test_std_report_dir("usual")
 
     # Load the MPA-style reports and get actual column names.
-    out <- SPARKI::load_STDreports(path_to_std, verbose = FALSE)
+    out <- SPARKI::load_STDreports(path_to_std)
     actual_colnames <- colnames(out)
 
     # Get expected column names.
@@ -223,57 +251,21 @@ describe("load_STDreports()", {
   })
 
   test_that("load_STDreports() does not fail if a standard report is empty", {
-    #  Get path to test directory.
+    logger::log_threshold(logger::OFF)
+
+    # Get path to test directory and define the name of the sample whose file
+    # known to be empty.
     path_to_std <- get_test_std_report_dir("empty")
-    path_to_std <- glue::single_quote(path_to_std)
-
-    # Build argument list.
-    args <- c("-e", glue::glue("devtools::load_all(quiet = TRUE); SPARKI::load_STDreports({path_to_std}, verbose = TRUE)"))
-
-    # Run the command.
-    result <- processx::run(
-      command = Sys.which("Rscript"),
-      args = args,
-      error_on_status = FALSE,
-      echo = FALSE,
-      stdout_line_callback = NULL,
-      stderr_line_callback = NULL
-    )
-
-    #  Define the name of the sample whose file is empty.
     empty_sample <- "sample2_empty"
 
-    #  Define the expected exit status and info/warning messages.
-    expected_exit_code <- 0
-    expected_info_in_stderr <- SPARKI:::LOAD_STD_INFO_SUCCESS
-    expected_warning_in_stderr <- SPARKI:::CHECK_EMPTY_FILE_WARNING
+    # First try to run load_STDreports() to ensure no errors will be thrown.
+    expect_no_error(SPARKI::load_STDreports(path_to_std))
 
-    # Get actual exit code and standard out/error.
-    actual_exit_code <- result$status
-    actual_stdout <- result$stdout
-    actual_stderr <- result$stderr
+    # Now run load_STDreports() again, storing the resulting dataframe for
+    # further inspection.
+    out <- SPARKI::load_STDreports(path_to_std)
 
-    # Assert that the exit code is zero.
-    expect_equal(
-      actual_exit_code,
-      expected_exit_code,
-      info = sprintf("Command failed with status %s", actual_exit_code)
-    )
-
-    # Assert that stderr contains the expected log info/warning messages.
-    expect_true(
-      grepl(expected_info_in_stderr, actual_stderr, fixed = TRUE),
-      info = sprintf("Standard out was:\n%s\nStandard error was:\n%s", actual_stdout, actual_stderr)
-    )
-    expect_true(
-      grepl(expected_warning_in_stderr, actual_stderr, fixed = TRUE),
-      info = sprintf("Standard out was: %s\nStandard error was: %s", actual_stdout, actual_stderr)
-    )
-
-    #  Assert that the sample whose file was empty is not present in the output.
-    expect_false(
-      grepl(empty_sample, actual_stdout, fixed = TRUE),
-      info = sprintf("Standard out was:\n%s\nStandard error was:\n%s", actual_stdout, actual_stderr)
-    )
+    # Assert that the sample whose file was empty is not present in the output.
+    expect_false(empty_sample %in% out[[SPARKI:::COLNAME_STD_SAMPLE]])
   })
 })

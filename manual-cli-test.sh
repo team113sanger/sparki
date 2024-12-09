@@ -12,4 +12,4 @@ Rscript -e "devtools::load_all(); SPARKI::cli()"\
   --organism 'Homo sapiens' \
   --domain 'Viruses,Bacteria' \
   --outdir "${OUTDIR}" \
-  --verbose
+  --verbosity trace

@@ -19,7 +19,7 @@ get_name_at_rank <- function(report, species, rank) {
   return(subset_report[[COLNAME_STD_TAXON]])
 }
 
-subsetReports <- function(report, species, verbose) {
+subsetReports <- function(report, species) {
   if (!(species %in% report[[COLNAME_STD_TAXON]])) {
     stop(paste0(
       "The organism ", species, " is not present ",
@@ -34,11 +34,7 @@ subsetReports <- function(report, species, verbose) {
   # Create vector with species, genus and family to be filtered out.
   taxa_to_remove <- c(species, genus, family)
 
-  if (verbose == TRUE) {
-    message(
-      "LOG WARNING: Filtering out ", species, ", ", genus, ", and ", family, "..."
-    )
-  }
+  logger::log_info(paste0("Filtering out ", species, ", ", genus, ", and ", family, "..."))
 
   report <- report |>
     #  Select rows corresponding to species, genus and family.

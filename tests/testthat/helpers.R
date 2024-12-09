@@ -76,12 +76,10 @@ get_local_tmp_dir <- function(env = parent.frame()) {
   return(tmp_dir)
 }
 
-# get_test_std_report_dir <- function(case_type) {
-#   if (!(case_type %in% c("usual", "empty"))) {
-#     stop(paste0(
-#       case_type, " is not a valid case type for the function get_test_std_report_dir! ",
-#       "Please choose from 'usual' or 'empty'."
-#     ))
-#   }
-#   testthat::test_path("testdata", "std_reports", paste0("case_with_", case_type, "_reports"))
-# }
+get_test_empty_dir <- function() {
+  return(testthat::test_path("testdata", "folders", "empty_folder"))
+}
+
+get_test_not_empty_dir <- function() {
+  return(testthat::test_path("testdata", "folders", "not_empty_folder"))
+}

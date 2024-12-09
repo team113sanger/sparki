@@ -2,19 +2,19 @@
 % Please edit documentation in R/load-data.R
 \name{load_MPAreports}
 \alias{load_MPAreports}
-\title{LOAD MPA-STYLE REPORTS}
+\title{Load MPA-style reports}
 \usage{
-load_MPAreports(mpa_reports_dir, samples_to_remove, verbose)
+load_MPAreports(mpa_reports_dir, samples_to_remove)
 }
 \arguments{
 \item{mpa_reports_dir}{Path to a directory containing MPA-style reports.}
 
-\item{verbose}{Whether to output log messages.}
+\item{samples_to_remove}{A list of samples to be removed, loaded with loadSamplesToRemove().}
 }
 \value{
 A dataframe (tibble) with the content of all MPA-style reports from the specified directory.
 }
 \description{
-This function takes a path to a directory containing MPA-style reports, reading and processing
-all reports into a single dataframe.
+This function takes a path to a directory containing MPA-style reports, reading and collating
+all sample-level reports into a single dataframe.
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/main.R
 \name{load_data}
 \alias{load_data}
-\title{PREPARE DATA}
+\title{Load and prepare data for SPARKI analysis}
 \usage{
 load_data(
   std_reports_path,
@@ -14,25 +14,37 @@ load_data(
   metadata_columns,
   outdir_path,
   prefix,
-  verbose,
   domain,
   samples_to_remove_path
 )
 }
 \arguments{
-\item{std_reports_path}{Path to directory containing standard Kraken2 reports.}
+\item{std_reports_path}{Path to a directory containing standard reports.}
 
-\item{mpa_reports_path}{Path to directory containing MPA-style reports.}
+\item{mpa_reports_path}{Path to a directory containing MPA-style reports.}
 
-\item{reference_path}{Path to file containing information on a Kraken2 reference database.}
+\item{organism}{Species-level name of the organism being analysed.}
 
-\item{metadata_path}{Path to metadata file.}
+\item{reference_path}{Path to 'inspect.txt' file in a Kraken2 reference database.}
 
-\item{verbose}{Verbosity level.}
+\item{metadata_path}{Path to metadata table file.}
+
+\item{metadata_sample_col}{Name of column containing sample IDs in the metadata table.}
+
+\item{metadata_columns}{Name of columns of interest in the metadata table.}
+
+\item{outdir_path}{Path to output directory.}
+
+\item{prefix}{Prefix to be added to output file names.}
+
+\item{domain}{Domain(s) of interest.}
+
+\item{samples_to_remove_path}{Path to file containing a list of samples that should
+be removed from the SPARKI analysis.}
 }
 \value{
-Processed data ready for downstream steps.
+A list containing the input arguments ready for the SPARKI analysis.
 }
 \description{
-PREPARE DATA
+Load and prepare data for SPARKI analysis
 }
