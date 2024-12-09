@@ -16,8 +16,3 @@ A dataframe containing the metadata.
 This function takes the path to a metadata file and reads the metadata table using
 readr::read_delim().
 }
-\examples{
-loadMetadata("metadata.csv")
-loadMetadata(metadata = "metadata.csv")
-
-}

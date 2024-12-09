@@ -22,10 +22,6 @@ This function takes the path to a given directory and performs a few checks:
 \item It ensures that the last character in the path is a slash symbol ("/").
 }
 }
-\examples{
-check_directory(dirpath = "path/to/directory", expectation = "empty")
-
-}
 \seealso{
 \code{\link[=check_report_directory]{check_report_directory()}} for another function that carries out
 checks based on a given directory path.

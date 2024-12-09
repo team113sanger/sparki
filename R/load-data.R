@@ -10,10 +10,6 @@
 #'
 #' @export
 #'
-#' @examples
-#' loadReference("inspect.txt")
-#' loadReference(reference_path = "inspect.txt")
-#'
 loadReference <- function(reference_path) {
   # Read Kraken2 reference file (inspect.txt).
   ref <- utils::read.table(
@@ -54,10 +50,6 @@ loadReference <- function(reference_path) {
 #' @return A dataframe containing the metadata.
 #'
 #' @export
-#'
-#' @examples
-#' loadMetadata("metadata.csv")
-#' loadMetadata(metadata = "metadata.csv")
 #'
 loadMetadata <- function(metadata) {
   #  Read metadata file.

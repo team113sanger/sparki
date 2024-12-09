@@ -19,7 +19,3 @@ This function takes a prefix and performs a few checks:
 \item Second, it ensures that there is an underscore symbol ("_") at the end of the prefix.
 }
 }
-\examples{
-check_prefix(prefix = "prefix")
-
-}

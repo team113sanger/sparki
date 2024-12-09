@@ -11,9 +11,6 @@
 #' @seealso [check_report_directory()] for another function that carries out
 #'  checks based on a given directory path.
 #'
-#' @examples
-#' check_directory(dirpath = "path/to/directory", expectation = "empty")
-#'
 #' @return Checked path to the given directory.
 #'
 check_directory <- function(dirpath, expectation) {
@@ -60,9 +57,6 @@ check_directory <- function(dirpath, expectation) {
 #'
 #' @seealso [check_directory()] for another function that carries out
 #'  checks based on a given directory path.
-#'
-#' @examples
-#' check_report_directory(dirpath = "path/to/directory", report_format = "std")
 #'
 #' @return Checked path to the given directory.
 #'
@@ -122,9 +116,6 @@ check_report_directory <- function(dirpath, report_format) {
 #'
 #' @param file_path Path to a given file.
 #'
-#' @examples
-#' check_file(file_path = "path/to/file")
-#'
 check_file <- function(file_path) {
   if (!(file.exists(file_path))) {
     error_message <- paste0(EXCEPTIONS_CHECKFILE_DOES_NOT_EXIST, glue::double_quote(file_path))
@@ -148,9 +139,6 @@ check_file <- function(file_path) {
 #' @param columns A vector with column names that are expected to be present
 #'  in the given dataframe.
 #'
-#' @examples
-#' check_columns(df = my_dataframe, columns = c("col1", "col2", "col3"))
-#'
 check_columns <- function(df, columns) {
   for (column in columns) {
     if (!(column %in% colnames(df))) {
@@ -169,9 +157,6 @@ check_columns <- function(df, columns) {
 #'
 #' @param prefix A given prefix that will later be added to output file names.
 #' @return Checked prefix.
-#'
-#' @examples
-#' check_prefix(prefix = "prefix")
 #'
 check_prefix <- function(prefix) {
   if (!(is.character(prefix))) {
@@ -193,9 +178,6 @@ check_prefix <- function(prefix) {
 #'
 #' @param domain A domain ("Viruses", "Bacteria", "Archaea", or "Eukaryota").
 #'
-#' @examples
-#' check_domain(domain = "Viruses")
-#'
 check_domain <- function(domain) {
   if (!(domain %in% c("Viruses", "Bacteria", "Archaea", "Eukaryota"))) {
     error_message <- paste0(EXCEPTIONS_CHECK_DOMAIN_NOT_VALID, glue::single_quote(domain))
@@ -209,12 +191,11 @@ check_domain <- function(domain) {
 #' This function takes an organism at the species level (e.g. "Homo sapiens")
 #' and checks if it is present in the standard and MPA-style reports.
 #'
+#' @param std_reports_path Path to a directory containing standard reports.
+#' @param mpa_reports_path Path to a directory containing MPA-style reports.
 #' @param organism The name of the organism being analysed (species-level). For
 #'  example, if your input data for Kraken2 comes from human samples, then the
 #'  organism should be "Homo sapiens".
-#'
-#' @examples
-#' check_organism(organism = "Homo sapiens")
 #'
 check_organism <- function(std_reports_path, mpa_reports_path, organism) {
   std_reports <- load_STDreports(std_reports_path)

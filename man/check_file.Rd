@@ -16,7 +16,3 @@ This function takes the path to a given file and performs a few checks:
 \item Second, it checks if the file is empty.
 }
 }
-\examples{
-check_file(file_path = "path/to/file")
-
-}

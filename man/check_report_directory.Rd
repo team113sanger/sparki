@@ -27,10 +27,6 @@ whether standard reports are indeed present.
 throwing an error otherwise.
 }
 }
-\examples{
-check_report_directory(dirpath = "path/to/directory", report_format = "std")
-
-}
 \seealso{
 \code{\link[=check_directory]{check_directory()}} for another function that carries out
 checks based on a given directory path.

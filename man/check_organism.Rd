@@ -7,6 +7,10 @@
 check_organism(std_reports_path, mpa_reports_path, organism)
 }
 \arguments{
+\item{std_reports_path}{Path to a directory containing standard reports.}
+
+\item{mpa_reports_path}{Path to a directory containing MPA-style reports.}
+
 \item{organism}{The name of the organism being analysed (species-level). For
 example, if your input data for Kraken2 comes from human samples, then the
 organism should be "Homo sapiens".}
@@ -14,8 +18,4 @@ organism should be "Homo sapiens".}
 \description{
 This function takes an organism at the species level (e.g. "Homo sapiens")
 and checks if it is present in the standard and MPA-style reports.
-}
-\examples{
-check_organism(organism = "Homo sapiens")
-
 }

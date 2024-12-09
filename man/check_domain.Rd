@@ -13,7 +13,3 @@ check_domain(domain)
 This function takes a domain and checks if it is valid, i.e. one of "Viruses",
 "Bacteria", "Archaea", or "Eukaryota".
 }
-\examples{
-check_domain(domain = "Viruses")
-
-}

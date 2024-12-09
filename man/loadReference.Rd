@@ -17,8 +17,3 @@ This function takes the path to an 'inspect.txt' file inside a Kraken2 reference
 and reads the table. The first 7 lines are skipped, as they correspond to header lines.
 Column names are added before the reference database dataframe is returned.
 }
-\examples{
-loadReference("inspect.txt")
-loadReference(reference_path = "inspect.txt")
-
-}

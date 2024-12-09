@@ -17,7 +17,3 @@ This function takes a dataframe and a vector containing column names that
 are expected to be found in the given dataframe; then it checks if each
 column is indeed present, throwing an error otherwise.
 }
-\examples{
-check_columns(df = my_dataframe, columns = c("col1", "col2", "col3"))
-
-}
