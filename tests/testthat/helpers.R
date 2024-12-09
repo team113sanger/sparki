@@ -75,11 +75,3 @@ get_local_tmp_dir <- function(env = parent.frame()) {
 
   return(tmp_dir)
 }
-
-get_test_empty_dir <- function() {
-  return(testthat::test_path("testdata", "folders", "empty_folder"))
-}
-
-get_test_not_empty_dir <- function() {
-  return(testthat::test_path("testdata", "folders", "not_empty_folder"))
-}

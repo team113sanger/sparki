@@ -14,7 +14,7 @@ test_that("check_directory() handles empty directories appropriately depending o
     logger::log_threshold(logger::OFF)
 
     # Define path to an empty directory.
-    dirpath <- get_test_empty_dir()
+    dirpath <- get_local_tmp_dir()
 
     # Carry out tests.
     expect_error(SPARKI:::check_directory(dirpath, expectation = "not_empty"))
@@ -25,7 +25,8 @@ test_that("check_directory() handles non-empty directories appropriately dependi
     logger::log_threshold(logger::OFF)
 
     # Define path to a non-empty directory.
-    dirpath <- get_test_not_empty_dir()
+    dirpath <- get_local_tmp_dir()
+    file.create(paste0(dirpath, "/a.txt"))
 
     # Carry out tests.
     expect_error(SPARKI:::check_directory(dirpath, expectation = "empty"))
@@ -36,7 +37,8 @@ test_that("check_directory() returns a valid path after adding a slash symbol to
     logger::log_threshold(logger::OFF)
 
     # Define path to a non-empty directory.
-    dirpath <- get_test_not_empty_dir()
+    dirpath <- get_local_tmp_dir()
+    file.create(paste0(dirpath, "/a.txt"))
 
     # Carry out tests.
     post_check_dirpath <- SPARKI:::check_directory(dirpath, expectation = "not_empty")
