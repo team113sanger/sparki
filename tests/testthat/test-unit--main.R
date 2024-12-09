@@ -1,5 +1,7 @@
 describe("Functions in main.R", {
   test_that("check_inputs() returns valid outputs", {
+    logger::log_threshold(logger::OFF)
+
     # Run SPARKI's check_inputs()
     out <- SPARKI:::check_inputs(
       std_reports_path = get_test_std_report_dir("usual"),
@@ -11,7 +13,6 @@ describe("Functions in main.R", {
       metadata_columns = "type,date,status",
       outdir_path = get_local_tmp_dir(),
       prefix = "test",
-      verbose = FALSE,
       domain = "Viruses",
       samples_to_remove_path = get_test_samples_to_remove()
     )
@@ -67,7 +68,7 @@ describe("Functions in main.R", {
     expect_false(is.null(metadata_path)) # Ensure path is not NULL.
 
     # Load metadata to double-check the specified columns are present.
-    metadata <- loadMetadata(metadata_path, verbose = FALSE)
+    metadata <- loadMetadata(metadata_path)
     for (column in c(metadata_sample_col, metadata_columns)) {
       expect_true((column %in% colnames(metadata)))
     }
@@ -121,6 +122,8 @@ describe("Functions in main.R", {
   })
 
   test_that("load_data() returns valid outputs", {
+    logger::log_threshold(logger::OFF)
+
     # Run SPARKI's load_data()
     out <- SPARKI:::load_data(
       std_reports_path = get_test_std_report_dir("usual"),
@@ -132,7 +135,6 @@ describe("Functions in main.R", {
       metadata_columns = "type,date,status",
       outdir_path = get_local_tmp_dir(),
       prefix = "test",
-      verbose = FALSE,
       domain = "Viruses",
       samples_to_remove = get_test_samples_to_remove()
     )
@@ -249,14 +251,15 @@ describe("Functions in main.R", {
     expect_type(ref_db[[SPARKI:::COLNAME_REF_DB_TAXON]], "character")
   })
 
-  test_that("run_sparki() generates all the output files it should", {
+  test_that("run_analysis() generates all the output files it should", {
+    logger::log_threshold(logger::OFF)
 
     # Define the output directory and ensure it is empty.
     outdir <- get_local_tmp_dir()
     expect_true((length(list.files(outdir)) == 0))
 
-    # Run SPARKI's run_sparki()
-    out <- SPARKI:::run_sparki(
+    # Run SPARKI's run_analysis()
+    out <- SPARKI:::run_analysis(
       std_reports_path = get_test_std_report_dir("usual"),
       mpa_reports_path = get_test_mpa_report_dir("usual"),
       organism = "Homo sapiens",
@@ -266,7 +269,6 @@ describe("Functions in main.R", {
       metadata_columns = "type,date,status",
       outdir_path = outdir,
       prefix = "test",
-      verbose = FALSE,
       include_eukaryotes = FALSE,
       include_sample_names = FALSE,
       domain = "Viruses",
@@ -278,7 +280,7 @@ describe("Functions in main.R", {
     ##------------------------------------------------##
 
     # Check that the output directory is not empty after the
-    # function run_sparki() is run.
+    # function run_analysis() is run.
     expect_true((length(list.files(outdir)) > 0))
 
     # Define the expected number of output PDF files in the
@@ -319,7 +321,7 @@ describe("Functions in main.R", {
 
     # Define the expected/actual number of columns in the unfiltered results table
     # and carry out test.
-    expected_ncol <- 23 # 20 fixed columns + 3 metadata columns as specified above.
+    expected_ncol <- 24 # 21 fixed columns + 3 metadata columns as specified above.
     actual_ncol <- ncol(unfiltered_res_table)
     expect_equal(actual_ncol, expected_ncol)
 
@@ -335,6 +337,7 @@ describe("Functions in main.R", {
       SPARKI:::COLNAME_STD_MINIMISERS,
       SPARKI:::COLNAME_STD_UNIQ_MINIMISERS,
       SPARKI:::COLNAME_STD_RANK,
+      SPARKI:::COLNAME_STD_N_TAXA_RANK,
       SPARKI:::COLNAME_STD_NCBI_ID,
       SPARKI:::COLNAME_STD_TAXON,
       SPARKI:::COLNAME_MPA_DOMAIN,
@@ -361,13 +364,13 @@ describe("Functions in main.R", {
       show_col_types = FALSE # Supressing messages about column types when the dataframe is created.
     )
 
-    # Define the expected/actual number of columns in the unfiltered results table
+    # Define the expected/actual number of columns in the filtered results table
     # and carry out test.
     expected_ncol <- 29 # 26 fixed columns + 3 metadata columns as specified above.
     actual_ncol <- ncol(filtered_res_table)
     expect_equal(actual_ncol, expected_ncol)
 
-    # Define the expected/actual column names in the unfiltered results table
+    # Define the expected/actual column names in the filtered results table
     # and carry out test.
     expected_colnames <- c(
       SPARKI:::COLNAME_STD_SAMPLE,
@@ -379,6 +382,7 @@ describe("Functions in main.R", {
       SPARKI:::COLNAME_STD_MINIMISERS,
       SPARKI:::COLNAME_STD_UNIQ_MINIMISERS,
       SPARKI:::COLNAME_STD_RANK,
+      SPARKI:::COLNAME_STD_N_TAXA_RANK,
       SPARKI:::COLNAME_STD_NCBI_ID,
       SPARKI:::COLNAME_STD_TAXON,
       SPARKI:::COLNAME_MPA_DOMAIN,
@@ -394,7 +398,6 @@ describe("Functions in main.R", {
       SPARKI:::COLNAME_STD_RATIO_TAXON,
       SPARKI:::COLNAME_STD_RATIO_CLADE,
       SPARKI:::COLNAME_STD_PVALUE,
-      SPARKI:::COLNAME_STD_N_TAXA_RANK,
       SPARKI:::COLNAME_STD_PADJ,
       SPARKI:::COLNAME_STD_SIGNIF
     )
