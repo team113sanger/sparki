@@ -2,9 +2,9 @@
 % Please edit documentation in R/load-data.R
 \name{loadMetadata}
 \alias{loadMetadata}
-\title{LOAD METADATA TABLE}
+\title{Load a metadata table}
 \usage{
-loadMetadata(metadata, verbose)
+loadMetadata(metadata)
 }
 \arguments{
 \item{metadata}{Path to a metadata table.}
@@ -13,7 +13,8 @@ loadMetadata(metadata, verbose)
 A dataframe containing the metadata.
 }
 \description{
-This function takes the path to a metadata file and reads the metadata table using readr::read_delim().
+This function takes the path to a metadata file and reads the metadata table using
+readr::read_delim().
 }
 \examples{
 loadMetadata("metadata.csv")

@@ -2,7 +2,7 @@
 % Please edit documentation in R/exceptions.R
 \name{check_file}
 \alias{check_file}
-\title{CARRY OUT CHECKS ON A GIVEN FILE}
+\title{Carry out checks on a given file}
 \usage{
 check_file(file_path)
 }

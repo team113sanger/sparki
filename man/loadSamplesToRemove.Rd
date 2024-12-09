@@ -2,9 +2,9 @@
 % Please edit documentation in R/load-data.R
 \name{loadSamplesToRemove}
 \alias{loadSamplesToRemove}
-\title{LOAD LIST OF SAMPLES TO BE EXCLUDED FROM SPARKI ANALYSIS}
+\title{Load list of samples to be removed from the SPARKI analysis}
 \usage{
-loadSamplesToRemove(filepath, verbose)
+loadSamplesToRemove(filepath)
 }
 \arguments{
 \item{filepath}{Path to a tab-delimited file in which each line is a sample ID.}
@@ -15,5 +15,6 @@ A list containing the samples IDs from the input file.
 \description{
 This function takes the path to a tab-delimited file, in which each line should
 be a sample ID, and returns a list with these IDs. Note that the sample IDs need
-to match those that are present in the merged reports dataframe.
+to match those that are present in the reports to be loaded with load_STDreports()
+and load_MPAreports().
 }

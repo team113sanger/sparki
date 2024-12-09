@@ -2,9 +2,9 @@
 % Please edit documentation in R/reports-merge.R
 \name{mergeReports}
 \alias{mergeReports}
-\title{MERGE STANDARD AND MPA-STYLE REPORTS}
+\title{Merge standard and MPA-style reports}
 \usage{
-mergeReports(std_reports, mpa_reports, verbose)
+mergeReports(std_reports, mpa_reports)
 }
 \arguments{
 \item{std_reports}{A dataframe (tibble) with standard reports, loaded with load_STDreports().}

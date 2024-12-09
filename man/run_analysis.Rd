@@ -2,7 +2,7 @@
 % Please edit documentation in R/main.R
 \name{run_analysis}
 \alias{run_analysis}
-\title{RUN AN END-TO-END SPARKI ANALYSIS}
+\title{Run an end-to-end SPARKI analysis}
 \usage{
 run_analysis(
   std_reports_path,
@@ -17,42 +17,42 @@ run_analysis(
   include_eukaryotes,
   include_sample_names,
   domain,
-  samples_to_remove
+  samples_to_remove_path
 )
 }
 \arguments{
-\item{std_reports_path}{Path to a directory containing standard Kraken2 reports.}
+\item{std_reports_path}{Path to a directory containing standard reports.}
 
 \item{mpa_reports_path}{Path to a directory containing MPA-style reports.}
 
-\item{organism}{Species being analysed (e.g. Homo sapiens).}
+\item{organism}{Species-level name of the organism being analysed.}
 
-\item{reference_path}{Path to an "inspect.txt" file in a Kraken2 reference database.}
+\item{reference_path}{Path to 'inspect.txt' file in a Kraken2 reference database.}
 
-\item{metadata_path}{Path to metadata file.}
+\item{metadata_path}{Path to metadata table file.}
 
-\item{metadata_sample_col}{The name of the column that contains sample IDs in the metadata table
-specified via 'metadata_path'.}
+\item{metadata_sample_col}{Name of column containing sample IDs in the metadata table.}
 
-\item{metadata_columns}{Comma-separated column names from the metadata table specified via 'metadata_path'.}
+\item{metadata_columns}{Name of columns of interest in the metadata table.}
 
-\item{outdir_path}{Path to an output directory.}
+\item{outdir_path}{Path to output directory.}
 
-\item{prefix}{Prefix to be added to output files.}
+\item{prefix}{Prefix to be added to output file names.}
 
-\item{include_eukaryotes}{Whether eukaryotes should be included in all output plots (some plots will have
-eukaryotes included regardless of this option).}
+\item{include_eukaryotes}{Whether eukaryotes should be included in all plots (they are
+included in some of the plots regardless of this flag).}
 
-\item{include_sample_names}{Whether sample names should be included in all output plots (some plots will
-have sample names included regardless of this option).}
+\item{include_sample_names}{Whether sample names should be included in all plots (they
+are included in some of the plots regardless of this flag).}
 
-\item{domain}{Domain(s) of interest (one of "Eukaryota", "Bacteria", "Viruses" or "Archaea").}
+\item{domain}{Domain(s) of interest.}
 
-\item{samples_to_remove}{A list of samples that should not be included in the SPARKI analysis.}
+\item{samples_to_remove_path}{Path to file containing a list of samples that should
+be removed from the SPARKI analysis.}
 }
 \value{
 Processed reports ready for downstream analysis.
 }
 \description{
-RUN AN END-TO-END SPARKI ANALYSIS
+Run an end-to-end SPARKI analysis
 }

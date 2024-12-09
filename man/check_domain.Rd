@@ -2,7 +2,7 @@
 % Please edit documentation in R/exceptions.R
 \name{check_domain}
 \alias{check_domain}
-\title{CHECK IF THE DOMAIN SPECIFIED IS VALID}
+\title{Check if the domain specified is valid}
 \usage{
 check_domain(domain)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/exceptions.R
 \name{check_directory}
 \alias{check_directory}
-\title{CARRY OUT CHECKS ON A GIVEN DIRECTORY}
+\title{Carry out checks on a given directory}
 \usage{
 check_directory(dirpath, expectation)
 }

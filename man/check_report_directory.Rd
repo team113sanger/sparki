@@ -2,7 +2,7 @@
 % Please edit documentation in R/exceptions.R
 \name{check_report_directory}
 \alias{check_report_directory}
-\title{CARRY OUT CHECKS ON DIRECTORIES CONTAINING SPECIFICALLY STANDARD OR MPA-STYLE REPORTS}
+\title{Carry out checks on directories that contain standard or MPA-style reports}
 \usage{
 check_report_directory(dirpath, report_format)
 }
