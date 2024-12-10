@@ -19,10 +19,8 @@ knitr::opts_knit$set(root.dir = "/lustre/scratch126/casm/team113da/users/jb62/pr
 
 ```{r source_code}
 #library(SPARKI)
-source("R/utilities.R")
-source("R/helper.R")
-source("R/plotting.R")
-source("R/constants.R")
+devtools::load_all()
+logger::log_threshold(logger::INFO)
 ```
 
 This tutorial will demonstrate how to run SPARKI on Kraken2 results. First of all, we will need Kraken2 reports in both standard and MPA-style formats.
@@ -254,7 +252,7 @@ plotDomainReads_barplot(
 
 ```{r statistical_assessment, echo = TRUE, fig.retina = 1, fig.width = 25, fig.height = 15, fig.align = 'center'}
 
-merged_reports <- subsetReports(merged_reports, species_to_remove = "Homo sapiens")
+merged_reports <- subsetReports(merged_reports, species = "Homo sapiens")
 merged_reports <- assessMinimiserRatio(merged_reports)
 merged_reports <- assessStatistics(merged_reports, ref_db)
 ```
