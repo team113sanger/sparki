@@ -1,28 +1,37 @@
 Package: SPARKI
 Title: A tool for the interpretation of pathogen identification results
-Version: 0.0.3
-Authors@R: 
-    person("Jacqueline", "Boccacino", , "jb62@sanger.ac.uk", role = "aut",
-           comment = c(ORCID = "0000-0001-6813-5217"))
-    person("Martin", "del Castillo Velasco-Herrera", , "mdc1@sanger.ac.uk", role = "aut",
-           comment = c(ORCID = "0000-0001-5956-0211"))
-    person("Jamie", "Billington", , "jb63@sanger.ac.uk", role = "aut",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-    person("Ian", "Vermes", , "iv3@sanger.ac.uk", role = "aut",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: SPARKI (Statistical Process Aimed at Robust Kraken 2 Interpretation, <sparki>) was developed as both an R package and a command line tool to help researchers interpret the outputs of Kraken 2 (Wood et al. 2019). It is available both as a standalone software and as part of an end-to-end pathogen identification pipeline (sparki-nf, <sparki-nf>). The main sample-level results yielded by SPARKI are, for each taxon, (i) the proportion of minimisers found in the sample (the higher the proportion of minimisers, the more of the organism’s genome is likely present in the sample) and (ii) the statistical significance of the result.
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+Version: 0.0.4
+Authors@R: c(
+    person("Jacqueline", "Boccacino", email = "jb62@sanger.ac.uk", role = c("cre", "aut"),
+           comment = c(ORCID = "0000-0001-6813-5217")),
+    person("Martin", "del Castillo Velasco-Herrera", email = "mdc1@sanger.ac.uk", role = c("aut"),
+           comment = c(ORCID = "0000-0001-5956-0211")),
+    person("Jamie", "Billington", email = "jb63@sanger.ac.uk", role = c("aut")),
+    person("Ian", "Vermes", email = "iv3@sanger.ac.uk", role = c("aut"))
+        )
+Description: SPARKI (Statistical Process Aimed at Robust Kraken 2 Interpretation, <sparki>) was developed as both an R package and a command line tool to help researchers interpret the outputs of Kraken 2 (Wood et al. 2019). It is available both as a standalone software and as part of an end-to-end pathogen identification pipeline (sparki-nf). The main sample-level results yielded by SPARKI are, for each taxon, (i) the proportion of minimisers found in the sample (the higher the proportion of minimisers, the more of the organism’s genome is likely present in the sample) and (ii) the statistical significance of the result.
+License: AGPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.0.0
+RoxygenNote: 7.3.1
+Depends:
+    R (>= 4.2.0)
 Imports:
     dplyr,
     fs,
     ggplot2,
     ggpubr,
+    logger,
+    optparse,
     readr,
     tidyr
 Suggests:
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    usethis (>= 2.0.0),
+    devtools (>= 2.4.0),
+    roxygen2 (>= 7.0.0),
+    styler (>= 1.9.0),
+    processx (>= 3.8.0),
+    withr,
+    glue
 Config/testthat/edition: 3
