@@ -1,6 +1,6 @@
 Package: SPARKI
 Title: A tool for the interpretation of pathogen identification results
-Version: 0.0.4
+Version: 0.1.0
 Authors@R: c(
     person("Jacqueline", "Boccacino", email = "jb62@sanger.ac.uk", role = c("cre", "aut"),
            comment = c(ORCID = "0000-0001-6813-5217")),
