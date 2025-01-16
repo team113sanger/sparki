@@ -17,7 +17,28 @@ This repository contains the code related to SPARKI (**S**tatistical **P**rocess
     - [Installing with `renv`](#installing-with-renv)
     - [Installing a specific tag, branch or commit of `SPARKI`](#installing-a-specific-tag-branch-or-commit-of-sparki)
 
+## Usage - quick start
+
+Sparki is an R pacakge with CLI and can be interacted with using `Rscript`
+
+```bash
+# To confirm the installation & version
+Rscript -e "SPARKI::cli()" --version
+
+# To see the how Sparki can be run
+Rscript -e "SPARKI::cli()" --help
+```
+
 ## Installation - quick start
+
+*** Use Sparki as a preinstalled standalon module on the Farm? ***
+As a convenience Sparki is installed as a module on the Sanger farm. To load the latest Sparki module:
+
+```bash
+module load /software/team113/modules/modulefiles/sparki/default
+```
+
+*** Install it into your R packages? ***
 
 This package requires a **Personal Access Token** (PAT) to be able to install it from the **Sanger GitLab**. You can generate a PAT by following the instructions [here](https://gitlab.internal.sanger.ac.uk/-/user_settings/personal_access_tokens).
 
