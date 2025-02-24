@@ -1,5 +1,5 @@
 test_that("helpers.R get_test_mpa_report_dir() returns a valid path for each case type", {
-  for (case_type in c("usual", "empty")) {
+  for (case_type in c("valid", "empty")) {
     # Assert that the directory exists
     expect_true(fs::dir_exists(get_test_mpa_report_dir(case_type)))
     # Assert that directory contains files with the expected extension .kraken.mpa
@@ -8,7 +8,7 @@ test_that("helpers.R get_test_mpa_report_dir() returns a valid path for each cas
 })
 
 test_that("helpers.R get_test_std_report_dir returns a valid path for each case type", {
-  for (case_type in c("usual", "empty")) {
+  for (case_type in c("valid", "empty")) {
     # Assert that the directory exists
     expect_true(fs::dir_exists(get_test_std_report_dir(case_type)))
     # Assert that directory contains files with the expected extension .kraken.mpa
