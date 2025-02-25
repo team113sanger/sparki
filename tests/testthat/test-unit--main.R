@@ -4,8 +4,8 @@ describe("Functions in main.R", {
 
     # Run SPARKI's check_inputs()
     out <- SPARKI:::check_inputs(
-      std_reports_path = get_test_std_report_dir("usual"),
-      mpa_reports_path = get_test_mpa_report_dir("usual"),
+      std_reports_path = get_test_std_report_dir("valid"),
+      mpa_reports_path = get_test_mpa_report_dir("valid"),
       organism = "Homo sapiens",
       reference_path = get_test_reference(),
       metadata_path = get_test_metadata(),
@@ -126,8 +126,8 @@ describe("Functions in main.R", {
 
     # Run SPARKI's load_data()
     out <- SPARKI:::load_data(
-      std_reports_path = get_test_std_report_dir("usual"),
-      mpa_reports_path = get_test_mpa_report_dir("usual"),
+      std_reports_path = get_test_std_report_dir("valid"),
+      mpa_reports_path = get_test_mpa_report_dir("valid"),
       organism = "Homo sapiens",
       reference_path = get_test_reference(),
       metadata_path = get_test_metadata(),
@@ -260,8 +260,8 @@ describe("Functions in main.R", {
 
     # Run SPARKI's run_analysis()
     out <- SPARKI:::run_analysis(
-      std_reports_path = get_test_std_report_dir("usual"),
-      mpa_reports_path = get_test_mpa_report_dir("usual"),
+      std_reports_path = get_test_std_report_dir("valid"),
+      mpa_reports_path = get_test_mpa_report_dir("valid"),
       organism = "Homo sapiens",
       reference_path = get_test_reference(),
       metadata_path = get_test_metadata(),

@@ -169,9 +169,11 @@ cli <- function() {
     "Standard reports directory", "MPA-style reports directory", "Organism",
     "Kraken2 reference database", "Output directory", "Domain"
   )
-  for (argument in required_arguments) {
-    if (is.na(argument)) {
-      arg_name <- names(required_arguments)[required_arguments == argument]
+
+  for (i in seq_len(length(required_arguments))) {
+
+    if (is.na(required_arguments[i])) {
+      arg_name <- names(required_arguments)[i]
       error_message <- paste0(CLI_ARGUMENT_NOT_PROVIDED, glue::double_quote(arg_name))
       logger::log_fatal(error_message)
       stop(error_message)

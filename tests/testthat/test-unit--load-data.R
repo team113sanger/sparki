@@ -6,7 +6,7 @@ describe("load_MPAreports()", {
     expected_number_of_columns <- 12
 
     #  Get path to test directory.
-    path_to_mpa <- get_test_mpa_report_dir("usual")
+    path_to_mpa <- get_test_mpa_report_dir("valid")
 
     # Load the MPA-style reports and obtain the actual numbers of rows and columns.
     out <- SPARKI::load_MPAreports(path_to_mpa)
@@ -25,7 +25,7 @@ describe("load_MPAreports()", {
     logger::log_threshold(logger::OFF)
 
     #  Get path to test directory.
-    path_to_mpa <- get_test_mpa_report_dir("usual")
+    path_to_mpa <- get_test_mpa_report_dir("valid")
 
     # Load the MPA-style reports.
     out <- SPARKI::load_MPAreports(path_to_mpa)
@@ -49,7 +49,7 @@ describe("load_MPAreports()", {
     logger::log_threshold(logger::OFF)
 
     #  Get path to test directory.
-    path_to_mpa <- get_test_mpa_report_dir("usual")
+    path_to_mpa <- get_test_mpa_report_dir("valid")
 
     # Load the MPA-style reports and get actual column names.
     out <- SPARKI::load_MPAreports(path_to_mpa)
@@ -98,7 +98,7 @@ describe("load_MPAreports()", {
     logger::log_threshold(logger::OFF)
 
     # Get path to test directory.
-    path_to_mpa <- get_test_mpa_report_dir("usual")
+    path_to_mpa <- get_test_mpa_report_dir("valid")
 
     # Load the MPA-style reports and obtain the actual numbers of rows and columns.
     out <- SPARKI::load_MPAreports(path_to_mpa)
@@ -187,7 +187,7 @@ describe("load_STDreports()", {
     expected_number_of_columns <- 9
 
     #  Get path to test directory.
-    path_to_std <- get_test_std_report_dir("usual")
+    path_to_std <- get_test_std_report_dir("valid")
 
     # Load the MPA-style reports and obtain the actual numbers of rows and columns.
     out <- SPARKI::load_STDreports(path_to_std)
@@ -206,7 +206,7 @@ describe("load_STDreports()", {
     logger::log_threshold(logger::OFF)
 
     # Get path to test directory.
-    path_to_std <- get_test_std_report_dir("usual")
+    path_to_std <- get_test_std_report_dir("valid")
 
     # Load the MPA-style reports.
     out <- SPARKI::load_STDreports(path_to_std)
@@ -227,7 +227,7 @@ describe("load_STDreports()", {
     logger::log_threshold(logger::OFF)
 
     # Get path to test directory.
-    path_to_std <- get_test_std_report_dir("usual")
+    path_to_std <- get_test_std_report_dir("valid")
 
     # Load the MPA-style reports and get actual column names.
     out <- SPARKI::load_STDreports(path_to_std)
