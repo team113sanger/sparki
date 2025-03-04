@@ -174,7 +174,7 @@ git hf push
 
 3. Finish the release.
 ```bash
-git hf feature finish 0.1.2 # Or whatever the name of the release.
+git hf release finish 0.1.2 # Or whatever the name of the release.
 ```
 
 4. Just follow the next steps that will be displayed in your terminal after running `git hf feature finish` and that's it!

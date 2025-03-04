@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] - 2025-03-04
+
+### Fixed
+- Fixed the logging of the function `check_species_in_report()` as it was bailing out in some cases, specifically when the logging threshold was set to `debug` or `trace`.
+
+### Changed
+- `exceptions.R` is now `checks.R`
+- The function `check_species_in_report()` was moved from `reports-subset.R` to `checks.R` and was refactored; a new function called `look_for_alternative_name()` was created in the refactoring process to make `check_species_in_report()` simpler.
+
+### Added
+- Implemented more tests around functions in `reports-subset.R` and added some end-to-end tests for the CLI (`cli.R`).
+
 ## [0.1.1] - 2025-02-25
 
 ### Warning
