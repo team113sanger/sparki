@@ -20,6 +20,8 @@ This repository contains the code related to SPARKI (**S**tatistical **P**rocess
     - [Installing a specific tag, branch or commit of `SPARKI`](#installing-a-specific-tag-branch-or-commit-of-sparki)
 - [Using `SPARKI` as a command line tool](#using-sparki-as-a-command-line-tool)
 - [Using `SPARKI` inside R](#using-sparki-inside-r)
+- [For developers](#for-developers)
+  - [Making a release](#making-a-release)
 
 ## Quick start
 
@@ -147,3 +149,32 @@ Rscript -e "SPARKI::cli()" \
 ## Using SPARKI inside R
 
 Please check out [this tutorial](https://gitlab.internal.sanger.ac.uk/team113_projects/jb62-projects/sparki/-/blob/develop/tutorials/SPARKI_basic_usage.pdf?ref_type=heads).
+
+## For developers
+
+### Making a release
+1. Start a release with HubFlow.
+```bash
+module load git
+git hf release start 0.1.2 # Or whatever tag.
+```
+
+2. Make documentation commits.
+```bash
+git add DESCRIPTION
+git commit -m "Bump package version to 0.1.2"
+```
+```bash
+git add CHANGELOG.md
+git commit -m "Update changelog"
+```
+```bash
+git hf push
+```
+
+3. Finish the release.
+```bash
+git hf feature finish 0.1.2 # Or whatever the name of the release.
+```
+
+4. Just follow the next steps that will be displayed in your terminal after running `git hf feature finish` and that's it!
