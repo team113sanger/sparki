@@ -12,46 +12,50 @@ This repository contains the code related to SPARKI (**S**tatistical **P**rocess
 [develop-branch]: https://gitlab.internal.sanger.ac.uk/team113_projects/jb62-projects/sparki/-/commits/develop
 
 ## Table of contents
-- [Installation - quick start](#installation---quick-start)
+- [Quick start](#quick-start)
+- [Installation](#installation)
+  - [Install it into your R packages](#install-it-into-your-r-packages)
     - [Installing with `remotes`](#installing-with-remotes)
     - [Installing with `renv`](#installing-with-renv)
     - [Installing a specific tag, branch or commit of `SPARKI`](#installing-a-specific-tag-branch-or-commit-of-sparki)
+- [Using `SPARKI` as a command line tool](#using-sparki-as-a-command-line-tool)
+- [Using `SPARKI` inside R](#using-sparki-inside-r)
+- [For developers](#for-developers)
+  - [Making a release](#making-a-release)
 
-## Usage - quick start
+## Quick start
 
-Sparki is an R pacakge with CLI and can be interacted with using `Rscript`
+SPARKI is an R package with a CLI that can be interacted with using `Rscript`:
 
 ```bash
-# To confirm the installation & version
+# To confirm the installation & version!
 Rscript -e "SPARKI::cli()" --version
 
-# To see the how Sparki can be run
+# To see how SPARKI can be run!
 Rscript -e "SPARKI::cli()" --help
 ```
 
-## Installation - quick start
-
-*** Use Sparki as a preinstalled standalon module on the Farm? ***
-As a convenience Sparki is installed as a module on the Sanger farm. To load the latest Sparki module:
+As a convenience, SPARKI is installed as a module on the Sanger Farm. To load the latest SPARKI module:
 
 ```bash
 module load /software/team113/modules/modulefiles/sparki/default
 ```
 
-*** Install it into your R packages? ***
+## Installation
 
-This package requires a **Personal Access Token** (PAT) to be able to install it from the **Sanger GitLab**. You can generate a PAT by following the instructions [here](https://gitlab.internal.sanger.ac.uk/-/user_settings/personal_access_tokens).
+### Install it into your R packages
 
-You can install SPARKI using the `remotes` or `renv` package.
+This package requires a **Personal Access Token** (PAT) if you are to install it from the **Sanger GitLab**. You can generate a PAT by following the instructions [here](https://gitlab.internal.sanger.ac.uk/-/user_settings/personal_access_tokens).
 
-If you are installing SPARKI on the Sanger farm you can use R version 4.2 or
-newer. For convenience, you can load the R 4.4 module with the following command:
+If you are installing SPARKI on the Sanger Farm you can use R version 4.2 or newer. For convenience, you can load the R 4.4 module with the following command:
 
 ```bash
 module load rocker/rver/4.4.0
 ```
 
-### Installing with `remotes`
+You can install SPARKI using the `remotes` or `renv` packages, as described below.
+
+#### Installing with `remotes`
 
 Start an R shell, install the `remotes` package if you haven't already, and then
 install SPARKI:
@@ -66,7 +70,7 @@ remotes::install_gitlab(
 )
 ```
 
-### Installing with `renv`
+#### Installing with `renv`
 
 If you are using `renv` to manage your R environment, you can add SPARKI to your
 project by running the following commands in an R shell:
@@ -79,7 +83,7 @@ Sys.setenv(GITLAB_PAT = PAT)
 renv::install("gitlab::team113_projects/jb62-projects/sparki")
 ```
 
-### Installing a specific tag, branch or commit of `SPARKI`
+#### Installing a specific tag, branch or commit of `SPARKI`
 
 You can install a specific branch, tag or commit by adding a `@ref` to the end of the repo URL. For example, to install the `develop` branch:
 
@@ -98,7 +102,7 @@ options(renv.config.gitlab.host = "gitlab.internal.sanger.ac.uk")
 renv::install("gitlab::team113_projects/jb62-projects/sparki@develop")
 ```
 
-## Using SPARKI's command line interface (CLI)
+## Using SPARKI as command line tool
 
 ### CLI arguments/options
 
@@ -108,24 +112,25 @@ renv::install("gitlab::team113_projects/jb62-projects/sparki@develop")
 - `--organism`: species you are analysing (e.g. if working with human samples, this will be `Homo sapiens`).
 - `--reference`: path to the `inspect.txt` file that is present in the reference database used to run Kraken2.
 - `--domain`: domain(s) that the user is interested in (e.g. `Viruses`); note that if multiple domains are to be provided, they must be comma-separated (e.g. `Viruses,Bacteria`).
-- `--outdir`: path to an output directory.
+- `--outdir`: path to an output directory (note that it must be an empty directory!).
 
 #### *Optional*
 - `--metadata`: path to a metadata file containing sample-level information.
 - `--sample-col`: if `--metadata` is provided, users should also specify the name of the column that contains sample IDs.
 - `--columns`: if `--metadata` is provided, users should also specify the names of the columns from the metadata table that should be used; the column names must be comma-separated.
 - `--prefix`: prefix to be added to SPARKI's output files (note: you do not need to include an underscore at the end of your prefix!).
-- `--samples-to-remove`: if the directories provided to `--std-reports` and `--mpa-reports` contain samples that should not be included in the final outputs, a list with those samples can be provided in a text file.
-- `--verbose`: flag indicating that the user would like log messages to be printed out.
+- `--samples-to-remove`: if the directories provided to `--std-reports` and `--mpa-reports` contain samples that should not be included in the final outputs, a list with those samples can be provided in a text file; each line in the file should be a sample ID.
+- `--verbosity`: verbosity level (one of `trace`/`t`, `debug`/`d`, `info`/`i`, `success`/`s`, `warn`/`w`, `error`/`e`, `fatal`/`f`, or `off`/`o`).
 - `--include-eukaryotes`: flag indicating that the user would like eukaryotes to be included in all plots (note that using this flag may cause some plots to be too full; also note that some plots will have eukaryotes included regardless of this flag).
 - `--include-sample-names`: flag indicating that the user would like sample names to be included in all plots (note that using this flag may cause some plots to be too full; also note that some plots will have sample names included regardless of this flag).
 
 ### CLI usage example
 
-```
+```bash
 PROJECTDIR="/lustre/scratch126/casm/team113da/users/jb62/projects/sparki"
+module load sparki
 
-/software/team113/dermatlas/R/R-4.2.2/bin/Rscript ${PROJECTDIR}/R/cli.R \
+Rscript -e "SPARKI::cli()" \
     --std-reports ${PROJECTDIR}/test/reports \
     --mpa-reports ${PROJECTDIR}/test/mpa \
     --organism "Homo sapiens" \
@@ -135,7 +140,7 @@ PROJECTDIR="/lustre/scratch126/casm/team113da/users/jb62/projects/sparki"
     --columns Diagnosis_short,Site_group \
     --prefix SebT \
     --outdir ${PROJECTDIR}/test/outputs/ \
-    --verbose \
+    --verbosity info \
     --domain Viruses,Bacteria \
     --samples-to-remove ${PROJECTDIR}/test/samples_remove.txt
 ```
@@ -144,3 +149,32 @@ PROJECTDIR="/lustre/scratch126/casm/team113da/users/jb62/projects/sparki"
 ## Using SPARKI inside R
 
 Please check out [this tutorial](https://gitlab.internal.sanger.ac.uk/team113_projects/jb62-projects/sparki/-/blob/develop/tutorials/SPARKI_basic_usage.pdf?ref_type=heads).
+
+## For developers
+
+### Making a release
+1. Start a release with HubFlow.
+```bash
+module load git
+git hf release start 0.1.2 # Or whatever tag.
+```
+
+2. Make documentation commits.
+```bash
+git add DESCRIPTION
+git commit -m "Bump package version to 0.1.2"
+```
+```bash
+git add CHANGELOG.md
+git commit -m "Update changelog"
+```
+```bash
+git hf push
+```
+
+3. Finish the release.
+```bash
+git hf release finish 0.1.2 # Or whatever the name of the release.
+```
+
+4. Just follow the next steps that will be displayed in your terminal after running `git hf feature finish` and that's it!
