@@ -203,9 +203,6 @@ check_species_in_report <- function(report, species) {
 
   # If the species name specified by the user is not present in the report as is...
   if (species %in% report[[COLNAME_STD_TAXON]]) {
-
-    print(which(report[[COLNAME_STD_TAXON]] == species))
-
     logger::log_debug(paste0(
       "The species ", species, " was found in the report at rows ",
       paste(which(report[[COLNAME_STD_TAXON]] == species), collapse = ", "), "."
