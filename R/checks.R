@@ -108,6 +108,8 @@ check_report_directory <- function(dirpath, report_format) {
   return(dirpath)
 }
 
+
+
 #' Carry out checks on a given file
 #'
 #' This function takes the path to a given file and performs a few checks:
