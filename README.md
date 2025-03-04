@@ -12,10 +12,14 @@ This repository contains the code related to SPARKI (**S**tatistical **P**rocess
 [develop-branch]: https://gitlab.internal.sanger.ac.uk/team113_projects/jb62-projects/sparki/-/commits/develop
 
 ## Table of contents
-- [Installation - quick start](#installation---quick-start)
+- [Quick start](#quick-start)
+- [Installation](#installation)
+  - [Install it into your R packages](#install-it-into-your-r-packages)
     - [Installing with `remotes`](#installing-with-remotes)
     - [Installing with `renv`](#installing-with-renv)
     - [Installing a specific tag, branch or commit of `SPARKI`](#installing-a-specific-tag-branch-or-commit-of-sparki)
+- [Using SPARKI as a command line tool](#using-sparki-as-a-command-line-tool)
+- [Using SPARKI inside R](#using-sparki-inside-r)
 
 ## Quick start
 
@@ -41,13 +45,13 @@ module load /software/team113/modules/modulefiles/sparki/default
 
 This package requires a **Personal Access Token** (PAT) if you are to install it from the **Sanger GitLab**. You can generate a PAT by following the instructions [here](https://gitlab.internal.sanger.ac.uk/-/user_settings/personal_access_tokens).
 
-You can install SPARKI using the `remotes` or `renv` packages.
-
 If you are installing SPARKI on the Sanger Farm you can use R version 4.2 or newer. For convenience, you can load the R 4.4 module with the following command:
 
 ```bash
 module load rocker/rver/4.4.0
 ```
+
+You can install SPARKI using the `remotes` or `renv` packages, as described below.
 
 #### Installing with `remotes`
 
@@ -96,7 +100,7 @@ options(renv.config.gitlab.host = "gitlab.internal.sanger.ac.uk")
 renv::install("gitlab::team113_projects/jb62-projects/sparki@develop")
 ```
 
-## Using SPARKI's command line interface (CLI)
+## Using SPARKI as command line tool
 
 ### CLI arguments/options
 
@@ -120,11 +124,11 @@ renv::install("gitlab::team113_projects/jb62-projects/sparki@develop")
 
 ### CLI usage example
 
-```
+```bash
 PROJECTDIR="/lustre/scratch126/casm/team113da/users/jb62/projects/sparki"
 module load sparki
 
-Rscript ${PROJECTDIR}/R/cli.R \
+Rscript -e "SPARKI::cli()" \
     --std-reports ${PROJECTDIR}/test/reports \
     --mpa-reports ${PROJECTDIR}/test/mpa \
     --organism "Homo sapiens" \
