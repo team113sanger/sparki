@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.1] - 2025-02-25
 
+### Warning
+- Users are advised not to use `debug` and `trace` as the verbosity level in this version as they may come across a bug that was introduced in the logging of the function `check_species_in_report()`!
+
 ### Fixed
 - Fixed part of the logging-related code in `cli()` to actually print the argument name when the CLI is launched with a missing required argument.
 - `subsetReports()` is now an exported function.
