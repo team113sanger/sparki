@@ -12,14 +12,14 @@ test_that("cli() works when only required arguments are specified", {
         glue::glue("--outdir", {get_local_tmp_dir()}, .sep = " "),
         "--organism 'Homo sapiens'",
         "--domain Viruses",
-        "--verbosity off", # Not a required argument but we do not want log messages to be printed out during the test.
-        sep = " "
+        "--verbosity trace", # We want to test at the trace level to ensure logging will be produced with no errors;
+        sep = " "            # the log messages will exist but they will not be printed out (as defined below).
     )
 
     exit_code <- system(
         command = cli_cmd,
         ignore.stdout = TRUE, # Ignoring this as we do not want log messages to be printed out during the test.
-        ignore.stderr = FALSE,
+        ignore.stderr = TRUE, # Ignoring this as we do not want log messages to be printed out during the test.
         intern = FALSE
     )
 
@@ -40,21 +40,21 @@ test_that("cli() works when the report contains white space-delimited species na
         glue::glue("--outdir", {get_local_tmp_dir()}, .sep = " "),
         "--organism 'Homo_sapiens'", # This species is present in the report with a white space as the delimiter!
         "--domain Viruses",
-        "--verbosity off", # Not a required argument but we do not want log messages to be printed out during the test.
-        sep = " "
+        "--verbosity trace", # We want to test at the trace level to ensure logging will be produced with no errors;
+        sep = " "            # the log messages will exist but they will not be printed out (as defined below).
     )
 
     exit_code <- system(
         command = cli_cmd,
         ignore.stdout = TRUE, # Ignoring this as we do not want log messages to be printed out during the test.
-        ignore.stderr = FALSE,
+        ignore.stderr = TRUE, # Ignoring this as we do not want log messages to be printed out during the test.
         intern = FALSE
     )
 
     expect_equal(exit_code, 0)
 })
 
-test_that("cli() fails when the user-defined species' delimiter is neither a white space or an underscore", {
+test_that("cli() fails when the user-defined species's delimiter is neither a white space or an underscore", {
     logger::log_threshold(logger::OFF)
 
     rscript <- Sys.which("Rscript")
@@ -68,14 +68,14 @@ test_that("cli() fails when the user-defined species' delimiter is neither a whi
         glue::glue("--outdir", {get_local_tmp_dir()}, .sep = " "),
         "--organism 'Homo-sapiens'", # This species is present in the report with a white space as the delimiter!
         "--domain Viruses",
-        "--verbosity off", # Not a required argument but we do not want log messages to be printed out during the test.
-        sep = " "
+        "--verbosity trace", # We want to test at the trace level to ensure logging will be produced with no errors;
+        sep = " "            # the log messages will exist but they will not be printed out (as defined below).
     )
 
     exit_code <- system(
         command = cli_cmd,
         ignore.stdout = TRUE, # Ignoring this as we do not want log messages to be printed out during the test.
-        ignore.stderr = TRUE, # In this case we know this will fail so we will ignore the standard error as well.
+        ignore.stderr = TRUE, # Ignoring this as we do not want log messages to be printed out during the test.
         intern = FALSE
     )
 
