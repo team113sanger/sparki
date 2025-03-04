@@ -39,11 +39,6 @@ check_inputs <- function(
   mpa_reports_path <- check_report_directory(dirpath = mpa_reports_path, report_format = "mpa")
 
   #######################
-  # CHECKS FOR ORGANISM #
-  #######################
-  check_organism(std_reports_path, mpa_reports_path, organism)
-
-  #######################
   # CHECKS FOR METADATA #
   #######################
 
