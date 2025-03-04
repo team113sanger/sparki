@@ -18,8 +18,8 @@ This repository contains the code related to SPARKI (**S**tatistical **P**rocess
     - [Installing with `remotes`](#installing-with-remotes)
     - [Installing with `renv`](#installing-with-renv)
     - [Installing a specific tag, branch or commit of `SPARKI`](#installing-a-specific-tag-branch-or-commit-of-sparki)
-- [Using SPARKI as a command line tool](#using-sparki-as-a-command-line-tool)
-- [Using SPARKI inside R](#using-sparki-inside-r)
+- [Using `SPARKI` as a command line tool](#using-sparki-as-a-command-line-tool)
+- [Using `SPARKI` inside R](#using-sparki-inside-r)
 
 ## Quick start
 
