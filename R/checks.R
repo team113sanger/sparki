@@ -202,15 +202,15 @@ check_domain <- function(domain) {
 check_organism <- function(std_reports_path, mpa_reports_path, organism) {
   std_reports <- load_STDreports(std_reports_path)
   if (!(organism %in% std_reports[[COLNAME_STD_TAXON]])) {
-    error_message <- paste0(EXCEPTIONS_CHECK_ORGANISM_STD, glue::double_quote(organism))
-    logger::log_fatal(error_message)
-    stop(error_message)
+    warning_message <- paste0(EXCEPTIONS_CHECK_ORGANISM_STD, glue::double_quote(organism))
+    logger::log_warning(warning_message)
+    warning(warning_message)
   }
 
   mpa_reports <- load_MPAreports(mpa_reports_path)
   if (!(organism %in% mpa_reports[[COLNAME_MPA_SPECIES]])) {
-    error_message <- paste0(EXCEPTIONS_CHECK_ORGANISM_STD, glue::double_quote(organism))
-    logger::log_fatal(error_message)
-    stop(error_message)
+    warning_message <- paste0(EXCEPTIONS_CHECK_ORGANISM_STD, glue::double_quote(organism))
+    logger::log_warning(warning_message)
+    warning(warning_message)
   }
 }
