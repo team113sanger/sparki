@@ -171,3 +171,22 @@ describe("check_species_in_report()", {
     expect_no_error(SPARKI:::check_species_in_report(std_reports, species_name))
   })
 })
+
+test_that("look_for_alternative_name() fails when the species name does not contain any of the supported delimiters", {
+  logger::log_threshold(logger::OFF)
+
+  # Get path to test directory
+  path_to_std <- get_test_std_report_dir("valid")
+
+  # Load the standard reports and define species names that should fail.
+  std_reports <- SPARKI::load_STDreports(path_to_std)
+  names_that_should_fail <- c("Homo+sapiens", "Homo/sapiens", "Homo.sapiens", "Homosapiens", "Homo  sapiens")
+  names(names_that_should_fail) <- c("+", "/", ".", "", "  ")
+
+  # Carry out tests.
+  for (species_name in names_that_should_fail) {
+    expect_error(SPARKI:::look_for_alternative_name(
+      std_reports, species_name, names(names_that_should_fail)[names_that_should_fail == species_name]
+    ))
+  }
+})
