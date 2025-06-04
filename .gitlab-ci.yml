@@ -31,6 +31,7 @@ include:
     # does not have sudo. By default CICD jobs do not build with 'docker
     # compose' but use 'docker' - so this is just a safety measure.
     HAS_SUDO: 0
+    DOCKERFILE_PATH: Dockerfile-dev
 
 ############
 #   JOBS   #
