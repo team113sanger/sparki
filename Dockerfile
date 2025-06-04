@@ -42,7 +42,7 @@ ENV \
     RENV_PATHS_LIBRARY_ROOT="${OPT_DIRECTORY:?}/renv/library" \
     RENV_PATHS_LIBRARY="${OPT_DIRECTORY:?}/renv/library/sparki-libs" \
     RENV_PATHS_CACHE="${OPT_DIRECTORY:?}/renv-cache" \
-    LOGGING_DIRECTORY="${DATA_DIRECTORY:?}/logs" 
+    LOGGING_DIRECTORY="${DATA_DIRECTORY:?}/logs"
 
 # Run the commands to:
 # - create directories defined in the environment variables
