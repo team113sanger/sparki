@@ -20,7 +20,9 @@ include:
     - .component-after_script
     - .component-tags-shared-large-runner
 
-.specific-variables:
+
+
+.dev-variables:
   variables:
     USE_DOCKER_TARGET_STAGE: 1
     DOCKER_TARGET_STAGE: base_stage
@@ -32,16 +34,33 @@ include:
     # compose' but use 'docker' - so this is just a safety measure.
     HAS_SUDO: 0
     DOCKERFILE_PATH: Dockerfile-dev
+    IMAGE_TAG_SUFFIX: "-dev"
+
+.public-variables:
+  extends:
+    - .dev-variables
+  variables:
+    DOCKERFILE_PATH: Dockerfile
+    IMAGE_TAG_SUFFIX: "-public"
+
 
 ############
 #   JOBS   #
 ############
 
-build:
+build-dev:
   stage: build
   extends:
     - .generic-wo-script-or-rules
-    - .specific-variables
+    - .dev-variables
+    - .component-script_docker-build
+    - .component-rules-except-release
+
+build-public:
+  stage: build
+  extends:
+    - .generic-wo-script-or-rules
+    - .public-variables
     - .component-script_docker-build
     - .component-rules-except-release
 
@@ -49,7 +68,7 @@ unit-test:
   stage: test
   extends:
     - .generic-wo-script-or-rules
-    - .specific-variables
+    - .dev-variables
     - .component-rules-except-release
   script:
     - echo "*** [SCRIPT] START ***"
@@ -64,7 +83,7 @@ format-test:
   stage: test
   extends:
     - .generic-wo-script-or-rules
-    - .specific-variables
+    - .dev-variables
     - .component-script-test-formatting-in-docker
     - .component-rules-except-release
 
@@ -72,7 +91,7 @@ publish-develop:
   stage: publish
   extends:
     - .generic-wo-script-or-rules
-    - .specific-variables
+    - .dev-variables
     - .component-script-publish-develop-docker-image
     - .component-rules-develop-only
 
@@ -80,6 +99,6 @@ publish-tagged_and_latest_docker_images:
   stage: publish
   extends:
     - .generic-wo-script-or-rules
-    - .specific-variables
+    - .dev-variables
     - .component-script-publish-tagged+latest-docker-image
     - .component-rules-tag-only

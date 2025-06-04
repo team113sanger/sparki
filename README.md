@@ -112,11 +112,16 @@ Alternatively, you can use a Docker container to interact with `SPARKI`'s CLI. I
 # 1 - Create an image from the Dockerfile.
 docker build -t sparki:local -f Dockerfile --progress plain .
 
-# 2 - Start a container.
-docker compose -f docker-compose.yml up -d
+# 2.1 - Check the SPARKI help.
+docker run --rm sparki:local Rscript -e "SPARKI::cli()" --help
 
-# 3 - Run SPARKI.
-docker run sparki:local Rscript -e "SPARKI::cli()" --help
+# 2.2 - Run SPARKI.
+docker run --rm sparki:local -v path/to/dir:/opt/data/ Rscript -e "SPARKI::cli()" \
+  --std-reports /opt/data/reports \
+  --mpa-reports /opt/data/mpa \
+  --organism "Homo sapiens" \
+  --reference /opt/data/inspect.txt \
+  --outdir /opt/data/
 ```
 
 You can find more details on how to use `SPARKI`'s CLI below.
@@ -208,12 +213,9 @@ git hf release finish 0.1.2 # Or whatever the name of the release.
 If you are working on `SPARKI`, please do so using a development-focused Docker container that you can start by following the steps below:
 
 ```bash
-# 1 - Create an image from the Dockerfile.
-docker build -t sparki-dev:local -f Dockerfile-dev --progress plain .
+# 1 - Create an image and start a container.
+docker compose -f docker-compose.yml up -d --build
 
-# 2 - Start a container.
-docker compose -f docker-compose-dev.yml up -d
-
-# 3 - Enter the container.
+# 2 - Enter the container.
 docker exec -it sparki bash
 ```
