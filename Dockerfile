@@ -22,7 +22,8 @@ ENV \
     LC_ALL="en_US.UTF-8" \
     LANG="en_US.UTF-8" \
     PKGTYPE="binary" \
-    RENV_CONFIG_PAK_ENABLED="TRUE"
+    RENV_CONFIG_PAK_ENABLED="TRUE" \
+    PRE_COMMIT_VERSION="4.0.1"
 
 
 # Set next environment variables that interpolate the top level environment
@@ -42,8 +43,15 @@ ENV \
     RENV_PATHS_LIBRARY_ROOT="${OPT_DIRECTORY:?}/renv/library" \
     RENV_PATHS_LIBRARY="${OPT_DIRECTORY:?}/renv/library/sparki-libs" \
     RENV_PATHS_CACHE="${OPT_DIRECTORY:?}/renv-cache" \
-    LOGGING_DIRECTORY="${DATA_DIRECTORY:?}/logs"
+    LOGGING_DIRECTORY="${DATA_DIRECTORY:?}/logs" \
+    PIPX_HOME="${OPT_DIRECTORY}/pipx" \
+    PIPX_BIN_DIR="${OPT_DIRECTORY}/pipx/bin"
 
+# Set the environment that interpolates the next level of environment variables
+#
+# Set the PATH to include the pipx bin directory
+ENV \
+    PATH=${PIPX_BIN_DIR:?}:${PATH}
 
 # Run the commands to:
 # - create directories defined in the environment variables
@@ -58,7 +66,7 @@ RUN \
     && useradd -u ${USER_ID} -g ${GROUP_ID} "${USER_NAME}" --shell /bin/bash --create-home --home-dir "${USER_DIRECTORY}" \
     && if ! getent group docker > /dev/null; then groupadd docker; fi \
     && usermod -a -G docker,staff admin \
-    && mkdir -p "${PROJECT_DIRECTORY:?}" "${DATA_DIRECTORY:?}" "${OPT_DIRECTORY:?}" "${RENV_DIRECTORY:?}" "${RENV_PATHS_LIBRARY:?}" "${RENV_PATHS_CACHE:?}" \
+    && mkdir -p "${PROJECT_DIRECTORY:?}" "${DATA_DIRECTORY:?}" "${OPT_DIRECTORY:?}" "${RENV_DIRECTORY:?}" "${RENV_PATHS_LIBRARY:?}" "${RENV_PATHS_CACHE:?}" "${PIPX_BIN_DIR:?}" "${PIPX_BIN_DIR:?}" \
     && chown -R "${USER_NAME:?}:${USER_NAME:?}" "${PROJECT_DIRECTORY:?}" "${DATA_DIRECTORY:?}" "${USER_DIRECTORY:?}" "${OPT_DIRECTORY:?}" \
     && chmod -R 755 "${PROJECT_DIRECTORY:?}" "${DATA_DIRECTORY:?}" "${USER_DIRECTORY:?}" "${OPT_DIRECTORY:?}"
 
@@ -75,6 +83,8 @@ RUN \
     && DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
     build-essential \
     vim \
+    pipx \
+    && pipx install "pre-commit==${PRE_COMMIT_VERSION:?}" \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -113,3 +123,6 @@ RUN \
     && chmod -R 755 "${PROJECT_DIRECTORY:?}" "${DATA_DIRECTORY:?}" "${USER_DIRECTORY:?}" "${OPT_DIRECTORY:?}"
 
 USER "${USER_NAME:?}"
+
+# Install pre-commit hooks
+RUN pre-commit install --install-hooks
