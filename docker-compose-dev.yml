@@ -2,10 +2,10 @@ services:
   sparki:
     container_name: sparki
     user: admin
-    image: project:local
+    image: dev-sparki:local
     build:
       context: ./
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile-dev
       target: development_only_stage
       args:
         # Images built with HAS_SUDO=1 will have sudo installed and a privileged
