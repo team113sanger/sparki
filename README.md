@@ -25,7 +25,7 @@ This repository contains the code related to SPARKI (**S**tatistical **P**rocess
 
 ## Quick start
 
-SPARKI is an R package with a CLI that can be interacted with using `Rscript`:
+SPARKI is an R package with a command line interface (CLI) that can be interacted with using `Rscript`:
 
 ```bash
 # To confirm the installation & version!
@@ -35,7 +35,7 @@ Rscript -e "SPARKI::cli()" --version
 Rscript -e "SPARKI::cli()" --help
 ```
 
-As a convenience, SPARKI is installed as a module on the Sanger Farm. To load the latest SPARKI module:
+As a convenience, SPARKI is installed as a module on the Sanger farm. To load the latest SPARKI module:
 
 ```bash
 module load /software/team113/modules/modulefiles/sparki/default
@@ -43,11 +43,13 @@ module load /software/team113/modules/modulefiles/sparki/default
 
 ## Installation
 
+*Note: As of now, `SPARKI` is only available through Sanger's internal GitLab.*
+
 ### Install it into your R packages
 
-This package requires a **Personal Access Token** (PAT) if you are to install it from the **Sanger GitLab**. You can generate a PAT by following the instructions [here](https://gitlab.internal.sanger.ac.uk/-/user_settings/personal_access_tokens).
+This package requires a **Personal Access Token** (PAT) if you are to install it from **Sanger's internal GitLab**. You can generate a PAT by following the instructions [here](https://gitlab.internal.sanger.ac.uk/-/user_settings/personal_access_tokens).
 
-If you are installing SPARKI on the Sanger Farm you can use R version 4.2 or newer. For convenience, you can load the R 4.4 module with the following command:
+If you are installing `SPARKI` on the Sanger farm you can use R version 4.2 or newer. For convenience, you can load the R 4.4 module om the farm with the following command:
 
 ```bash
 module load rocker/rver/4.4.0
@@ -57,8 +59,7 @@ You can install SPARKI using the `remotes` or `renv` packages, as described belo
 
 #### Installing with `remotes`
 
-Start an R shell, install the `remotes` package if you haven't already, and then
-install SPARKI:
+Start an R shell, install the `remotes` package if you haven't already, and then install `SPARKI`:
 
 ```R
 PAT <- "glpat-...<your-pat-goes-here>..."
@@ -72,8 +73,7 @@ remotes::install_gitlab(
 
 #### Installing with `renv`
 
-If you are using `renv` to manage your R environment, you can add SPARKI to your
-project by running the following commands in an R shell:
+If you are using `renv` to manage your R environment, you can add `SPARKI` to your project by running the following commands in an R shell:
 
 ```R
 # It is assumed that you have already created an `renv` environment
@@ -102,7 +102,25 @@ options(renv.config.gitlab.host = "gitlab.internal.sanger.ac.uk")
 renv::install("gitlab::team113_projects/jb62-projects/sparki@develop")
 ```
 
-## Using SPARKI as command line tool
+#### Using Docker
+
+Alternatively, you can use a Docker container to interact with `SPARKI`'s CLI. In this repository we provide a Dockerfile and a Docker configuration file, respectively `Dockerfile-run` and `docker-compose-run.yml`, which you can use to start a container and run a `SPARKI` analysis following the instructions below:
+
+```bash
+# 1 - Create an image from the Dockerfile.
+docker build -t run-sparki:local -f Dockerfile-run --progress plain .
+
+# 2 - Start a container.
+docker compose -f docker-compose-run.yml up -d
+
+# 3 - Run SPARKI.
+docker run run-sparki:local Rscript -e "SPARKI::cli()" --help
+```
+
+You can find more details on how to use `SPARKI`'s CLI below.
+
+
+## Using SPARKI as a command line tool (recommended!)
 
 ### CLI arguments/options
 
@@ -128,7 +146,7 @@ renv::install("gitlab::team113_projects/jb62-projects/sparki@develop")
 
 ```bash
 PROJECTDIR="/lustre/scratch126/casm/team113da/users/jb62/projects/sparki"
-module load sparki
+module load sparki # If working on the farm!
 
 Rscript -e "SPARKI::cli()" \
     --std-reports ${PROJECTDIR}/test/reports \
@@ -146,13 +164,17 @@ Rscript -e "SPARKI::cli()" \
 ```
 
 
-## Using SPARKI inside R
+## Using SPARKI as an R package
 
 Please check out [this tutorial](https://gitlab.internal.sanger.ac.uk/team113_projects/jb62-projects/sparki/-/blob/develop/tutorials/SPARKI_basic_usage.pdf?ref_type=heads).
+
 
 ## For developers
 
 ### Making a release
+
+To make a new release, please follow the steps below:
+
 1. Start a release with HubFlow.
 ```bash
 module load git
@@ -177,4 +199,19 @@ git hf push
 git hf release finish 0.1.2 # Or whatever the name of the release.
 ```
 
-4. Just follow the next steps that will be displayed in your terminal after running `git hf feature finish` and that's it!
+4. Just follow the next steps that will be displayed in your terminal after running `git hf release finish` and that's it!
+
+### Development-focused environment
+
+If you are working on `SPARKI`, please do so using a development-focused Docker container that you can start by following the steps below:
+
+```bash
+# 1 - Create an image from the Dockerfile.
+docker build -t dev-sparki:local -f Dockerfile-dev --progress plain .
+
+# 2 - Start a container.
+docker compose -f docker-compose-dev.yml up -d
+
+# 3 - Run SPARKI.
+docker run dev-sparki:local Rscript -e "SPARKI::cli()" --help
+```
