@@ -42,15 +42,8 @@ ENV \
     RENV_PATHS_LIBRARY_ROOT="${OPT_DIRECTORY:?}/renv/library" \
     RENV_PATHS_LIBRARY="${OPT_DIRECTORY:?}/renv/library/sparki-libs" \
     RENV_PATHS_CACHE="${OPT_DIRECTORY:?}/renv-cache" \
-    PIPX_HOME="${OPT_DIRECTORY}/pipx" \
-    PIPX_BIN_DIR="${OPT_DIRECTORY}/pipx/bin" \
     LOGGING_DIRECTORY="${DATA_DIRECTORY:?}/logs"
 
-# Set the environment that interpolates the next level of environment variables
-#
-# Set the PATH to include the pipx bin directory
-ENV \
-    PATH=${PIPX_BIN_DIR:?}:${PATH}
 
 # Run the commands to:
 # - create directories defined in the environment variables
@@ -65,7 +58,7 @@ RUN \
     && useradd -u ${USER_ID} -g ${GROUP_ID} "${USER_NAME}" --shell /bin/bash --create-home --home-dir "${USER_DIRECTORY}" \
     && if ! getent group docker > /dev/null; then groupadd docker; fi \
     && usermod -a -G docker,staff admin \
-    && mkdir -p "${PROJECT_DIRECTORY:?}" "${DATA_DIRECTORY:?}" "${OPT_DIRECTORY:?}" "${RENV_DIRECTORY:?}" "${RENV_PATHS_LIBRARY:?}" "${RENV_PATHS_CACHE:?}" "${PIPX_BIN_DIR:?}" "${PIPX_BIN_DIR:?}" \
+    && mkdir -p "${PROJECT_DIRECTORY:?}" "${DATA_DIRECTORY:?}" "${OPT_DIRECTORY:?}" "${RENV_DIRECTORY:?}" "${RENV_PATHS_LIBRARY:?}" "${RENV_PATHS_CACHE:?}" \
     && chown -R "${USER_NAME:?}:${USER_NAME:?}" "${PROJECT_DIRECTORY:?}" "${DATA_DIRECTORY:?}" "${USER_DIRECTORY:?}" "${OPT_DIRECTORY:?}" \
     && chmod -R 755 "${PROJECT_DIRECTORY:?}" "${DATA_DIRECTORY:?}" "${USER_DIRECTORY:?}" "${OPT_DIRECTORY:?}"
 
@@ -105,8 +98,13 @@ RUN if [ -f renv.lock ]; then \
     else \
     Rscript -e 'renv::init(bare = TRUE); renv::install()' ; \
     fi
+
 # Copy the rest of the project files to the container
 COPY --chown="${USER_NAME}:${USER_NAME}" . .
+
+# Install SPARKI from local repository.
+# Current version is 0.1.2!
+RUN R -e 'devtools::install()'
 
 # Reapply permissions after all installation and copying is done so the user can
 # manipulate the files if necessary
