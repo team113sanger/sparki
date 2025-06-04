@@ -64,7 +64,7 @@ build-public:
     - .component-script_docker-build
     - .component-rules-except-release
 
-unit-test:
+unit-test-dev:
   stage: test
   extends:
     - .generic-wo-script-or-rules
@@ -77,9 +77,28 @@ unit-test:
     - docker pull "${CANDIDATE_IMAGE}"
     # Test image against unit tests
     - docker run --rm -t "${CANDIDATE_IMAGE}" Rscript -e "devtools::test(reporter = c('progress', 'fail'))"
+    - docker run --rm -t "${CANDIDATE_IMAGE}" Rscript -e "devtools::load_all(); SPARKI::cli()" --help
+    - docker run --rm -t "${CANDIDATE_IMAGE}" Rscript -e "devtools::load_all(); SPARKI::cli()" --version
     - echo "*** [SCRIPT] END ***"
 
-format-test:
+unit-test-public:
+  stage: test
+  extends:
+    - .generic-wo-script-or-rules
+    - .public-variables
+    - .component-rules-except-release
+  script:
+    - echo "*** [SCRIPT] START ***"
+    - echo "I am a script - I run the R unit tests in a docker container"
+    - echo "Unit test against CANDIDATE_IMAGE='${CANDIDATE_IMAGE:?not-set-in-before_script}'"
+    - docker pull "${CANDIDATE_IMAGE}"
+    # Test image against unit tests
+    #- docker run --rm -t "${CANDIDATE_IMAGE}" Rscript -e "devtools::test(reporter = c('progress', 'fail'))"
+    - docker run --rm -t "${CANDIDATE_IMAGE}" Rscript -e "SPARKI::cli()" --help
+    - docker run --rm -t "${CANDIDATE_IMAGE}" Rscript -e "SPARKI::cli()" --version
+    - echo "*** [SCRIPT] END ***"
+
+format-test-dev:
   stage: test
   extends:
     - .generic-wo-script-or-rules
@@ -101,4 +120,12 @@ publish-tagged_and_latest_docker_images:
     - .generic-wo-script-or-rules
     - .dev-variables
     - .component-script-publish-tagged+latest-docker-image
+    - .component-rules-tag-only
+
+publish-tagged_and_latest_docker_images-public:
+  stage: publish
+  extends:
+    - .generic-wo-script-or-rules
+    - .public-variables
+    - .component-script-publish-quayio-tagged+latest-docker-image
     - .component-rules-tag-only
