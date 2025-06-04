@@ -212,6 +212,6 @@ docker build -t dev-sparki:local -f Dockerfile-dev --progress plain .
 # 2 - Start a container.
 docker compose -f docker-compose-dev.yml up -d
 
-# 3 - Run SPARKI.
-docker run dev-sparki:local Rscript -e "SPARKI::cli()" --help
+# 3 - Enter the container.
+docker exec -it sparki bash
 ```
