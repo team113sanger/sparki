@@ -18,10 +18,12 @@ This repository contains the code related to SPARKI (**S**tatistical **P**rocess
     - [Installing with `remotes`](#installing-with-remotes)
     - [Installing with `renv`](#installing-with-renv)
     - [Installing a specific tag, branch or commit of `SPARKI`](#installing-a-specific-tag-branch-or-commit-of-sparki)
+    - [Using Docker](#using-docker)
 - [Using `SPARKI` as a command line tool](#using-sparki-as-a-command-line-tool)
 - [Using `SPARKI` inside R](#using-sparki-inside-r)
 - [For developers](#for-developers)
   - [Making a release](#making-a-release)
+  - [Development-focused environment](#development-focused-environment)
 
 ## Quick start
 
@@ -104,17 +106,17 @@ renv::install("gitlab::team113_projects/jb62-projects/sparki@develop")
 
 #### Using Docker
 
-Alternatively, you can use a Docker container to interact with `SPARKI`'s CLI. In this repository we provide a Dockerfile and a Docker configuration file, respectively `Dockerfile-run` and `docker-compose-run.yml`, which you can use to start a container and run a `SPARKI` analysis following the instructions below:
+Alternatively, you can use a Docker container to interact with `SPARKI`'s CLI. In this repository we provide a Dockerfile and a Docker configuration file, respectively `Dockerfile` and `docker-compose.yml`, which you can use to start a container and run a `SPARKI` analysis following the instructions below:
 
 ```bash
 # 1 - Create an image from the Dockerfile.
-docker build -t run-sparki:local -f Dockerfile-run --progress plain .
+docker build -t sparki:local -f Dockerfile --progress plain .
 
 # 2 - Start a container.
-docker compose -f docker-compose-run.yml up -d
+docker compose -f docker-compose.yml up -d
 
 # 3 - Run SPARKI.
-docker run run-sparki:local Rscript -e "SPARKI::cli()" --help
+docker run sparki:local Rscript -e "SPARKI::cli()" --help
 ```
 
 You can find more details on how to use `SPARKI`'s CLI below.
@@ -207,7 +209,7 @@ If you are working on `SPARKI`, please do so using a development-focused Docker 
 
 ```bash
 # 1 - Create an image from the Dockerfile.
-docker build -t dev-sparki:local -f Dockerfile-dev --progress plain .
+docker build -t sparki-dev:local -f Dockerfile-dev --progress plain .
 
 # 2 - Start a container.
 docker compose -f docker-compose-dev.yml up -d

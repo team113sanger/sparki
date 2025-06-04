@@ -2,7 +2,7 @@ services:
   sparki:
     container_name: sparki
     user: admin
-    image: dev-sparki:local
+    image: sparki-dev:local
     build:
       context: ./
       dockerfile: Dockerfile-dev
