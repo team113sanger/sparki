@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.3] - 2025-06-05
+
+### Changed
+- The development-focused `Dockerfile`, which already existed in the repository, was renamed to `Dockerfile-dev`; this should only be used by developers.
+- Made changes to `docker-compose.yml` so that both `Dockerfile` and `Dockerfile-dev` are taken into account.
+
+### Added
+- A new analysis-focused `Dockerfile` was added to the repository; this is aimed at all users who would like to run a `SPARKI` analysis.
+
 ## [0.1.2] - 2025-03-04
 
 ### Fixed

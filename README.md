@@ -18,14 +18,17 @@ This repository contains the code related to SPARKI (**S**tatistical **P**rocess
     - [Installing with `remotes`](#installing-with-remotes)
     - [Installing with `renv`](#installing-with-renv)
     - [Installing a specific tag, branch or commit of `SPARKI`](#installing-a-specific-tag-branch-or-commit-of-sparki)
-- [Using `SPARKI` as a command line tool](#using-sparki-as-a-command-line-tool)
-- [Using `SPARKI` inside R](#using-sparki-inside-r)
+  - [Using Docker](#using-docker)
+- [Usage](#usage)
+  - [Using `SPARKI` as a command line tool](#using-sparki-as-a-command-line-tool)
+  - [Using `SPARKI` inside R](#using-sparki-inside-r)
 - [For developers](#for-developers)
   - [Making a release](#making-a-release)
+  - [Development-focused environment](#development-focused-environment)
 
 ## Quick start
 
-SPARKI is an R package with a CLI that can be interacted with using `Rscript`:
+SPARKI is an R package with a command line interface (CLI) that can be interacted with using `Rscript`:
 
 ```bash
 # To confirm the installation & version!
@@ -35,7 +38,7 @@ Rscript -e "SPARKI::cli()" --version
 Rscript -e "SPARKI::cli()" --help
 ```
 
-As a convenience, SPARKI is installed as a module on the Sanger Farm. To load the latest SPARKI module:
+As a convenience, SPARKI is installed as a module on the Sanger farm. To load the latest SPARKI module:
 
 ```bash
 module load /software/team113/modules/modulefiles/sparki/default
@@ -43,11 +46,13 @@ module load /software/team113/modules/modulefiles/sparki/default
 
 ## Installation
 
+*Note: As of now, `SPARKI` is only available through Sanger's internal GitLab.*
+
 ### Install it into your R packages
 
-This package requires a **Personal Access Token** (PAT) if you are to install it from the **Sanger GitLab**. You can generate a PAT by following the instructions [here](https://gitlab.internal.sanger.ac.uk/-/user_settings/personal_access_tokens).
+This package requires a **Personal Access Token** (PAT) if you are to install it from **Sanger's internal GitLab**. You can generate a PAT by following the instructions [here](https://gitlab.internal.sanger.ac.uk/-/user_settings/personal_access_tokens).
 
-If you are installing SPARKI on the Sanger Farm you can use R version 4.2 or newer. For convenience, you can load the R 4.4 module with the following command:
+If you are installing `SPARKI` on the Sanger farm you can use R version 4.2 or newer. For convenience, you can load the R 4.4 module om the farm with the following command:
 
 ```bash
 module load rocker/rver/4.4.0
@@ -57,8 +62,7 @@ You can install SPARKI using the `remotes` or `renv` packages, as described belo
 
 #### Installing with `remotes`
 
-Start an R shell, install the `remotes` package if you haven't already, and then
-install SPARKI:
+Start an R shell, install the `remotes` package if you haven't already, and then install `SPARKI`:
 
 ```R
 PAT <- "glpat-...<your-pat-goes-here>..."
@@ -72,8 +76,7 @@ remotes::install_gitlab(
 
 #### Installing with `renv`
 
-If you are using `renv` to manage your R environment, you can add SPARKI to your
-project by running the following commands in an R shell:
+If you are using `renv` to manage your R environment, you can add `SPARKI` to your project by running the following commands in an R shell:
 
 ```R
 # It is assumed that you have already created an `renv` environment
@@ -102,11 +105,35 @@ options(renv.config.gitlab.host = "gitlab.internal.sanger.ac.uk")
 renv::install("gitlab::team113_projects/jb62-projects/sparki@develop")
 ```
 
-## Using SPARKI as command line tool
+### Using Docker
 
-### CLI arguments/options
+Alternatively, you can use a Docker container to interact with `SPARKI`'s CLI. In this repository we provide a Dockerfile and a Docker configuration file, respectively `Dockerfile` and `docker-compose.yml`, which you can use to start a container and run a `SPARKI` analysis following the instructions below:
 
-#### *Required*
+```bash
+# 1 - Create an image from the Dockerfile.
+docker build -t sparki:local -f Dockerfile --progress plain .
+
+# 2.1 - Check the SPARKI help.
+docker run --rm sparki:local Rscript -e "SPARKI::cli()" --help
+
+# 2.2 - Run SPARKI.
+docker run --rm sparki:local -v path/to/dir:/opt/data/ Rscript -e "SPARKI::cli()" \
+  --std-reports /opt/data/reports \
+  --mpa-reports /opt/data/mpa \
+  --organism "Homo sapiens" \
+  --reference /opt/data/inspect.txt \
+  --outdir /opt/data/
+```
+
+You can find more details on how to use `SPARKI`'s CLI below.
+
+## Usage
+
+### Using SPARKI as a command line tool (recommended!)
+
+#### CLI arguments/options
+
+##### *Required*
 - `--std-reports`: path to a directory containing 'standard' reports.
 - `--mpa-reports`: path to a directory containing MPA-style reports.
 - `--organism`: species you are analysing (e.g. if working with human samples, this will be `Homo sapiens`).
@@ -114,7 +141,7 @@ renv::install("gitlab::team113_projects/jb62-projects/sparki@develop")
 - `--domain`: domain(s) that the user is interested in (e.g. `Viruses`); note that if multiple domains are to be provided, they must be comma-separated (e.g. `Viruses,Bacteria`).
 - `--outdir`: path to an output directory (note that it must be an empty directory!).
 
-#### *Optional*
+##### *Optional*
 - `--metadata`: path to a metadata file containing sample-level information.
 - `--sample-col`: if `--metadata` is provided, users should also specify the name of the column that contains sample IDs.
 - `--columns`: if `--metadata` is provided, users should also specify the names of the columns from the metadata table that should be used; the column names must be comma-separated.
@@ -124,11 +151,11 @@ renv::install("gitlab::team113_projects/jb62-projects/sparki@develop")
 - `--include-eukaryotes`: flag indicating that the user would like eukaryotes to be included in all plots (note that using this flag may cause some plots to be too full; also note that some plots will have eukaryotes included regardless of this flag).
 - `--include-sample-names`: flag indicating that the user would like sample names to be included in all plots (note that using this flag may cause some plots to be too full; also note that some plots will have sample names included regardless of this flag).
 
-### CLI usage example
+#### CLI usage example
 
 ```bash
 PROJECTDIR="/lustre/scratch126/casm/team113da/users/jb62/projects/sparki"
-module load sparki
+module load sparki # If working on the farm!
 
 Rscript -e "SPARKI::cli()" \
     --std-reports ${PROJECTDIR}/test/reports \
@@ -146,13 +173,17 @@ Rscript -e "SPARKI::cli()" \
 ```
 
 
-## Using SPARKI inside R
+### Using SPARKI as an R package
 
 Please check out [this tutorial](https://gitlab.internal.sanger.ac.uk/team113_projects/jb62-projects/sparki/-/blob/develop/tutorials/SPARKI_basic_usage.pdf?ref_type=heads).
+
 
 ## For developers
 
 ### Making a release
+
+To make a new release, please follow the steps below:
+
 1. Start a release with HubFlow.
 ```bash
 module load git
@@ -177,4 +208,16 @@ git hf push
 git hf release finish 0.1.2 # Or whatever the name of the release.
 ```
 
-4. Just follow the next steps that will be displayed in your terminal after running `git hf feature finish` and that's it!
+4. Just follow the next steps that will be displayed in your terminal after running `git hf release finish` and that's it!
+
+### Development-focused environment
+
+If you are working on `SPARKI`, please do so using a development-focused Docker container that you can start by following the steps below:
+
+```bash
+# 1 - Create an image and start a container.
+docker compose -f docker-compose.yml up -d --build
+
+# 2 - Enter the container.
+docker exec -it sparki bash
+```

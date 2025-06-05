@@ -6,7 +6,7 @@ stages:
 include:
   # DOCS: https://gitlab.internal.sanger.ac.uk/team113sanger/common/cicd-template/-/blob/develop/README.md
   - project: "team113sanger/common/cicd-template"
-    ref: 0.3.4
+    ref: 0.3.6
     file: ".gitlab-ci-components.yml"
 
 #############
@@ -20,7 +20,9 @@ include:
     - .component-after_script
     - .component-tags-shared-large-runner
 
-.specific-variables:
+
+
+.dev-variables:
   variables:
     USE_DOCKER_TARGET_STAGE: 1
     DOCKER_TARGET_STAGE: base_stage
@@ -31,24 +33,42 @@ include:
     # does not have sudo. By default CICD jobs do not build with 'docker
     # compose' but use 'docker' - so this is just a safety measure.
     HAS_SUDO: 0
+    DOCKERFILE_PATH: Dockerfile-dev
+    IMAGE_TAG_SUFFIX: "-dev"
+
+.public-variables:
+  extends:
+    - .dev-variables
+  variables:
+    DOCKERFILE_PATH: Dockerfile
+    IMAGE_TAG_SUFFIX: "-public"
+
 
 ############
 #   JOBS   #
 ############
 
-build:
+build-dev:
   stage: build
   extends:
     - .generic-wo-script-or-rules
-    - .specific-variables
+    - .dev-variables
     - .component-script_docker-build
     - .component-rules-except-release
 
-unit-test:
+build-public:
+  stage: build
+  extends:
+    - .generic-wo-script-or-rules
+    - .public-variables
+    - .component-script_docker-build
+    - .component-rules-except-release
+
+unit-test-dev:
   stage: test
   extends:
     - .generic-wo-script-or-rules
-    - .specific-variables
+    - .dev-variables
     - .component-rules-except-release
   script:
     - echo "*** [SCRIPT] START ***"
@@ -57,13 +77,32 @@ unit-test:
     - docker pull "${CANDIDATE_IMAGE}"
     # Test image against unit tests
     - docker run --rm -t "${CANDIDATE_IMAGE}" Rscript -e "devtools::test(reporter = c('progress', 'fail'))"
+    - docker run --rm -t "${CANDIDATE_IMAGE}" Rscript -e "devtools::load_all(); SPARKI::cli()" --help
+    - docker run --rm -t "${CANDIDATE_IMAGE}" Rscript -e "devtools::load_all(); SPARKI::cli()" --version
     - echo "*** [SCRIPT] END ***"
 
-format-test:
+unit-test-public:
   stage: test
   extends:
     - .generic-wo-script-or-rules
-    - .specific-variables
+    - .public-variables
+    - .component-rules-except-release
+  script:
+    - echo "*** [SCRIPT] START ***"
+    - echo "I am a script - I run the R unit tests in a docker container"
+    - echo "Unit test against CANDIDATE_IMAGE='${CANDIDATE_IMAGE:?not-set-in-before_script}'"
+    - docker pull "${CANDIDATE_IMAGE}"
+    # Test image against unit tests
+    #- docker run --rm -t "${CANDIDATE_IMAGE}" Rscript -e "devtools::test(reporter = c('progress', 'fail'))"
+    - docker run --rm -t "${CANDIDATE_IMAGE}" Rscript -e "SPARKI::cli()" --help
+    - docker run --rm -t "${CANDIDATE_IMAGE}" Rscript -e "SPARKI::cli()" --version
+    - echo "*** [SCRIPT] END ***"
+
+format-test-dev:
+  stage: test
+  extends:
+    - .generic-wo-script-or-rules
+    - .dev-variables
     - .component-script-test-formatting-in-docker
     - .component-rules-except-release
 
@@ -71,7 +110,7 @@ publish-develop:
   stage: publish
   extends:
     - .generic-wo-script-or-rules
-    - .specific-variables
+    - .dev-variables
     - .component-script-publish-develop-docker-image
     - .component-rules-develop-only
 
@@ -79,6 +118,14 @@ publish-tagged_and_latest_docker_images:
   stage: publish
   extends:
     - .generic-wo-script-or-rules
-    - .specific-variables
+    - .dev-variables
     - .component-script-publish-tagged+latest-docker-image
+    - .component-rules-tag-only
+
+publish-tagged_and_latest_docker_images-public:
+  stage: publish
+  extends:
+    - .generic-wo-script-or-rules
+    - .public-variables
+    - .component-script-publish-quayio-tagged+latest-docker-image
     - .component-rules-tag-only
