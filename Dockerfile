@@ -21,9 +21,7 @@ ENV \
     USER_DIRECTORY="/home/admin" \
     LC_ALL="en_US.UTF-8" \
     LANG="en_US.UTF-8" \
-    PKGTYPE="binary" \
-    RENV_CONFIG_PAK_ENABLED="TRUE"
-
+    PKGTYPE="binary"
 
 # Set next environment variables that interpolate the top level environment
 # variables
@@ -37,11 +35,6 @@ ENV \
     USER_BIN_DIRECTORY="${USER_DIRECTORY:?}/.local/bin" \
     SSH_DIR="${USER_DIRECTORY:?}/.ssh" \
     PROJECT_DIRECTORY="${OPT_DIRECTORY:?}/repo" \
-    RENV_DIRECTORY="${OPT_DIRECTORY:?}/renv" \
-    RENV_PATHS_ROOT="${OPT_DIRECTORY:?}/renv" \
-    RENV_PATHS_LIBRARY_ROOT="${OPT_DIRECTORY:?}/renv/library" \
-    RENV_PATHS_LIBRARY="${OPT_DIRECTORY:?}/renv/library/sparki-libs" \
-    RENV_PATHS_CACHE="${OPT_DIRECTORY:?}/renv-cache" \
     LOGGING_DIRECTORY="${DATA_DIRECTORY:?}/logs"
 
 # Run the commands to:
@@ -57,7 +50,7 @@ RUN \
     && useradd -u ${USER_ID} -g ${GROUP_ID} "${USER_NAME}" --shell /bin/bash --create-home --home-dir "${USER_DIRECTORY}" \
     && if ! getent group docker > /dev/null; then groupadd docker; fi \
     && usermod -a -G docker,staff admin \
-    && mkdir -p "${PROJECT_DIRECTORY:?}" "${DATA_DIRECTORY:?}" "${OPT_DIRECTORY:?}" "${RENV_DIRECTORY:?}" "${RENV_PATHS_LIBRARY:?}" "${RENV_PATHS_CACHE:?}" \
+    && mkdir -p "${PROJECT_DIRECTORY:?}" "${DATA_DIRECTORY:?}" "${OPT_DIRECTORY:?}" \
     && chown -R "${USER_NAME:?}:${USER_NAME:?}" "${PROJECT_DIRECTORY:?}" "${DATA_DIRECTORY:?}" "${USER_DIRECTORY:?}" "${OPT_DIRECTORY:?}" \
     && chmod -R 755 "${PROJECT_DIRECTORY:?}" "${DATA_DIRECTORY:?}" "${USER_DIRECTORY:?}" "${OPT_DIRECTORY:?}"
 
@@ -81,29 +74,19 @@ RUN \
 # Install R packages                           #
 ################################################
 
-# We use the renv package to bootstrap the R package installation and isolate them from the system
-# R installation.
-RUN R -e 'install.packages("renv")'
-
-# Copy the renv.lock file (if it exists) and the DESCRIPTION file to the
-# container (as well as the renv/ directory)
-WORKDIR $PROJECT_DIRECTORY
-COPY --chown="${USER_NAME}:${USER_NAME}" ["DESCRIPTION", "NAMESPACE", "./"]
-
-# Install the R packages from the lock file or the DESCRIPTION file if the lock
-# file does not exist.
-RUN if [ -f renv.lock ]; then \
-    Rscript -e 'renv::init(bare = TRUE); renv::restore()' ; \
-    else \
-    Rscript -e 'renv::init(bare = TRUE); renv::install()' ; \
-    fi
+WORKDIR ${PROJECT_DIRECTORY}
 
 # Copy the rest of the project files to the container
 COPY --chown="${USER_NAME}:${USER_NAME}" . .
 
-# Install SPARKI from local repository.
-# Current version is 0.1.2!
-RUN R -e 'devtools::install()'
+# We use the renv package to bootstrap the R package installation and isolate them from the system
+# R installation.
+RUN \
+    rm -f .Rprofile \
+    && rm -f renv.lock \
+    && rm -rf renv/* \
+    && R -e 'install.packages("devtools")' \
+    && R -e 'devtools::install(dependencies = TRUE)'
 
 # Reapply permissions after all installation and copying is done so the user can
 # manipulate the files if necessary
