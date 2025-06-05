@@ -126,12 +126,13 @@ docker run --rm sparki:local -v path/to/dir:/opt/data/ Rscript -e "SPARKI::cli()
 
 You can find more details on how to use `SPARKI`'s CLI below.
 
+## Usage
 
-## Using SPARKI as a command line tool (recommended!)
+### Using SPARKI as a command line tool (recommended!)
 
-### CLI arguments/options
+#### CLI arguments/options
 
-#### *Required*
+##### *Required*
 - `--std-reports`: path to a directory containing 'standard' reports.
 - `--mpa-reports`: path to a directory containing MPA-style reports.
 - `--organism`: species you are analysing (e.g. if working with human samples, this will be `Homo sapiens`).
@@ -139,7 +140,7 @@ You can find more details on how to use `SPARKI`'s CLI below.
 - `--domain`: domain(s) that the user is interested in (e.g. `Viruses`); note that if multiple domains are to be provided, they must be comma-separated (e.g. `Viruses,Bacteria`).
 - `--outdir`: path to an output directory (note that it must be an empty directory!).
 
-#### *Optional*
+##### *Optional*
 - `--metadata`: path to a metadata file containing sample-level information.
 - `--sample-col`: if `--metadata` is provided, users should also specify the name of the column that contains sample IDs.
 - `--columns`: if `--metadata` is provided, users should also specify the names of the columns from the metadata table that should be used; the column names must be comma-separated.
@@ -149,7 +150,7 @@ You can find more details on how to use `SPARKI`'s CLI below.
 - `--include-eukaryotes`: flag indicating that the user would like eukaryotes to be included in all plots (note that using this flag may cause some plots to be too full; also note that some plots will have eukaryotes included regardless of this flag).
 - `--include-sample-names`: flag indicating that the user would like sample names to be included in all plots (note that using this flag may cause some plots to be too full; also note that some plots will have sample names included regardless of this flag).
 
-### CLI usage example
+#### CLI usage example
 
 ```bash
 PROJECTDIR="/lustre/scratch126/casm/team113da/users/jb62/projects/sparki"
@@ -171,7 +172,7 @@ Rscript -e "SPARKI::cli()" \
 ```
 
 
-## Using SPARKI as an R package
+### Using SPARKI as an R package
 
 Please check out [this tutorial](https://gitlab.internal.sanger.ac.uk/team113_projects/jb62-projects/sparki/-/blob/develop/tutorials/SPARKI_basic_usage.pdf?ref_type=heads).
 
