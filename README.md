@@ -107,7 +107,7 @@ renv::install("gitlab::team113_projects/jb62-projects/sparki@develop")
 
 ### Using Docker
 
-Alternatively, you can use a Docker container to interact with `SPARKI`'s CLI. In this repository we provide a Dockerfile and a Docker configuration file, respectively `Dockerfile` and `docker-compose.yml`, which you can use to start a container and run a `SPARKI` analysis following the instructions below:
+Alternatively, you can use a Docker container to interact with `SPARKI`'s CLI. In this repository we provide a `Dockerfile` that you can use to start a container and run a `SPARKI` analysis following the instructions below:
 
 ```bash
 # 1 - Create an image from the Dockerfile.
@@ -122,6 +122,7 @@ docker run --rm sparki:local -v path/to/dir:/opt/data/ Rscript -e "SPARKI::cli()
   --mpa-reports /opt/data/mpa \
   --organism "Homo sapiens" \
   --reference /opt/data/inspect.txt \
+  --domain "Viruses" \
   --outdir /opt/data/
 ```
 

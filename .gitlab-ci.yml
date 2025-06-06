@@ -94,8 +94,8 @@ unit-test-public:
     - docker pull "${CANDIDATE_IMAGE}"
     # Test image against unit tests
     #- docker run --rm -t "${CANDIDATE_IMAGE}" Rscript -e "devtools::test(reporter = c('progress', 'fail'))"
-    - docker run --rm -t "${CANDIDATE_IMAGE}" Rscript -e "SPARKI::cli()" --help
-    - docker run --rm -t "${CANDIDATE_IMAGE}" Rscript -e "SPARKI::cli()" --version
+    - docker run --rm -w / -t "${CANDIDATE_IMAGE}" Rscript -e "SPARKI::cli()" --help
+    - docker run --rm -w / -t "${CANDIDATE_IMAGE}" Rscript -e "SPARKI::cli()" --version
     - echo "*** [SCRIPT] END ***"
 
 format-test-dev:
