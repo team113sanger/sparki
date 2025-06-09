@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
     warning = FALSE,
     message = FALSE
 )
-knitr::opts_knit$set(root.dir = "/lustre/scratch126/casm/team113da/users/jb62/projects/sparki/")
+knitr::opts_knit$set(root.dir = "/home/ubuntu/git_clones/sparki/")
 
 ```
 
@@ -24,7 +24,7 @@ logger::log_threshold(logger::INFO)
 ```
 
 This tutorial will demonstrate how to run SPARKI on Kraken2 results. First of all, we will need Kraken2 reports in both standard and MPA-style formats.
-A standard report can be generated with the option `r I("--report")` when running Kraken2 on the command line; please note that the flag `r I("--report-minimizer-data")`
+A standard report can be generated with the option `--report` when running Kraken2 on the command line; please note that the flag `r I("--report-minimizer-data")`
 must also be used. An MPA-style report can be generated when the options `r I("--report")` and `r I("--use-mpa-style")` are combined on the command line; alternatively,
 MPA-style reports can be generated from a standard report with the script `r I("kreport2mpa.py")` from the KrakenTools toolkit.
 
