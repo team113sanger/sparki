@@ -103,6 +103,7 @@ LOAD_MPA_SUCCESS <- "MPA-style reports loaded successfully!"
 LOAD_STD_NO_REPORTS_FOUND <- "No standard reports were found in the directory provided. Please review your input:"
 LOAD_STD_NO_SAMPLES_REMOVED <- "No samples were filtered out from the collated standard reports table."
 LOAD_STD_SUCCESS <- "Standard reports loaded successfully!"
+LOAD_STD_DB_NOT_COMPATIBLE <- "The standard reports provided do not contain 'D' as a domain identifier. It may be that you are using a Kraken2 reference database that is not currently compatible with SPARKI."
 
 # check_for_empty_files()
 CHECK_EMPTY_FILE_WARNING <- "An empty report was found! Carrying on... The following sample will not be included in the SPARKI analysis:"
@@ -236,8 +237,8 @@ PREPARE_PLOT_MINIMISERS_SUCCESS <- "Prepared dataframe for plotMinimisers_dotplo
 PREPARE_PLOT_MINIMISERS_PADJ_NOT_FOUND <- "The statistical assessment columns have not been found in the report provided as input to prepare_for_plotMinimisers(). Did you forget to run assessStatistics()?"
 
 # plotMinimisers_dotplot()
-PLOT_MINIMISERS_SIGNIF_NOT_FOUND <- "Neither significant or non-significant results were found in the report provided."
-PLOT_MINIMISERS_SUCCESS <- "Created dot plot with minimiser proportions and statistical assessment results."
+PLOT_MINIMISERS_SIGNIF_NOT_FOUND <- "The creation of a minimiser plot failed. Neither significant or non-significant results were found in the report provided."
+PLOT_MINIMISERS_SUCCESS <- "Created dot plot with minimiser proportions and statistical assessment results successfully!"
 
 #### plot-significance.R ####
 
@@ -246,8 +247,8 @@ GET_SIGNIFICANCE_SIGNIF_NOT_FOUND <- "The statistical assessment columns have no
 GET_SIGNIFICANCE_SUCCESS <- "Prepared dataframe for plotSignificanceSummary()."
 
 # plotSignificanceSummary()
-PLOT_SIGNIFICANCE_SIGNIF_NOT_FOUND <- "Neither significant or non-significant results were found in the report provided."
-PLOT_SIGNIFICANCE_SUCCESS <- "Created plot with the statistical significance summary."
+PLOT_SIGNIFICANCE_SIGNIF_NOT_FOUND <- "The creation of a significance summary plot failed. Neither significant or non-significant results were found in the report provided."
+PLOT_SIGNIFICANCE_SUCCESS <- "Created plot with the statistical significance summary successfully!"
 
 
 ##-------------------##

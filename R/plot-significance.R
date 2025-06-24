@@ -10,7 +10,7 @@
 #'
 #' @export
 #'
-plotSignificanceSummary <- function(report, return_plot, outdir, prefix) {
+plotSignificanceSummary <- function(report, return_plot = FALSE, outdir = NA, prefix = "") {
   summary <- getSignificanceSummary(report)
 
   # If there are both significant and non-significant results...

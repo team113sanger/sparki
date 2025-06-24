@@ -19,9 +19,10 @@ plotMinimisers_dotplot <- function(
     domain,
     fig_width,
     fig_height,
-    return_plot,
-    outdir,
-    prefix) {
+    return_plot = FALSE,
+    outdir = NA,
+    prefix = ""
+) {
   # Assign NA to outdir in case it has not been provided by the user.
   if (missing(outdir)) outdir <- NA
 

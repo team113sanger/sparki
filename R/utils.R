@@ -50,7 +50,7 @@ handlePrefix <- function(filename, prefix) {
 #'
 #' @return Depending on the arguments provided, the plot will be returned.
 #'
-handlePlot <- function(plot, filename, prefix, outdir, fig_width, fig_height, return_plot) {
+handlePlot <- function(plot, return_plot = FALSE, filename, prefix = "", outdir = NA, fig_width, fig_height) {
   #  If outdir is not NA, it means it has been provided by the user and therefore
   #  the plot should be saved to an output directory.
   if (!(is.na(outdir))) {
@@ -64,16 +64,14 @@ handlePlot <- function(plot, filename, prefix, outdir, fig_width, fig_height, re
       plot = plot, filename = filename, outdir = outdir,
       fig_width = fig_width, fig_height = fig_height
     )
-
-    #  The user may want the plot to be returned by the function even if it
-    #  has been saved to an output directory.
-    if (return_plot == TRUE) return(plot)
-
     #  If outdir is NA, it means the user has not provided an output directory and
-    #  therefore the plot will not be saved. In this case, the plot will be returned
-    #  regardless of the value of return_plot.
+    #  therefore the plot will not be saved.
   } else if (is.na(outdir)) {
-    return(plot)
+    if (return_plot == TRUE) {
+      return(plot)
+    } else {
+      print(plot)
+    }
   }
 }
 

@@ -87,6 +87,7 @@ RUN \
 # - git for version control
 # - pipx to install python built tools, pre-commit (apt-get version of pre-commit is too old)
 # themselves -- this is done in a later stage.
+# - texlive-* and lmodern for rendering R markdown files.
 RUN \
     apt-get update -y \
     && DEBIAN_FRONTEND=noninteractive apt-get install -yq --no-install-recommends \
@@ -98,6 +99,11 @@ RUN \
     nano \
     git \
     pipx \
+    texlive-latex-base \
+    texlive-fonts-recommended \
+    texlive-fonts-extra \
+    texlive-latex-extra \
+    lmodern \
     && pipx install "pre-commit==${PRE_COMMIT_VERSION:?}" \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

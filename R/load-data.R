@@ -124,6 +124,11 @@ load_STDreports <- function(std_reports_dir, samples_to_remove) {
     logger::log_info(LOAD_STD_NO_SAMPLES_REMOVED)
   }
 
+  if (!("D" %in% std_reports[[COLNAME_STD_RANK]])) {
+    logger::log_fatal(LOAD_STD_DB_NOT_COMPATIBLE)
+    stop(LOAD_STD_DB_NOT_COMPATIBLE)
+  }
+
   logger::log_info(LOAD_STD_SUCCESS)
 
   return(std_reports)

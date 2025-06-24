@@ -14,7 +14,7 @@
 #'
 #' @export
 #'
-plotClassificationSummary_violin <- function(report, return_plot, outdir, prefix) {
+plotClassificationSummary_violin <- function(report, return_plot = FALSE, outdir = NA, prefix = "") {
   # Assign NA to outdir in case it has not been provided by the user.
   if (missing(outdir)) outdir <- NA
 
@@ -77,9 +77,10 @@ plotClassificationSummary_barplot <- function(
     report,
     include_sample_names,
     orientation = "vertical",
-    return_plot,
-    outdir,
-    prefix) {
+    return_plot = FALSE,
+    outdir = NA,
+    prefix = ""
+) {
 
   # Assign NA to outdir in case it has not been provided by the user.
   if (missing(outdir)) outdir <- NA
@@ -148,7 +149,7 @@ plotClassificationSummary_barplot <- function(
 #'
 #' @export
 #'
-plotClassificationProportion <- function(report, return_plot, outdir, prefix = "") {
+plotClassificationProportion <- function(report, return_plot = FALSE, outdir = NA, prefix = "") {
   #  Assign NA to outdir in case it has not been provided by the user.
   if (missing(outdir)) outdir <- NA
 

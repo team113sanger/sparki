@@ -9,7 +9,7 @@
 #'
 #' @export
 #'
-plotDistribution_histogram <- function(report, return_plot, outdir, prefix) {
+plotDistribution_histogram <- function(report, return_plot = FALSE, outdir = NA, prefix = "") {
   report <- prepare_for_plotDistribution(report)
 
   plot <- ggplot2::ggplot(
@@ -49,7 +49,7 @@ plotDistribution_histogram <- function(report, return_plot, outdir, prefix) {
 #'
 #' @export
 #'
-plotDistribution_violin <- function(report, return_plot, outdir, prefix) {
+plotDistribution_violin <- function(report, return_plot = FALSE, outdir = NA, prefix = "") {
   report <- prepare_for_plotDistribution(report)
 
   plot <- ggplot2::ggplot(

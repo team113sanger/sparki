@@ -111,7 +111,7 @@ Alternatively, you can use a Docker container to interact with `SPARKI`'s CLI. I
 
 ```bash
 # 1 - Create an image from the Dockerfile.
-docker build -t sparki:local -f Dockerfile --progress plain .
+docker build -t sparki:local -f Dockerfile .
 
 # 2.1 - Check the SPARKI help.
 docker run --rm sparki:local Rscript -e "SPARKI::cli()" --help

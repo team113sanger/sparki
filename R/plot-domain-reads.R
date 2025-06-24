@@ -16,9 +16,9 @@
 plotDomainReads_violin <- function(
     report,
     include_eukaryotes = FALSE,
-    return_plot,
-    outdir,
-    prefix) {
+    return_plot = FALSE,
+    outdir = NA,
+    prefix = "") {
 
   if (!(include_eukaryotes %in% c(TRUE, FALSE))) {
     error_message <- paste0(INC_EUKARYOTES_INVALID_VALUE, include_eukaryotes)
@@ -39,6 +39,9 @@ plotDomainReads_violin <- function(
 
   # Prepare data for plotting.
   report <- prepare_for_plotDomainReads(report, include_eukaryotes)
+
+  n_domains <- length(unique(report[[COLNAME_DOMAIN_READS_TAXON]]))
+  logger::log_debug(paste0("The number of domains is ", n_domains))
 
   #  Create violin plot.
   plot <- ggplot2::ggplot(
@@ -65,8 +68,11 @@ plotDomainReads_violin <- function(
       legend.position = "none"
     ) +
     ggplot2::ylab(expression("log"[10] ~ "(# classified reads)")) +
-    ggplot2::scale_fill_manual(values = c("gold1", "royalblue", "snow2", "indianred2")) +
-    ggplot2::facet_wrap(~ get(COLNAME_DOMAIN_READS_TAXON), scales = "free")
+    ggplot2::scale_fill_manual(values = c("gold1", "royalblue", "snow2", "indianred2"))
+
+  if (n_domains > 1) {
+    plot <- plot + ggplot2::facet_wrap(~get(COLNAME_DOMAIN_READS_TAXON), scales = "free")
+  }
 
   #  Decide what to do with plot based on user-defined options.
   handlePlot(
@@ -99,9 +105,10 @@ plotDomainReads_barplot <- function(
     include_sample_names = FALSE,
     orientation = "vertical",
     include_eukaryotes = FALSE,
-    return_plot,
-    outdir,
-    prefix) {
+    return_plot = FALSE,
+    outdir = NA,
+    prefix = ""
+  ) {
 
   if (!(include_eukaryotes %in% c(TRUE, FALSE))) {
     error_message <- paste0(INC_EUKARYOTES_INVALID_VALUE, glue::single_quote(include_eukaryotes))
@@ -119,11 +126,11 @@ plotDomainReads_barplot <- function(
   if (missing(outdir)) outdir <- NA
 
   if (include_eukaryotes) {
-    x_lab <- "\nProportion of classified reads\n(all domains)"
+    x_lab <- "\nProportion of classified reads\n(all domains)\n"
     filename <- "nReadsDomains_barplot_with_eukaryotes"
     colours <- c("gold1", "royalblue", "snow4", "indianred2")
   } else {
-    x_lab <- "\nProportion of classified reads\n(non-eukaryotes only)"
+    x_lab <- "\nProportion of classified reads\n(non-eukaryotes only)\n"
     filename <- "nReadsDomains_barplot_without_eukaryotes"
     colours <- c("gold1", "royalblue", "indianred2")
   }
@@ -156,8 +163,7 @@ plotDomainReads_barplot <- function(
     ggplot2::ylab("Sample\n") +
     ggplot2::scale_fill_manual(
       name = "Domain", values = colours
-    ) +
-    ggplot2::geom_vline(xintercept = c(0.25, 0.5, 0.75), linetype = "dashed")
+    )
 
   adjusted_plot <- adjust_barplot(
     plot = plot, n_samples = length(unique(report[, COLNAME_STD_SAMPLE])),
