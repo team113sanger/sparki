@@ -22,9 +22,16 @@ This repository contains the code related to SPARKI (**S**tatistical **P**rocess
 - [Usage](#usage)
   - [Using `SPARKI` as a command line tool](#using-sparki-as-a-command-line-tool)
   - [Using `SPARKI` inside R](#using-sparki-inside-r)
-- [For developers](#for-developers)
-  - [Making a release](#making-a-release)
-  - [Development-focused environment](#development-focused-environment)
+- [Additional information](#additional-information)
+
+
+## SPARKI, sparki-nf, and map-to-genome: tools to help you carry out your pathogen identification analysis!
+
+| Tool | Repository | Goal |
+| --- | --- | --- |
+| SPARKI | [SPARKI repo](https://github.com/team113sanger/sparki) | Framework to help interpret Kraken2 outputs |
+| sparki-nf | [sparki-nf repo](https://github.com/team113sanger/sparki-nf) | Pipeline integrating Kraken2, KrakenTools, and SPARKI |
+| map-to-genome | [map-to-genome repo](https://github.com/team113sanger/map-to-genome) | Pipeline for validation of SPARKI hits |
 
 ## Quick start
 
@@ -146,7 +153,7 @@ Rscript -e "SPARKI::cli()" \
 
 ### Using SPARKI as an R package
 
-Please check out [this tutorial](https://gitlab.internal.sanger.ac.uk/team113_projects/jb62-projects/sparki/-/blob/develop/tutorials/SPARKI_basic_usage.pdf?ref_type=heads).
+Please check out the tutorial in this repository, which can be found at `vignettes/SPARKI_basic_usage.pdf`.
 
 ## Additional information
 
