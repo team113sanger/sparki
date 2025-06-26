@@ -27,13 +27,15 @@ This repository contains the code related to SPARKI (**S**tatistical **P**rocess
 
 ## Before you get started
 
-As abovementioned, SPARKI is a tool to help you collate and interpret the outputs produced by Kraken2. In this context, we have also developed an end-to-end pathogen identification pipeline, `sparki-nf`, which integrates [Kraken2](https://github.com/DerrickWood/kraken2), [KrakenTools](https://github.com/jenniferlu717/KrakenTools), and SPARKI; additionally, we also provide an optional pipeline, `map-to-genome`, which users can leverage to further validate SPARKI hits.
+As abovementioned, SPARKI is a tool to help collate and interpret the outputs produced by Kraken2. In this context, we have developed an end-to-end pathogen identification pipeline, `sparki-nf`, which integrates [Kraken2](https://github.com/DerrickWood/kraken2), [KrakenTools](https://github.com/jenniferlu717/KrakenTools), and SPARKI; additionally, we also provide an optional pipeline, `map-to-genome`, which users can leverage to further validate SPARKI hits.
 
 | Tool | Repository | Goal |
 | --- | --- | --- |
 | SPARKI | [SPARKI repo](https://github.com/team113sanger/sparki) | Framework to help interpret Kraken2 outputs |
 | sparki-nf | [sparki-nf repo](https://github.com/team113sanger/sparki-nf) | Pipeline integrating Kraken2, KrakenTools, and SPARKI |
 | map-to-genome | [map-to-genome repo](https://github.com/team113sanger/map-to-genome) | Pipeline for validation of SPARKI hits |
+
+Before using `SPARKI`, please ensure you have run [Kraken2](https://github.com/DerrickWood/kraken2) and [KrakenTools](https://github.com/jenniferlu717/KrakenTools), as their outputs are needed by `SPARKI`. Alternatively, you can use `sparki-nf` for a seamless end-to-end pathogen identification analysis.
 
 ## Quick start
 
@@ -49,7 +51,7 @@ Rscript -e "SPARKI::cli()" --help
 
 ## Installation
 
-### Install it into your R packages
+### Install `SPARKI` into your R packages
 
 You can install SPARKI using the `remotes` or `renv` packages, as described below.
 
