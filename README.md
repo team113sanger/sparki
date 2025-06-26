@@ -134,22 +134,21 @@ You can find more details on how to use `SPARKI`'s CLI below.
 #### CLI usage example
 
 ```bash
-PROJECTDIR="/lustre/scratch126/casm/team113da/users/jb62/projects/sparki"
-module load sparki # If working on the farm!
+PROJECTDIR="path/to/project_dir"
 
 Rscript -e "SPARKI::cli()" \
-    --std-reports ${PROJECTDIR}/test/reports \
-    --mpa-reports ${PROJECTDIR}/test/mpa \
+    --std-reports ${PROJECTDIR}/reports \
+    --mpa-reports ${PROJECTDIR}/mpa \
     --organism "Homo sapiens" \
-    --reference ${PROJECTDIR}/test/inspect.txt \
-    --metadata ${PROJECTDIR}/test/metadata.csv \
-    --sample-col Tumour_RNA \
-    --columns Diagnosis_short,Site_group \
-    --prefix SebT \
-    --outdir ${PROJECTDIR}/test/outputs/ \
+    --reference ${PROJECTDIR}/inspect.txt \
+    --metadata ${PROJECTDIR}/metadata.csv \
+    --sample-col sample_id \
+    --columns column1,column2 \
+    --prefix project \
+    --outdir ${PROJECTDIR}/outputs/ \
     --verbosity info \
     --domain Viruses,Bacteria \
-    --samples-to-remove ${PROJECTDIR}/test/samples_remove.txt
+    --samples-to-remove ${PROJECTDIR}/samples_remove.txt
 ```
 
 
