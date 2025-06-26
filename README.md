@@ -38,25 +38,9 @@ Rscript -e "SPARKI::cli()" --version
 Rscript -e "SPARKI::cli()" --help
 ```
 
-As a convenience, SPARKI is installed as a module on the Sanger farm. To load the latest SPARKI module:
-
-```bash
-module load /software/team113/modules/modulefiles/sparki/default
-```
-
 ## Installation
 
-*Note: As of now, `SPARKI` is only available through Sanger's internal GitLab.*
-
 ### Install it into your R packages
-
-This package requires a **Personal Access Token** (PAT) if you are to install it from **Sanger's internal GitLab**. You can generate a PAT by following the instructions [here](https://gitlab.internal.sanger.ac.uk/-/user_settings/personal_access_tokens).
-
-If you are installing `SPARKI` on the Sanger farm you can use R version 4.2 or newer. For convenience, you can load the R 4.4 module om the farm with the following command:
-
-```bash
-module load rocker/rver/4.4.0
-```
 
 You can install SPARKI using the `remotes` or `renv` packages, as described below.
 
@@ -65,13 +49,7 @@ You can install SPARKI using the `remotes` or `renv` packages, as described belo
 Start an R shell, install the `remotes` package if you haven't already, and then install `SPARKI`:
 
 ```R
-PAT <- "glpat-...<your-pat-goes-here>..."
-install.packages("remotes")
-remotes::install_gitlab(
-  repo = "team113_projects/jb62-projects/sparki",
-  host = "gitlab.internal.sanger.ac.uk",
-  auth_token = PAT
-)
+remotes::install_github("team113sanger/sparki")
 ```
 
 #### Installing with `renv`
@@ -80,10 +58,7 @@ If you are using `renv` to manage your R environment, you can add `SPARKI` to yo
 
 ```R
 # It is assumed that you have already created an `renv` environment
-options(renv.config.gitlab.host = "gitlab.internal.sanger.ac.uk")
-PAT <- "glpat-...<your-pat-goes-here>..."
-Sys.setenv(GITLAB_PAT = PAT)
-renv::install("gitlab::team113_projects/jb62-projects/sparki")
+renv::install("team113sanger/sparki")
 ```
 
 #### Installing a specific tag, branch or commit of `SPARKI`
@@ -92,17 +67,12 @@ You can install a specific branch, tag or commit by adding a `@ref` to the end o
 
 With `remotes`:
 ```R
-remotes::install_gitlab(
-  repo = "team113_projects/jb62-projects/sparki@develop",
-  host = "gitlab.internal.sanger.ac.uk",
-  auth_token = "..."
-)
+remotes::install_github("team113sanger/sparki@develop")
 ```
 
 With `renv`:
 ```R
-options(renv.config.gitlab.host = "gitlab.internal.sanger.ac.uk")
-renv::install("gitlab::team113_projects/jb62-projects/sparki@develop")
+renv::install("team113sanger/sparki@develop")
 ```
 
 ### Using Docker
@@ -178,8 +148,21 @@ Rscript -e "SPARKI::cli()" \
 
 Please check out [this tutorial](https://gitlab.internal.sanger.ac.uk/team113_projects/jb62-projects/sparki/-/blob/develop/tutorials/SPARKI_basic_usage.pdf?ref_type=heads).
 
+<details>
 
-## For developers
+<summary> For Sanger users
+
+As a convenience, SPARKI is installed as a module on the Sanger farm. To load the latest SPARKI module:
+
+```bash
+module load /software/team113/modules/modulefiles/sparki/default
+```
+
+</details>
+
+<details>
+
+<summary> For developers
 
 ### Making a release
 
@@ -222,3 +205,5 @@ docker compose -f docker-compose.yml up -d --build
 # 2 - Enter the container.
 docker exec -it sparki bash
 ```
+
+</details>
