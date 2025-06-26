@@ -14,6 +14,7 @@ This repository contains the code related to SPARKI (**S**tatistical **P**rocess
 ## Table of contents
 - [Before you get started](#before-you-get-started)
   - [An overview of Kraken2](#an-overview-of-kraken2)
+  - [How SPARKI works](#how-sparki-works)
 - [Quick start](#quick-start)
 - [Installation](#installation)
   - [Install it into your R packages](#install-it-into-your-r-packages)
