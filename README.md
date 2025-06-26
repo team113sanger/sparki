@@ -1,6 +1,6 @@
 # ✨ SPARKI: a tool for the interpretation of pathogen identification results ✨
 
-This repository contains the code related to SPARKI (**S**tatistical **P**rocess **A**imed at **R**obust **K**raken2 **I**nterpretation), a framework developed in R to help collate, refine, visualise & interpret Kraken2 outputs.
+This repository contains the code related to SPARKI (**S**tatistical **P**rocess **A**imed at **R**obust **K**raken2 **I**nterpretation), a framework developed in R to help collate, refine, visualise & interpret [Kraken2](https://github.com/DerrickWood/kraken2) outputs.
 
 |                         Main                         |                         Develop                          |
 | :----------------------------------------------------: | :------------------------------------------------------: |
@@ -12,6 +12,7 @@ This repository contains the code related to SPARKI (**S**tatistical **P**rocess
 [develop-branch]: https://gitlab.internal.sanger.ac.uk/team113_projects/jb62-projects/sparki/-/commits/develop
 
 ## Table of contents
+- [Before you get started](#before-you-get-started)
 - [Quick start](#quick-start)
 - [Installation](#installation)
   - [Install it into your R packages](#install-it-into-your-r-packages)
@@ -24,8 +25,9 @@ This repository contains the code related to SPARKI (**S**tatistical **P**rocess
   - [Using `SPARKI` inside R](#using-sparki-inside-r)
 - [Additional information](#additional-information)
 
+## Before you get started
 
-## SPARKI, sparki-nf, and map-to-genome: tools to help you carry out your pathogen identification analysis!
+As abovementioned, SPARKI is a tool to help you collate and interpret the outputs produced by Kraken2. In this context, we have also developed an end-to-end pathogen identification pipeline, `sparki-nf`, which integrates [Kraken2](https://github.com/DerrickWood/kraken2), [KrakenTools](https://github.com/jenniferlu717/KrakenTools), and SPARKI; additionally, we also provide an optional pipeline, `map-to-genome`, which users can leverage to further validate SPARKI hits.
 
 | Tool | Repository | Goal |
 | --- | --- | --- |
