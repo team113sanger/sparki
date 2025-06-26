@@ -1,6 +1,6 @@
 # ✨ SPARKI: a tool for the interpretation of pathogen identification results ✨
 
-This repository contains the code related to SPARKI (**S**tatistical **P**rocess **A**imed at **R**obust **K**raken2 **I**nterpretation), a framework developed in R to help collate, refine, visualise & interpret Kraken2 outputs.
+This repository contains the code related to SPARKI (**S**tatistical **P**rocess **A**imed at **R**obust **K**raken2 **I**nterpretation), a framework developed in R to help collate, refine, visualise & interpret [Kraken2](https://github.com/DerrickWood/kraken2) outputs.
 
 |                         Main                         |                         Develop                          |
 | :----------------------------------------------------: | :------------------------------------------------------: |
@@ -12,6 +12,9 @@ This repository contains the code related to SPARKI (**S**tatistical **P**rocess
 [develop-branch]: https://gitlab.internal.sanger.ac.uk/team113_projects/jb62-projects/sparki/-/commits/develop
 
 ## Table of contents
+- [Before you get started](#before-you-get-started)
+  - [An overview of Kraken2](#an-overview-of-kraken2)
+  - [How SPARKI works](#how-sparki-works)
 - [Quick start](#quick-start)
 - [Installation](#installation)
   - [Install it into your R packages](#install-it-into-your-r-packages)
@@ -22,41 +25,57 @@ This repository contains the code related to SPARKI (**S**tatistical **P**rocess
 - [Usage](#usage)
   - [Using `SPARKI` as a command line tool](#using-sparki-as-a-command-line-tool)
   - [Using `SPARKI` inside R](#using-sparki-inside-r)
-- [For developers](#for-developers)
-  - [Making a release](#making-a-release)
-  - [Development-focused environment](#development-focused-environment)
+- [Additional information](#additional-information)
+
+## Before you get started
+
+As abovementioned, SPARKI is a tool to help collate and interpret the outputs produced by Kraken2. In this context, we have developed an end-to-end pathogen identification pipeline, `sparki-nf`, which integrates [Kraken2](https://github.com/DerrickWood/kraken2), [KrakenTools](https://github.com/jenniferlu717/KrakenTools), and SPARKI; additionally, we also provide an optional pipeline, `map-to-genome`, which users can leverage to further validate SPARKI hits.
+
+| Tool | Repository | Goal |
+| --- | --- | --- |
+| SPARKI | [SPARKI repo](https://github.com/team113sanger/sparki) | Framework to help interpret Kraken2 outputs |
+| sparki-nf | [sparki-nf repo](https://github.com/team113sanger/sparki-nf) | Pipeline integrating Kraken2, KrakenTools, and SPARKI |
+| map-to-genome | [map-to-genome repo](https://github.com/team113sanger/map-to-genome) | Pipeline for validation of SPARKI hits |
+
+Before using `SPARKI`, please ensure you have run [Kraken2](https://github.com/DerrickWood/kraken2) and [KrakenTools](https://github.com/jenniferlu717/KrakenTools), as their outputs are needed by `SPARKI`. Alternatively, you can use `sparki-nf` for a seamless end-to-end pathogen identification analysis.
+
+### An overview of Kraken2 :bug:
+
+Briefly, Kraken2 [(Wood *et al*., 2019)](https://github.com/DerrickWood/kraken2) splits the sequencing data from a FASTQ file into *k*-mers, from which minimisers are obtained. By calculating a compact hash code for each minimiser, [Kraken2](https://github.com/DerrickWood/kraken2) is then able to assign each *k*-mer the appropriate lower common ancestor taxon. When run with the `--report` mode, Kraken2 generates a sample report (herein referred to as 'standard' report) containing all taxa, at different taxonomic ranks, which were identified in the sample; furthermore, if run with the flag `--report-minimizer-data`, the tool also outputs the number of unique minimisers associated with each taxon that were found in the sample. Alternatively, Kraken2 can be run with the `--report` mode and the flag `--use-mpa-style` to generate MetaPhlAn2 (MPA)-style reports. MPA-style reports can also be generated from 'standard' reports with KrakenTools [(Lu *et al*., 2022)](https://github.com/jenniferlu717/KrakenTools).
+
+For more details on [Kraken2](https://github.com/DerrickWood/kraken2) and [KrakenTools](https://github.com/jenniferlu717/KrakenTools), please refer to their respective repositories and publications.
+
+### How `SPARKI` works :sparkles:
+
+`SPARKI` takes as input standard and MPA-style reports from one of more samples and collates all results into a single dataframe. After that, it will calculate, for each taxon, (i) the proportion of minimisers found in a sample (the higher the proportion of minimisers, the more of the organism’s genome is likely present in the sample) and (ii) p-values and adjusted p-values estimated based on a normal distribution and representing the statistical significance of the result.
 
 ## Quick start
 
-SPARKI is an R package with a command line interface (CLI) that can be interacted with using `Rscript`:
+`SPARKI` has a command line interface (CLI) that can be interacted with using `Rscript`:
 
 ```bash
-# To confirm the installation & version!
+# To confirm the installation & version
 Rscript -e "SPARKI::cli()" --version
 
-# To see how SPARKI can be run!
+# To see how SPARKI can be run
 Rscript -e "SPARKI::cli()" --help
 ```
 
-As a convenience, SPARKI is installed as a module on the Sanger farm. To load the latest SPARKI module:
+### Basic usage example
 
 ```bash
-module load /software/team113/modules/modulefiles/sparki/default
+Rscript -e "SPARKI::cli()" \
+  --std-reports reports/ \
+  --mpa-reports mpa/ \
+  --organism "Homo sapiens" \
+  --reference inspect.txt \
+  --domain "Viruses" \
+  --outdir .
 ```
 
 ## Installation
 
-*Note: As of now, `SPARKI` is only available through Sanger's internal GitLab.*
-
-### Install it into your R packages
-
-This package requires a **Personal Access Token** (PAT) if you are to install it from **Sanger's internal GitLab**. You can generate a PAT by following the instructions [here](https://gitlab.internal.sanger.ac.uk/-/user_settings/personal_access_tokens).
-
-If you are installing `SPARKI` on the Sanger farm you can use R version 4.2 or newer. For convenience, you can load the R 4.4 module om the farm with the following command:
-
-```bash
-module load rocker/rver/4.4.0
-```
+### Install `SPARKI` into your R packages
 
 You can install SPARKI using the `remotes` or `renv` packages, as described below.
 
@@ -65,13 +84,7 @@ You can install SPARKI using the `remotes` or `renv` packages, as described belo
 Start an R shell, install the `remotes` package if you haven't already, and then install `SPARKI`:
 
 ```R
-PAT <- "glpat-...<your-pat-goes-here>..."
-install.packages("remotes")
-remotes::install_gitlab(
-  repo = "team113_projects/jb62-projects/sparki",
-  host = "gitlab.internal.sanger.ac.uk",
-  auth_token = PAT
-)
+remotes::install_github("team113sanger/sparki")
 ```
 
 #### Installing with `renv`
@@ -80,10 +93,7 @@ If you are using `renv` to manage your R environment, you can add `SPARKI` to yo
 
 ```R
 # It is assumed that you have already created an `renv` environment
-options(renv.config.gitlab.host = "gitlab.internal.sanger.ac.uk")
-PAT <- "glpat-...<your-pat-goes-here>..."
-Sys.setenv(GITLAB_PAT = PAT)
-renv::install("gitlab::team113_projects/jb62-projects/sparki")
+renv::install("team113sanger/sparki")
 ```
 
 #### Installing a specific tag, branch or commit of `SPARKI`
@@ -92,40 +102,33 @@ You can install a specific branch, tag or commit by adding a `@ref` to the end o
 
 With `remotes`:
 ```R
-remotes::install_gitlab(
-  repo = "team113_projects/jb62-projects/sparki@develop",
-  host = "gitlab.internal.sanger.ac.uk",
-  auth_token = "..."
-)
+remotes::install_github("team113sanger/sparki@develop")
 ```
 
 With `renv`:
 ```R
-options(renv.config.gitlab.host = "gitlab.internal.sanger.ac.uk")
-renv::install("gitlab::team113_projects/jb62-projects/sparki@develop")
+renv::install("team113sanger/sparki@develop")
 ```
 
 ### Using Docker
 
-Alternatively, you can use a Docker container to interact with `SPARKI`'s CLI. In this repository we provide a Dockerfile and a Docker configuration file, respectively `Dockerfile` and `docker-compose.yml`, which you can use to start a container and run a `SPARKI` analysis following the instructions below:
+Alternatively, you can use a Docker container to interact with `SPARKI`'s CLI. In this repository we provide a `Dockerfile` that you can use to start a container and run a `SPARKI` analysis following the instructions below:
+
+#### Getting a Docker image
+
+##### Building an image from the Dockerfile
 
 ```bash
-# 1 - Create an image from the Dockerfile.
-docker build -t sparki:local -f Dockerfile --progress plain .
-
-# 2.1 - Check the SPARKI help.
-docker run --rm sparki:local Rscript -e "SPARKI::cli()" --help
-
-# 2.2 - Run SPARKI.
-docker run --rm sparki:local -v path/to/dir:/opt/data/ Rscript -e "SPARKI::cli()" \
-  --std-reports /opt/data/reports \
-  --mpa-reports /opt/data/mpa \
-  --organism "Homo sapiens" \
-  --reference /opt/data/inspect.txt \
-  --outdir /opt/data/
+docker build -t sparki:local -f Dockerfile .
 ```
 
-You can find more details on how to use `SPARKI`'s CLI below.
+##### Pulling an existing image
+
+```bash
+docker pull quay.io/team113sanger/sparki:latest
+```
+
+You can find more details on how to interact with `SPARKI`'s CLI using Docker in the section [Running SPARKI with a Docker image](#running-sparki-with-a-docker-image).
 
 ## Usage
 
@@ -154,31 +157,61 @@ You can find more details on how to use `SPARKI`'s CLI below.
 #### CLI usage example
 
 ```bash
-PROJECTDIR="/lustre/scratch126/casm/team113da/users/jb62/projects/sparki"
-module load sparki # If working on the farm!
+PROJECTDIR="path/to/project_dir"
 
 Rscript -e "SPARKI::cli()" \
-    --std-reports ${PROJECTDIR}/test/reports \
-    --mpa-reports ${PROJECTDIR}/test/mpa \
+    --std-reports ${PROJECTDIR}/reports \
+    --mpa-reports ${PROJECTDIR}/mpa \
     --organism "Homo sapiens" \
-    --reference ${PROJECTDIR}/test/inspect.txt \
-    --metadata ${PROJECTDIR}/test/metadata.csv \
-    --sample-col Tumour_RNA \
-    --columns Diagnosis_short,Site_group \
-    --prefix SebT \
-    --outdir ${PROJECTDIR}/test/outputs/ \
+    --reference ${PROJECTDIR}/inspect.txt \
+    --metadata ${PROJECTDIR}/metadata.csv \
+    --sample-col sample_id \
+    --columns column1,column2 \
+    --prefix project \
+    --outdir ${PROJECTDIR}/outputs/ \
     --verbosity info \
     --domain Viruses,Bacteria \
-    --samples-to-remove ${PROJECTDIR}/test/samples_remove.txt
+    --samples-to-remove ${PROJECTDIR}/samples_remove.txt
 ```
 
 
+### Running `SPARKI` with a Docker image
+
+After following the steps outlined in the section [Getting a Docker image](#getting-a-docker-image), you can interact with `SPARKI`'s CLI as follows:
+
+```bash
+docker run --rm sparki:local -v path/to/dir:/opt/data/ Rscript -e "SPARKI::cli()" \
+  --std-reports /opt/data/reports \
+  --mpa-reports /opt/data/mpa \
+  --organism "Homo sapiens" \
+  --reference /opt/data/inspect.txt \
+  --domain "Viruses" \
+  --outdir /opt/data/
+```
+
+Note that you will need to use a bind mount (as in `-v path/to/dir:/opt/data/`) to mount a directory from your machine into the container, so that your Kraken2 outputs and related files are visible to the container.
+
 ### Using SPARKI as an R package
 
-Please check out [this tutorial](https://gitlab.internal.sanger.ac.uk/team113_projects/jb62-projects/sparki/-/blob/develop/tutorials/SPARKI_basic_usage.pdf?ref_type=heads).
+Please check out the tutorial in this repository, which can be found at `vignettes/SPARKI_basic_usage.pdf`.
 
+## Additional information
 
-## For developers
+<details>
+
+<summary>For Sanger users</summary>
+
+As a convenience, SPARKI is installed as a module on the Sanger farm. To load the latest SPARKI module:
+
+```bash
+module load /software/team113/modules/modulefiles/sparki/default
+```
+
+</details>
+
+<details>
+
+<summary>For developers</summary>
 
 ### Making a release
 
@@ -221,3 +254,5 @@ docker compose -f docker-compose.yml up -d --build
 # 2 - Enter the container.
 docker exec -it sparki bash
 ```
+
+</details>

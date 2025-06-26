@@ -208,7 +208,7 @@ describe("load_STDreports()", {
     # Get path to test directory.
     path_to_std <- get_test_std_report_dir("valid")
 
-    # Load the MPA-style reports.
+    # Load the standard reports.
     out <- SPARKI::load_STDreports(path_to_std)
 
     # Carry out tests.
@@ -229,7 +229,7 @@ describe("load_STDreports()", {
     # Get path to test directory.
     path_to_std <- get_test_std_report_dir("valid")
 
-    # Load the MPA-style reports and get actual column names.
+    # Load the standard reports and get actual column names.
     out <- SPARKI::load_STDreports(path_to_std)
     actual_colnames <- colnames(out)
 
@@ -267,5 +267,15 @@ describe("load_STDreports()", {
 
     # Assert that the sample whose file was empty is not present in the output.
     expect_false(empty_sample %in% out[[SPARKI:::COLNAME_STD_SAMPLE]])
+  })
+
+  test_that("load_STDreports() fails if a report does not contain 'D' as the domain identifier", {
+    logger::log_threshold(logger::OFF)
+
+    # Get path to test directory.
+    path_to_std <- get_test_std_report_dir("db_incompatible")
+
+    # Load the standard reports.
+    expect_error(SPARKI::load_STDreports(path_to_std))
   })
 })
