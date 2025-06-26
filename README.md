@@ -148,9 +148,11 @@ Rscript -e "SPARKI::cli()" \
 
 Please check out [this tutorial](https://gitlab.internal.sanger.ac.uk/team113_projects/jb62-projects/sparki/-/blob/develop/tutorials/SPARKI_basic_usage.pdf?ref_type=heads).
 
+## Additional information
+
 <details>
 
-<summary> For Sanger users
+<summary>For Sanger users</summary>
 
 As a convenience, SPARKI is installed as a module on the Sanger farm. To load the latest SPARKI module:
 
@@ -162,7 +164,7 @@ module load /software/team113/modules/modulefiles/sparki/default
 
 <details>
 
-<summary> For developers
+<summary>For developers</summary>
 
 ### Making a release
 
