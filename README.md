@@ -128,7 +128,7 @@ docker build -t sparki:local -f Dockerfile .
 docker pull quay.io/team113sanger/sparki:latest
 ```
 
-You can find more details on how to use `SPARKI`'s CLI below.
+You can find more details on how to interact with `SPARKI`'s CLI using Docker in the section [Running SPARKI with a Docker image](#running-sparki-with-a-docker-image).
 
 ## Usage
 
@@ -177,6 +177,8 @@ Rscript -e "SPARKI::cli()" \
 
 ### Running `SPARKI` with a Docker image
 
+After following the steps outlined in the section [Getting a Docker image](#getting-a-docker-image), you can interact with `SPARKI`'s CLI as follows:
+
 ```bash
 docker run --rm sparki:local -v path/to/dir:/opt/data/ Rscript -e "SPARKI::cli()" \
   --std-reports /opt/data/reports \
@@ -186,6 +188,8 @@ docker run --rm sparki:local -v path/to/dir:/opt/data/ Rscript -e "SPARKI::cli()
   --domain "Viruses" \
   --outdir /opt/data/
 ```
+
+Note that you will need to use a bind mount (as in `-v path/to/dir:/opt/data/`) to mount a directory from your machine into the container, so that your Kraken2 outputs and related files are visible to the container.
 
 ### Using SPARKI as an R package
 
