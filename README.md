@@ -46,19 +46,30 @@ For more details on Kraken2 [(Wood *et al*., 2019)](https://github.com/DerrickWo
 
 ### How `SPARKI` works :sparkles:
 
-`SPARKI` takes as input standard and MPA-style reports from one of more samples and collates all results into a single dataframe. After that, it will calculate (i) the proportion of minimisers found in a sample (the higher the proportion of minimisers, the more of the organism’s genome is likely present in the sample) and (ii)
-p-values and adjusted p-values estimated based on a normal distribution and representing the statistical significance of the result.
+`SPARKI` takes as input standard and MPA-style reports from one of more samples and collates all results into a single dataframe. After that, it will calculate, for each taxon, (i) the proportion of minimisers found in a sample (the higher the proportion of minimisers, the more of the organism’s genome is likely present in the sample) and (ii) p-values and adjusted p-values estimated based on a normal distribution and representing the statistical significance of the result.
 
 ## Quick start
 
-SPARKI is an R package with a command line interface (CLI) that can be interacted with using `Rscript`:
+`SPARKI` has a command line interface (CLI) that can be interacted with using `Rscript`:
 
 ```bash
-# To confirm the installation & version!
+# To confirm the installation & version
 Rscript -e "SPARKI::cli()" --version
 
-# To see how SPARKI can be run!
+# To see how SPARKI can be run
 Rscript -e "SPARKI::cli()" --help
+```
+
+### Basic usage example
+
+```bash
+Rscript -e "SPARKI::cli()" \
+  --std-reports reports/ \
+  --mpa-reports mpa/ \
+  --organism "Homo sapiens" \
+  --reference inspect.txt \
+  --domain "Viruses" \
+  --outdir .
 ```
 
 ## Installation
@@ -102,21 +113,18 @@ renv::install("team113sanger/sparki@develop")
 
 Alternatively, you can use a Docker container to interact with `SPARKI`'s CLI. In this repository we provide a `Dockerfile` that you can use to start a container and run a `SPARKI` analysis following the instructions below:
 
+#### Getting a Docker image
+
+##### Building an image from the Dockerfile
+
 ```bash
-# 1 - Create an image from the Dockerfile.
 docker build -t sparki:local -f Dockerfile .
+```
 
-# 2.1 - Check the SPARKI help.
-docker run --rm sparki:local Rscript -e "SPARKI::cli()" --help
+##### Pulling an existing image
 
-# 2.2 - Run SPARKI.
-docker run --rm sparki:local -v path/to/dir:/opt/data/ Rscript -e "SPARKI::cli()" \
-  --std-reports /opt/data/reports \
-  --mpa-reports /opt/data/mpa \
-  --organism "Homo sapiens" \
-  --reference /opt/data/inspect.txt \
-  --domain "Viruses" \
-  --outdir /opt/data/
+```bash
+docker pull quay.io/team113sanger/sparki:latest
 ```
 
 You can find more details on how to use `SPARKI`'s CLI below.
@@ -165,6 +173,18 @@ Rscript -e "SPARKI::cli()" \
     --samples-to-remove ${PROJECTDIR}/samples_remove.txt
 ```
 
+
+### Running `SPARKI` with a Docker image
+
+```bash
+docker run --rm sparki:local -v path/to/dir:/opt/data/ Rscript -e "SPARKI::cli()" \
+  --std-reports /opt/data/reports \
+  --mpa-reports /opt/data/mpa \
+  --organism "Homo sapiens" \
+  --reference /opt/data/inspect.txt \
+  --domain "Viruses" \
+  --outdir /opt/data/
+```
 
 ### Using SPARKI as an R package
 
