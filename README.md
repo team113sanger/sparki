@@ -16,15 +16,20 @@ This repository contains the code related to SPARKI (**S**tatistical **P**rocess
   - [An overview of Kraken2](#an-overview-of-kraken2)
   - [How SPARKI works](#how-sparki-works)
 - [Quick start](#quick-start)
+  - [Basic usage example](#basic-usage-example)
 - [Installation](#installation)
-  - [Install it into your R packages](#install-it-into-your-r-packages)
+  - [Install `SPARKI` into your R packages](#install-sparki-into-your-r-packages)
     - [Installing with `remotes`](#installing-with-remotes)
     - [Installing with `renv`](#installing-with-renv)
     - [Installing a specific tag, branch or commit of `SPARKI`](#installing-a-specific-tag-branch-or-commit-of-sparki)
   - [Using Docker](#using-docker)
+    - [Getting a Docker image](#getting-a-docker-image)
+      - [Building an image from the Dockerfile](#building-an-image-from-the-dockerfile)
+      - [Pulling an existing image](#pulling-an-existing-image)
 - [Usage](#usage)
-  - [Using `SPARKI` as a command line tool](#using-sparki-as-a-command-line-tool)
-  - [Using `SPARKI` inside R](#using-sparki-inside-r)
+  - [Using `SPARKI` as a command line tool (recommended!)](#using-sparki-as-a-command-line-tool-recommended)
+  - [Running `SPARKI` with a Docker image](#using-sparki-with-a-docker-image)
+  - [Using `SPARKI` as an R package](#using-sparki-as-an-r-package)
 - [Additional information](#additional-information)
 
 ## Before you get started
@@ -134,7 +139,7 @@ You can find more details on how to interact with `SPARKI`'s CLI using Docker in
 
 ## Usage
 
-### Using SPARKI as a command line tool (recommended!)
+### Using `SPARKI` as a command line tool (recommended!)
 
 #### CLI arguments/options
 
@@ -176,7 +181,6 @@ Rscript -e "SPARKI::cli()" \
     --samples-to-remove ${PROJECTDIR}/samples_remove.txt
 ```
 
-
 ### Running `SPARKI` with a Docker image
 
 After following the steps outlined in the section [Getting a Docker image](#getting-a-docker-image), you can interact with `SPARKI`'s CLI as follows:
@@ -193,7 +197,7 @@ docker run --rm sparki:local -v path/to/dir:/opt/data/ Rscript -e "SPARKI::cli()
 
 Note that you will need to use a bind mount (as in `-v path/to/dir:/opt/data/`) to mount a directory from your machine into the container, so that your Kraken2 outputs and related files are visible to the container.
 
-### Using SPARKI as an R package
+### Using `SPARKI` as an R package
 
 Please check out the tutorial in this repository, which can be found at `vignettes/SPARKI_basic_usage.pdf`.
 
