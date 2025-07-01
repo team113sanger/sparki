@@ -29,7 +29,7 @@ This repository contains the code related to SPARKI (**S**tatistical **P**rocess
 
 ## Before you get started
 
-As abovementioned, SPARKI is a tool to help collate and interpret the outputs produced by Kraken2. In this context, we have developed an end-to-end pathogen identification pipeline, `sparki-nf`, which integrates [Kraken2](https://github.com/DerrickWood/kraken2), [KrakenTools](https://github.com/jenniferlu717/KrakenTools), and SPARKI; additionally, we also provide an optional pipeline, `map-to-genome`, which users can leverage to further validate SPARKI hits.
+SPARKI is a tool to help collate and interpret the outputs produced by Kraken2. In this context, we have developed an end-to-end pathogen identification pipeline, `sparki-nf`, which integrates [Kraken2](https://github.com/DerrickWood/kraken2), [KrakenTools](https://github.com/jenniferlu717/KrakenTools), and SPARKI; additionally, we also provide an optional pipeline, `map-to-genome`, which users can leverage to further validate SPARKI hits.
 
 | Tool | Repository | Goal |
 | --- | --- | --- |
@@ -41,13 +41,15 @@ Before using `SPARKI`, please ensure you have run [Kraken2](https://github.com/D
 
 ### An overview of Kraken2 :bug:
 
-Briefly, Kraken2 [(Wood *et al*., 2019)](https://github.com/DerrickWood/kraken2) splits the sequencing data from a FASTQ file into *k*-mers, from which minimisers are obtained. By calculating a compact hash code for each minimiser, [Kraken2](https://github.com/DerrickWood/kraken2) is then able to assign each *k*-mer the appropriate lower common ancestor taxon. When run with the `--report` mode, Kraken2 generates a sample report (herein referred to as 'standard' report) containing all taxa, at different taxonomic ranks, which were identified in the sample; furthermore, if run with the flag `--report-minimizer-data`, the tool also outputs the number of unique minimisers associated with each taxon that were found in the sample. Alternatively, Kraken2 can be run with the `--report` mode and the flag `--use-mpa-style` to generate MetaPhlAn2 (MPA)-style reports. MPA-style reports can also be generated from 'standard' reports with KrakenTools [(Lu *et al*., 2022)](https://github.com/jenniferlu717/KrakenTools).
+Kraken2 [(Wood *et al*., 2019)](https://github.com/DerrickWood/kraken2) splits the sequencing data from a FASTQ file into *k*-mers, from which minimisers are obtained. By calculating a compact hash code for each minimiser, [Kraken2](https://github.com/DerrickWood/kraken2) is then able to assign each *k*-mer the appropriate lower common ancestor taxon. When run with the `--report` mode, Kraken2 generates a sample report (herein referred to as 'standard' report) containing all taxa, at different taxonomic ranks, which were identified in the sample; furthermore, if run with the flag `--report-minimizer-data`, the tool also outputs the number of unique minimisers associated with each taxon that were found in the sample. Alternatively, Kraken2 can be run with the `--report` mode and the flag `--use-mpa-style` to generate MetaPhlAn2 (MPA)-style reports. MPA-style reports can also be generated from 'standard' reports with KrakenTools [(Lu *et al*., 2022)](https://github.com/jenniferlu717/KrakenTools).
 
 For more details on [Kraken2](https://github.com/DerrickWood/kraken2) and [KrakenTools](https://github.com/jenniferlu717/KrakenTools), please refer to their respective repositories and publications.
 
 ### How `SPARKI` works :sparkles:
 
 `SPARKI` takes as input standard and MPA-style reports from one of more samples and collates all results into a single dataframe. After that, it will calculate, for each taxon, (i) the proportion of minimisers found in a sample (the higher the proportion of minimisers, the more of the organism’s genome is likely present in the sample) and (ii) p-values and adjusted p-values estimated based on a normal distribution and representing the statistical significance of the result.
+
+To ensure reliability, we have implemented tests around the `SPARKI` codebase - please check the section [Additional information](#additional-information) for more details.
 
 ## Quick start
 
@@ -253,6 +255,14 @@ docker compose -f docker-compose.yml up -d --build
 
 # 2 - Enter the container.
 docker exec -it sparki bash
+```
+
+### Testing
+
+Unit and integration tests for `SPARKI` can be found in this repository at `tests/`. To run them, you can enter the [development-focused container created above](#development-focused-environment), start an R shell, and then run the following command:
+
+```R
+devtools::test()
 ```
 
 </details>
